@@ -14,6 +14,7 @@
       font-family: Arial, sans-serif;
       color: #111;
       background: #fff;
+      overflow-x: hidden;
     }
 
     nav {
@@ -29,7 +30,7 @@
 
     .nav-logo { margin-right: auto; }
     .nav-logo a { display: flex; align-items: center; text-decoration: none; }
-    .nav-logo img { height: 70px; width: auto; }
+    .nav-logo img { height: 92px; width: auto; }
 
     .nav-links { display: flex; list-style: none; align-items: center; }
     .nav-links > li { position: relative; }
@@ -125,7 +126,7 @@
       background-image: url('data:image/jpeg;base64,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');
       background-size: cover;
       background-position: center;
-      background-image: url('https://images.unsplash.com/photo-1738193830098-a09d744d862e?auto=format&fit=crop&fm=jpg&q=80&w=1800');
+      background-image: url('https://images.pexels.com/photos/4162011/pexels-photo-4162011.jpeg?auto=compress&cs=tinysrgb&w=1800');
       z-index: 0;
     }
     .banner-overlay {
@@ -144,6 +145,7 @@
       font-family: 'Playfair Display', serif;
       letter-spacing: 0.02em;
       padding: 0 16px;
+      max-width: 100%;
     }
     .banner-content {
       position: relative;
@@ -155,6 +157,7 @@
       text-align: center;
       gap: 16px;
       padding: 0 18px;
+      max-width: 100%;
     }
     .banner-cta {
       display: inline-block;
@@ -190,6 +193,8 @@
       display: none;
       background: #f4f4f4;
       padding: 30px;
+      max-width: 100%;
+      overflow-wrap: break-word;
     }
     .page.active { display: block; }
 
@@ -203,6 +208,9 @@
     #page-aeration-overseeding { background: #dddddd; }
     #page-snow-removal { background: #d9d9d9; }
     #page-leaf-removal { background: #d5d5d5; }
+    #page-estimate { background: #ececec; }
+    #page-plans { background: #e6e6e6; }
+    #page-gallery { background: #dddddd; }
     #page-contact { background: #eeeeee; }
     #page-hiring { background: #e8e8e8; }
     #page-faqs { background: #e2e2e2; }
@@ -463,6 +471,205 @@
     .form-submit:hover {
       background: #2d6417;
     }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .primary-link,
+    .secondary-link,
+    .copy-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      padding: 11px 16px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid #3a7d1e;
+      font-size: 0.98rem;
+    }
+    .primary-link,
+    .copy-button {
+      color: #fff;
+      background: #3a7d1e;
+    }
+    .secondary-link {
+      color: #3a7d1e;
+      background: #fff;
+    }
+    .primary-link:hover,
+    .copy-button:hover { background: #2d6417; }
+    .secondary-link:hover { background: #f0f7ec; }
+    .stat-grid,
+    .plan-grid,
+    .gallery-grid,
+    .service-area-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .stat-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .plan-grid,
+    .gallery-grid,
+    .service-area-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .stat-card,
+    .plan-card,
+    .gallery-item,
+    .tool-card {
+      background: #fff;
+      border: 1px solid #c9d8c4;
+      border-radius: 4px;
+      padding: 18px;
+      color: #214d17;
+    }
+    .stat-card strong {
+      display: block;
+      color: #3a7d1e;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+    .plan-card {
+      border-left: 5px solid #3a7d1e;
+    }
+    .plan-card h3,
+    .tool-card h3,
+    .gallery-item h3 {
+      color: #3a7d1e;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .plan-price {
+      color: #214d17;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 0;
+    }
+    .badge {
+      display: inline-block;
+      background: #e5f1df;
+      border: 1px solid #b8d5aa;
+      border-radius: 4px;
+      color: #214d17;
+      padding: 6px 9px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .estimate-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+      gap: 18px;
+      align-items: start;
+      margin-top: 18px;
+    }
+    .estimate-form,
+    .contact-form {
+      margin-top: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      color: #214d17;
+    }
+    .estimate-form label,
+    .contact-form label {
+      color: #214d17;
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+    .estimate-form input,
+    .estimate-form select,
+    .estimate-form textarea,
+    .contact-form input,
+    .contact-form select,
+    .contact-form textarea,
+    .availability-form input {
+      border: 1px solid #b8c9b3;
+      border-radius: 4px;
+      padding: 11px 12px;
+      font: inherit;
+      color: #214d17;
+      background: #fff;
+    }
+    .estimate-form textarea,
+    .contact-form textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .estimate-result,
+    .form-message {
+      background: #fff;
+      border: 1px solid #c9d8c4;
+      border-left: 5px solid #3a7d1e;
+      border-radius: 4px;
+      padding: 18px;
+      color: #214d17;
+      line-height: 1.6;
+    }
+    [hidden] { display: none !important; }
+    .estimate-result h3,
+    .form-message h3 {
+      color: #3a7d1e;
+      margin-bottom: 8px;
+    }
+    .estimate-range {
+      display: block;
+      color: #3a7d1e;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      margin: 8px 0;
+    }
+    .form-helper {
+      color: #38662e;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-top: 6px;
+    }
+    .availability-form {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .availability-form input {
+      flex: 1 1 210px;
+    }
+    .gallery-item {
+      padding: 0;
+      overflow: hidden;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-caption {
+      padding: 16px;
+    }
+    .season-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+    .season-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid #c9d8c4;
+      line-height: 1.55;
+    }
+    .season-list li:last-child {
+      border-bottom: 0;
+    }
 
     footer {
       background: #3a7d1e;
@@ -484,7 +691,7 @@
       justify-content: space-between;
     }
     .footer-logo { flex: 0 0 auto; }
-    .footer-logo img { height: 90px; width: auto; }
+    .footer-logo img { height: 125px; width: auto; }
     .footer-cols {
       display: flex;
       gap: 50px;
@@ -534,25 +741,38 @@
       .hamburger { display: flex; }
 
       .banner { height: 300px; }
-      .banner-cta { width: 100%; max-width: 300px; }
+      .banner-title { font-size: clamp(2rem, 10vw, 2.55rem); padding: 0 24px; }
+      .banner-content { padding: 0 28px; }
+      .banner-cta { width: 100%; max-width: 280px; font-size: 1rem; padding: 13px 18px; }
 
       main { padding: 28px 16px 80px; }
 
-      .page { padding: 22px 18px; }
+      .page { padding: 22px 16px; }
+      .page-intro,
+      .info-box { font-size: 1rem; }
       .home-feature-image { height: 190px; }
       .service-card-image { height: 170px; }
       .service-page-image { height: 185px; }
       .service-card-grid,
       .home-highlight-grid,
+      .stat-grid,
+      .plan-grid,
+      .gallery-grid,
+      .service-area-grid,
+      .estimate-shell,
+      .estimate-form,
+      .contact-form,
       .contractor-form,
       .checkbox-options {
         grid-template-columns: 1fr;
       }
+      .estimate-shell { gap: 16px; }
+      .gallery-item img { height: 175px; }
 
       footer { padding: 30px 16px 16px; }
 
       .footer-main { gap: 24px; }
-      .footer-logo img { height: 65px; }
+      .footer-logo img { height: 92px; }
       .footer-cols {
         gap: 30px;
         margin-left: 0;
@@ -589,6 +809,9 @@
           <a href="#" onclick="showPage('snow-removal', 'Snow Removal')">Snow Removal</a>
         </div>
       </li>
+      <li><a href="#" onclick="showPage('estimate', 'Free Estimate')">Estimate</a></li>
+      <li><a href="#" onclick="showPage('plans', 'Service Plans')">Plans</a></li>
+      <li><a href="#" onclick="showPage('gallery', 'Project Gallery')">Gallery</a></li>
       <li>
         <a href="#">About</a>
         <div class="dropdown">
@@ -614,6 +837,10 @@
     <a href="#" onclick="showPage('aeration-overseeding','Aeration &amp; Overseeding');closeMobileMenu()">Aeration &amp; Overseeding</a>
     <a href="#" onclick="showPage('leaf-removal','Leaf Removal');closeMobileMenu()">Leaf Removal</a>
     <a href="#" onclick="showPage('snow-removal','Snow Removal');closeMobileMenu()">Snow Removal</a>
+    <div class="mobile-section-label">Tools</div>
+    <a href="#" onclick="showPage('estimate','Free Estimate');closeMobileMenu()">Free Estimate</a>
+    <a href="#" onclick="showPage('plans','Service Plans');closeMobileMenu()">Service Plans</a>
+    <a href="#" onclick="showPage('gallery','Project Gallery');closeMobileMenu()">Project Gallery</a>
     <div class="mobile-section-label">About</div>
     <a href="#" onclick="showPage('contact','Contact Info');closeMobileMenu()">Contact Info</a>
     <a href="#" onclick="showPage('hiring','Hiring');closeMobileMenu()">Hiring</a>
@@ -625,7 +852,7 @@
     <div class="banner-overlay"></div>
     <div class="banner-content">
       <h1 class="banner-title">JCM Landscaping</h1>
-      <a class="banner-cta" href="#" onclick="showPage('contact', 'Contact Info')">Get a Free Estimate Today!</a>
+      <a class="banner-cta" href="#" onclick="showPage('estimate', 'Free Estimate')">Get a Free Estimate Today!</a>
       <div class="banner-phone">(918-998-5618)</div>
     </div>
   </div>
@@ -638,50 +865,89 @@
         <p class="page-lead">JCM Landscaping helps people take care of outdoor jobs without making the process complicated.</p>
         <p>We connect customers with available contracted workers for lawn care, landscaping, weed control, aeration, holiday lighting, and snow removal. Some jobs are simple and can be handled with a basic service package. Others need a quote because the size, timing, or amount of work can change the price.</p>
         <p>Service is available anywhere a contracted worker is available. If someone can take the job in your area, JCM can help get the work started.</p>
-        <img class="home-feature-image" src="https://images.unsplash.com/photo-1738193830098-a09d744d862e?auto=format&fit=crop&fm=jpg&q=80&w=1400" alt="Freshly maintained lawn and landscaping" loading="lazy">
+        <img class="home-feature-image" src="https://images.pexels.com/photos/4162011/pexels-photo-4162011.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="Freshly maintained lawn and landscaping" loading="lazy">
+        <div class="cta-row">
+          <a class="primary-link" href="#" onclick="showPage('estimate', 'Free Estimate')">Build an Estimate</a>
+          <a class="secondary-link" href="#" onclick="showPage('plans', 'Service Plans')">View Service Plans</a>
+          <a class="secondary-link" href="#" onclick="showPage('hiring', 'Hiring')">Contractor Application</a>
+        </div>
+      </div>
+      <div class="home-section">
+        <h2>A Real System for Outdoor Work</h2>
+        <p>JCM is set up to handle one-time jobs, regular service, seasonal work, and commercial requests. The goal is simple: make it easy to ask for help, understand the next step, and get matched with an available contracted worker.</p>
+        <div class="stat-grid">
+          <div class="stat-card"><strong>7+</strong><span>service categories</span></div>
+          <div class="stat-card"><strong>2</strong><span>pricing styles</span></div>
+          <div class="stat-card"><strong>1</strong><span>simple estimate request</span></div>
+          <div class="stat-card"><strong>365</strong><span>seasonal property support</span></div>
+        </div>
+      </div>
+      <div class="home-section">
+        <h2>Check Availability</h2>
+        <p>Service depends on whether a contracted worker is available near the property. Use this quick check to start the request.</p>
+        <div class="service-area-grid">
+          <div class="tool-card">
+            <h3>Customer Availability Check</h3>
+            <form class="availability-form" id="availabilityForm">
+              <input id="availabilityArea" type="text" placeholder="Enter city, area, or ZIP" aria-label="City, area, or ZIP">
+              <button class="copy-button" type="submit">Check Area</button>
+            </form>
+            <p class="form-helper" id="availabilityResult">Enter your area and we will show the next step.</p>
+          </div>
+          <div class="tool-card">
+            <h3>How JCM Prices Work</h3>
+            <p>Some simple jobs can fit a package. Larger jobs, commercial work, seasonal lighting, snow removal, and custom landscaping are quoted after the details are known.</p>
+            <div class="badge-row">
+              <span class="badge">Packages</span>
+              <span class="badge">Custom Quotes</span>
+              <span class="badge">One-time Jobs</span>
+              <span class="badge">Recurring Service</span>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="home-section">
         <h2>Complete Lawn &amp; Landscaping Services</h2>
         <p>From regular lawn care to bigger seasonal cleanup, JCM is built to help homeowners and businesses keep their property clean, healthy, and ready to be seen.</p>
         <div class="service-card-grid">
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1740823434562-c2cb19a402b8?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Fresh mulch and landscape plants" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/12029150/pexels-photo-12029150.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Fresh mulch and landscape plants" loading="lazy">
             <h3>Landscape Services</h3>
             <p>Create lasting curb appeal. Residential and commercial designs include plantings, beds, rock, and hardscape features with scheduled yearly maintenance.</p>
             <a href="#" onclick="showPage('landscape-services', 'Landscape Services')">Learn More</a>
           </div>
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1472141521881-95d0e87e2e39?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Healthy green grass up close" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/4162016/pexels-photo-4162016.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Healthy green grass up close" loading="lazy">
             <h3>Weed Control and Fertilization</h3>
             <p>Protect your yard with residential and commercial programs that suppress invasive weeds and nourish healthy growth on a schedule tuned to Oklahoma seasons.</p>
             <a href="#" onclick="showPage('weed-control', 'Weed Control & Fertilization')">Learn More</a>
           </div>
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1690068023694-3fb09aeed37a?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Worker mowing a green lawn" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/6728930/pexels-photo-6728930.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Worker mowing a green lawn" loading="lazy">
             <h3>Residential Lawn Care with Weed Control</h3>
             <p>Keep your property looking clean with mowing, trimming, and edging paired with a treatment plan that keeps lawns weed free.</p>
             <a href="#" onclick="showPage('residential-lawn-care', 'Residential Lawn Care')">Learn More</a>
           </div>
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1738193830098-a09d744d862e?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Clean commercial lawn and landscape bed" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/13630739/pexels-photo-13630739.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Clean commercial lawn and landscape bed" loading="lazy">
             <h3>Commercial Lawn Care</h3>
             <p>Give your site a dependable finish. Offices, retail locations, and multi unit properties get clear schedules, proactive communication, and professional results.</p>
             <a href="#" onclick="showPage('commercial-lawn-care', 'Commercial Lawn Care')">Learn More</a>
           </div>
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1472141521881-95d0e87e2e39?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Thick lawn grass ready for care" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/4162016/pexels-photo-4162016.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Thick lawn grass ready for care" loading="lazy">
             <h3>Aeration and Overseeding</h3>
             <p>Boost root strength and fill in thin spots. Residential and commercial aeration opens compacted soil and overseeding builds a thicker, more resilient yard.</p>
             <a href="#" onclick="showPage('aeration-overseeding', 'Aeration & Overseeding')">Learn More</a>
           </div>
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1635628001185-0cbfb7bdc63a?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Wheelbarrow filled with fall leaves" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/9005024/pexels-photo-9005024.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Wheelbarrow filled with fall leaves" loading="lazy">
             <h3>Leaf Removal</h3>
             <p>Refresh your property with a tidy cleanup. We blow and rake lawns and beds, mulch where it makes sense, and haul away every bag for a crisp, finished look. Available for residential and commercial properties.</p>
             <a href="#" onclick="showPage('leaf-removal', 'Leaf Removal')">Learn More</a>
           </div>
           <div class="service-card">
-            <img class="service-card-image" src="https://images.unsplash.com/photo-1550959038-5a0104d4a8c5?auto=format&fit=crop&fm=jpg&q=80&w=900" alt="Snow removal equipment clearing a driveway" loading="lazy">
+            <img class="service-card-image" src="https://images.pexels.com/photos/27306407/pexels-photo-27306407.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Snow removal equipment clearing a driveway" loading="lazy">
             <h3>Snow Removal</h3>
             <p>Priority snow and ice clearing keeps walkways, drives, and entries safe. We monitor storms, pretreat when needed, plow and shovel on schedule, and apply ice melt with return visits if conditions refreeze. Available for residential and commercial properties.</p>
             <a href="#" onclick="showPage('snow-removal', 'Snow Removal')">Learn More</a>
@@ -721,6 +987,7 @@
         <h2>Landscape Services</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/12029150/pexels-photo-12029150.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Landscape bed with fresh mulch and plants" loading="lazy">
         <p>Clean up, refresh, or build out your outdoor space. JCM can help with planting, mulch, edging, trimming, bed cleanup, and other landscaping work. Once we know what you need, we match the job with an available contracted worker.</p>
         <p>Landscaping work can be small, like fresh mulch around the house, or bigger, like cleaning up overgrown beds and getting the yard ready for the season.</p>
         <ul class="info-list">
@@ -737,6 +1004,7 @@
         <h2>Holiday Lighting</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/35354476/pexels-photo-35354476.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Home with warm exterior holiday lights" loading="lazy">
         <p>Make your home or business look ready for the season without getting on a ladder. We can help with holiday light setup, takedown, and basic layout ideas when a contracted worker is available.</p>
         <p>Holiday lighting can include simple roofline lighting, entryway lighting, or other outdoor areas that need a clean seasonal look.</p>
         <ul class="info-list">
@@ -752,6 +1020,7 @@
         <h2>Weed Control & Fertilization</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/4162016/pexels-photo-4162016.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Healthy green grass after lawn care" loading="lazy">
         <p>Keep weeds under control and help your lawn grow thicker. We can set up weed control and fertilization services based on your yard, the season, and what your grass needs.</p>
         <p>Good lawn care is easier when weeds are handled early and the grass gets the right treatment at the right time.</p>
         <ul class="info-list">
@@ -768,6 +1037,7 @@
         <h2>Residential Lawn Care</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/6728930/pexels-photo-6728930.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Lawn mower cutting a green yard" loading="lazy">
         <p>Keep your yard looking neat without having to plan around it every week. JCM can help with mowing, trimming, edging, and basic lawn cleanup for homeowners.</p>
         <p>Residential lawn care is built for homeowners who want the yard handled on a schedule that makes sense for them.</p>
         <ul class="info-list">
@@ -784,6 +1054,7 @@
         <h2>Commercial Lawn Care</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/13630739/pexels-photo-13630739.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Neat lawn and landscape outside a building" loading="lazy">
         <p>JCM helps businesses, HOAs, and commercial properties keep their grass and outdoor areas clean and presentable. We coordinate contracted workers for the schedule and scope your property needs.</p>
         <p>Commercial properties often need steady service, clear scheduling, and a plan that fits the size of the property.</p>
         <ul class="info-list">
@@ -800,6 +1071,7 @@
         <h2>Aeration & Overseeding</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/4162016/pexels-photo-4162016.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Close view of thick grass growth" loading="lazy">
         <p>Help your lawn grow in thicker by loosening compacted soil and filling in thin spots. Aeration and overseeding are usually best in spring or fall, depending on your yard.</p>
         <p>Aeration opens up the soil so air, water, and nutrients can reach the roots. Overseeding helps fill in thin areas so the lawn has a better chance to grow in evenly.</p>
         <ul class="info-list">
@@ -815,6 +1087,7 @@
         <h2>Leaf Removal</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/9005024/pexels-photo-9005024.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Wheelbarrow of leaves ready to be hauled away" loading="lazy">
         <p>Leaf removal helps keep lawns, beds, walkways, and curb lines from looking messy during the busy fall season.</p>
         <p>JCM can help with blowing, raking, bagging, mulching where it makes sense, and hauling away leaves for residential and commercial properties.</p>
         <ul class="info-list">
@@ -831,6 +1104,7 @@
         <h2>Snow Removal</h2>
       </div>
       <div class="info-box">
+        <img class="service-page-image" src="https://images.pexels.com/photos/27306407/pexels-photo-27306407.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Snow clearing equipment in winter weather" loading="lazy">
         <p>Snow can get in the way fast. JCM can help clear driveways, walkways, and parking areas when a contracted worker is available in your area.</p>
         <p>Snow removal can be set up for one storm or planned ahead for the season, depending on what workers are available and what your property needs.</p>
         <ul class="info-list">
@@ -843,15 +1117,233 @@
       </div>
     </div>
 
+    <div id="page-estimate" class="page">
+      <div class="service-header">
+        <h2>Free Estimate</h2>
+      </div>
+      <div class="info-box">
+        <p class="page-lead">Use this estimate builder to give JCM the details needed to start a request.</p>
+        <p>The number shown is a rough planning range. Final pricing depends on property size, service details, timing, and whether a contracted worker is available.</p>
+        <div class="estimate-shell">
+          <form class="estimate-form" id="estimateForm" action="#" method="post">
+            <div class="form-field">
+              <label for="estimate-name">Full Name</label>
+              <input id="estimate-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="form-field">
+              <label for="estimate-phone">Phone</label>
+              <input id="estimate-phone" name="phone" type="tel" autocomplete="tel" required>
+            </div>
+            <div class="form-field">
+              <label for="estimate-email">Email</label>
+              <input id="estimate-email" name="email" type="email" autocomplete="email" placeholder="name@example.com">
+            </div>
+            <div class="form-field">
+              <label for="estimate-area">City, Area, or ZIP</label>
+              <input id="estimate-area" name="area" type="text" autocomplete="postal-code" required>
+            </div>
+            <div class="form-field">
+              <label for="estimate-service">Service Needed</label>
+              <select id="estimate-service" name="service" required>
+                <option value="">Choose a service</option>
+                <option value="residential-lawn-care">Residential lawn care</option>
+                <option value="commercial-lawn-care">Commercial lawn care</option>
+                <option value="landscape-services">Landscape services</option>
+                <option value="weed-control">Weed control and fertilization</option>
+                <option value="aeration-overseeding">Aeration and overseeding</option>
+                <option value="leaf-removal">Leaf removal</option>
+                <option value="snow-removal">Snow removal</option>
+                <option value="holiday-lighting">Holiday lighting</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="estimate-frequency">Service Type</label>
+              <select id="estimate-frequency" name="frequency" required>
+                <option value="one-time">One-time job</option>
+                <option value="weekly">Weekly service</option>
+                <option value="bi-weekly">Bi-weekly service</option>
+                <option value="monthly">Monthly service</option>
+                <option value="seasonal">Seasonal service</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="estimate-size">Property Size</label>
+              <select id="estimate-size" name="size" required>
+                <option value="small">Small yard or small site</option>
+                <option value="standard" selected>Standard residential yard</option>
+                <option value="large">Large yard or corner lot</option>
+                <option value="commercial">Commercial or multi unit property</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="estimate-date">Preferred Start Date</label>
+              <input id="estimate-date" name="date" type="date">
+            </div>
+            <div class="form-field-full">
+              <label for="estimate-address">Property Address or Nearby Cross Streets</label>
+              <input id="estimate-address" name="address" type="text" autocomplete="street-address" placeholder="Street, neighborhood, or nearby cross streets">
+            </div>
+            <div class="form-field-full">
+              <label for="estimate-notes">Job Details</label>
+              <textarea id="estimate-notes" name="notes" placeholder="Tell us what needs to be done, gate access, problem areas, pets, or timing needs."></textarea>
+              <p class="form-helper">No payment is collected here. This creates a clean request summary you can copy or send by email.</p>
+            </div>
+            <button class="form-submit" type="submit">Build Estimate Summary</button>
+          </form>
+          <aside class="estimate-result" id="estimateResult">
+            <h3>Estimate Summary</h3>
+            <p>Fill out the form and JCM will build a request summary with a rough planning range.</p>
+            <p class="form-helper">Final service depends on worker availability.</p>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-plans" class="page">
+      <div class="service-header">
+        <h2>Service Plans</h2>
+      </div>
+      <div class="info-box">
+        <p class="page-lead">Pick a simple starting point, then JCM can shape the work around the property.</p>
+        <p>These plans are not locked contracts. They are a clear way to explain what kind of help you need before a final quote or service package is confirmed.</p>
+        <div class="plan-grid">
+          <div class="plan-card">
+            <h3>Clean Cut</h3>
+            <p class="plan-price">Package style pricing when the yard fits</p>
+            <p>Mowing, trimming, edging, and basic cleanup for homeowners who want the property kept neat.</p>
+            <div class="badge-row"><span class="badge">Weekly</span><span class="badge">Bi-weekly</span><span class="badge">Residential</span></div>
+          </div>
+          <div class="plan-card">
+            <h3>Healthy Lawn</h3>
+            <p class="plan-price">Package or quote depending on yard size</p>
+            <p>Weed control, fertilization, aeration, and overseeding options built around the season and lawn condition.</p>
+            <div class="badge-row"><span class="badge">Weed Control</span><span class="badge">Fertilization</span><span class="badge">Seasonal</span></div>
+          </div>
+          <div class="plan-card">
+            <h3>Curb Appeal</h3>
+            <p class="plan-price">Custom quote</p>
+            <p>Landscape bed cleanup, mulch, rock, plantings, trimming, and refresh work for homes and businesses.</p>
+            <div class="badge-row"><span class="badge">Mulch</span><span class="badge">Beds</span><span class="badge">Cleanup</span></div>
+          </div>
+          <div class="plan-card">
+            <h3>Commercial Care</h3>
+            <p class="plan-price">Custom quote</p>
+            <p>Routine mowing, cleanup, seasonal services, and clear schedules for offices, retail sites, HOAs, and multi unit properties.</p>
+            <div class="badge-row"><span class="badge">Commercial</span><span class="badge">HOA</span><span class="badge">Recurring</span></div>
+          </div>
+        </div>
+        <div class="home-section">
+          <h2>Seasonal Work Calendar</h2>
+          <ul class="season-list">
+            <li><strong>Spring:</strong> lawn cleanup, mulch, aeration, weed control, fertilization, and first mowing schedules.</li>
+            <li><strong>Summer:</strong> mowing, edging, commercial upkeep, trimming, and ongoing weed control.</li>
+            <li><strong>Fall:</strong> overseeding, leaf removal, cleanup, bed refreshes, and holiday lighting setup.</li>
+            <li><strong>Winter:</strong> holiday lighting takedown, snow removal when available, and planning for spring work.</li>
+          </ul>
+        </div>
+        <div class="cta-row">
+          <a class="primary-link" href="#" onclick="showPage('estimate', 'Free Estimate')">Start an Estimate</a>
+          <a class="secondary-link" href="#" onclick="showPage('contact', 'Contact Info')">Ask a Question</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-gallery" class="page">
+      <div class="service-header">
+        <h2>Project Gallery</h2>
+      </div>
+      <div class="info-box">
+        <p class="page-lead">A quick look at the kinds of outdoor work customers can request through JCM.</p>
+        <p>These photos are examples for the website. You can replace them later with real job photos from completed work.</p>
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/4162011/pexels-photo-4162011.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Fresh lawn mowing example" loading="lazy">
+            <div class="gallery-caption"><h3>Routine Lawn Care</h3><p>Mowing, trimming, edging, and clean finish work.</p></div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/12029150/pexels-photo-12029150.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Mulch and landscape bed example" loading="lazy">
+            <div class="gallery-caption"><h3>Landscape Beds</h3><p>Mulch, rock, bed cleanup, and fresh curb appeal.</p></div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/9005024/pexels-photo-9005024.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Leaf removal example" loading="lazy">
+            <div class="gallery-caption"><h3>Seasonal Cleanup</h3><p>Leaf removal, bagging, haul away options, and property refreshes.</p></div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/35354476/pexels-photo-35354476.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Holiday lighting example" loading="lazy">
+            <div class="gallery-caption"><h3>Holiday Lighting</h3><p>Setup and takedown for homes and small businesses.</p></div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/13630739/pexels-photo-13630739.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Commercial lawn care example" loading="lazy">
+            <div class="gallery-caption"><h3>Commercial Sites</h3><p>Clear schedules and dependable appearance for business properties.</p></div>
+          </div>
+          <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/27306407/pexels-photo-27306407.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Snow removal example" loading="lazy">
+            <div class="gallery-caption"><h3>Snow Removal</h3><p>Storm response when a contracted worker is available.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="page-contact" class="page">
       <div class="service-header"><h2>Contact Info</h2></div>
       <div class="info-box">
-        <p>Use the contact information below to ask about services, estimates, and contractor availability.</p>
-        <ul class="contact-list">
-          <li><strong>Phone:</strong> (918) 998-5618</li>
-          <li><strong>Email:</strong> hello@jcmlandscaping.com</li>
-        </ul>
-        <p>When reaching out, include the service you need, the property type, your general area, and whether you want a one-time job or recurring service. The email is a placeholder and can be replaced when the real email is ready.</p>
+        <p class="page-lead">Ready to talk through a job, ask about pricing, or check whether JCM has someone available near your property?</p>
+        <p>Send the details here and the site will build a clean message. You can copy it or send it by email using the placeholder address until the real business email is ready.</p>
+        <div class="service-area-grid">
+          <div class="tool-card">
+            <h3>Direct Contact</h3>
+            <ul class="contact-list">
+              <li><strong>Phone:</strong> (918) 998-5618</li>
+              <li><strong>Email:</strong> hello@jcmlandscaping.com</li>
+            </ul>
+            <p class="form-helper">The email is a placeholder. Replace it in the code when the real address is ready.</p>
+          </div>
+          <div class="tool-card">
+            <h3>Best Details to Send</h3>
+            <ul class="info-list">
+              <li>Service needed</li>
+              <li>City, area, or ZIP</li>
+              <li>Property type and size</li>
+              <li>One-time job or recurring service</li>
+              <li>Photos, gate notes, or timing needs</li>
+            </ul>
+          </div>
+        </div>
+        <form class="contact-form" id="contactForm" action="#" method="post">
+          <div class="form-field">
+            <label for="contact-name">Full Name</label>
+            <input id="contact-name" name="contact_name" type="text" autocomplete="name" required>
+          </div>
+          <div class="form-field">
+            <label for="contact-phone">Phone</label>
+            <input id="contact-phone" name="contact_phone" type="tel" autocomplete="tel" required>
+          </div>
+          <div class="form-field">
+            <label for="contact-email">Email</label>
+            <input id="contact-email" name="contact_email" type="email" autocomplete="email" placeholder="name@example.com">
+          </div>
+          <div class="form-field">
+            <label for="contact-topic">What Do You Need?</label>
+            <select id="contact-topic" name="topic" required>
+              <option value="">Choose one</option>
+              <option value="Free estimate">Free estimate</option>
+              <option value="Current service question">Current service question</option>
+              <option value="Commercial request">Commercial request</option>
+              <option value="Contractor question">Contractor question</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-field-full">
+            <label for="contact-area">City, Area, or ZIP</label>
+            <input id="contact-area" name="contact_area" type="text" placeholder="Example: Tulsa, Broken Arrow, Owasso">
+          </div>
+          <div class="form-field-full">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" placeholder="Tell JCM what work you need and when you would like it done." required></textarea>
+          </div>
+          <button class="form-submit" type="submit">Create Contact Message</button>
+        </form>
+        <div class="form-message" id="contactMessage" hidden></div>
       </div>
     </div>
 
@@ -866,7 +1358,7 @@
           <li>List the equipment and tools you already have</li>
           <li>Let us know what days and times usually work for you</li>
         </ul>
-        <form class="contractor-form" action="#" method="post">
+        <form class="contractor-form" id="contractorForm" action="#" method="post">
           <div class="form-field">
             <label for="contractor-name">Full Name</label>
             <input id="contractor-name" name="contractor_name" type="text" autocomplete="name" required>
@@ -920,6 +1412,7 @@
           </div>
           <button class="form-submit" type="submit">Submit Application</button>
         </form>
+        <div class="form-message" id="contractorMessage" hidden></div>
         <p class="service-note">This form is ready to connect to email or a submission system when you are ready.</p>
       </div>
     </div>
@@ -977,6 +1470,12 @@
             <a href="#" onclick="showPage('hiring', 'Hiring')">Hiring</a>
             <a href="#" onclick="showPage('faqs', 'FAQs')">FAQs</a>
           </div>
+          <div class="footer-col">
+            <h4>Tools</h4>
+            <a href="#" onclick="showPage('estimate', 'Free Estimate')">Free Estimate</a>
+            <a href="#" onclick="showPage('plans', 'Service Plans')">Service Plans</a>
+            <a href="#" onclick="showPage('gallery', 'Project Gallery')">Project Gallery</a>
+          </div>
         </div>
       </div>
       <div class="footer-bottom">
@@ -987,14 +1486,287 @@
   </footer>
 
   <script>
+    var contactEmail = 'hello@jcmlandscaping.com';
+    var latestMessages = {
+      estimate: '',
+      contact: '',
+      contractor: ''
+    };
+
+    var serviceRanges = {
+      'residential-lawn-care': { label: 'Residential lawn care', low: 55, high: 125, unit: 'per visit' },
+      'commercial-lawn-care': { label: 'Commercial lawn care', low: 125, high: 450, unit: 'per visit' },
+      'landscape-services': { label: 'Landscape services', low: 350, high: 3500, unit: 'project range' },
+      'weed-control': { label: 'Weed control and fertilization', low: 65, high: 175, unit: 'per treatment' },
+      'aeration-overseeding': { label: 'Aeration and overseeding', low: 150, high: 450, unit: 'per service' },
+      'leaf-removal': { label: 'Leaf removal', low: 125, high: 600, unit: 'per cleanup' },
+      'snow-removal': { label: 'Snow removal', low: 75, high: 500, unit: 'per event' },
+      'holiday-lighting': { label: 'Holiday lighting', low: 300, high: 2500, unit: 'seasonal range' }
+    };
+
+    var sizeFactors = {
+      small: 0.8,
+      standard: 1,
+      large: 1.45,
+      commercial: 2.1
+    };
+
+    var sizeLabels = {
+      small: 'Small yard or small site',
+      standard: 'Standard residential yard',
+      large: 'Large yard or corner lot',
+      commercial: 'Commercial or multi unit property'
+    };
+
+    var frequencyLabels = {
+      'one-time': 'One-time job',
+      weekly: 'Weekly service',
+      'bi-weekly': 'Bi-weekly service',
+      monthly: 'Monthly service',
+      seasonal: 'Seasonal service'
+    };
+
     function showPage(id, title) {
       document.querySelectorAll('.page').forEach(function(p) {
         p.style.display = 'none';
+        p.classList.remove('active');
       });
       var target = document.getElementById('page-' + id);
-      if (target) { target.style.display = 'block'; }
+      if (target) {
+        target.style.display = 'block';
+        target.classList.add('active');
+      }
       document.title = title ? title + ' | JCM Landscaping' : 'JCM Landscaping';
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, function(character) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[character];
+      });
+    }
+
+    function getValue(id) {
+      var field = document.getElementById(id);
+      return field ? field.value.trim() : '';
+    }
+
+    function getSelectText(id) {
+      var field = document.getElementById(id);
+      if (!field || field.selectedIndex < 0) { return ''; }
+      return field.options[field.selectedIndex].text;
+    }
+
+    function roundToFive(value) {
+      return Math.max(25, Math.round(value / 5) * 5);
+    }
+
+    function formatMoney(value) {
+      return '$' + roundToFive(value).toLocaleString();
+    }
+
+    function buildMailto(subject, body) {
+      return 'mailto:' + contactEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    }
+
+    function line(label, value) {
+      return label + ': ' + (value || 'Not listed');
+    }
+
+    function copyText(text) {
+      if (!text) { return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(function() {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+      var active = document.activeElement;
+      if (active && active.classList && active.classList.contains('copy-button')) {
+        var oldText = active.textContent;
+        active.textContent = 'Copied';
+        window.setTimeout(function() { active.textContent = oldText; }, 1400);
+      }
+    }
+
+    function fallbackCopy(text) {
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    function copyLatest(type) {
+      copyText(latestMessages[type]);
+    }
+
+    function setupAvailabilityForm() {
+      var form = document.getElementById('availabilityForm');
+      var result = document.getElementById('availabilityResult');
+      if (!form || !result) { return; }
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        var area = getValue('availabilityArea');
+        if (!area) {
+          result.textContent = 'Enter your city, area, or ZIP first.';
+          return;
+        }
+        result.innerHTML = 'Good start. JCM can check worker availability near <strong>' + escapeHtml(area) + '</strong>. Build a free estimate next, or call (918) 998-5618 if you want to talk through it.';
+      });
+    }
+
+    function setupEstimateForm() {
+      var form = document.getElementById('estimateForm');
+      var result = document.getElementById('estimateResult');
+      if (!form || !result) { return; }
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!form.reportValidity()) { return; }
+
+        var serviceKey = getValue('estimate-service');
+        var service = serviceRanges[serviceKey] || { label: getSelectText('estimate-service'), low: 75, high: 250, unit: 'planning range' };
+        var sizeKey = getValue('estimate-size') || 'standard';
+        var sizeFactor = sizeFactors[sizeKey] || 1;
+        var low = roundToFive(service.low * sizeFactor);
+        var high = roundToFive(service.high * sizeFactor);
+        var name = getValue('estimate-name');
+        var phone = getValue('estimate-phone');
+        var email = getValue('estimate-email');
+        var area = getValue('estimate-area');
+        var date = getValue('estimate-date');
+        var address = getValue('estimate-address');
+        var notes = getValue('estimate-notes');
+        var frequency = frequencyLabels[getValue('estimate-frequency')] || getSelectText('estimate-frequency');
+        var size = sizeLabels[sizeKey] || getSelectText('estimate-size');
+
+        latestMessages.estimate = [
+          'JCM estimate request',
+          line('Name', name),
+          line('Phone', phone),
+          line('Email', email),
+          line('Area', area),
+          line('Address or cross streets', address),
+          line('Service', service.label),
+          line('Service type', frequency),
+          line('Property size', size),
+          line('Preferred start date', date),
+          line('Rough planning range', formatMoney(low) + ' - ' + formatMoney(high) + ' ' + service.unit),
+          line('Notes', notes),
+          '',
+          'Final pricing depends on property details, timing, and worker availability.'
+        ].join('\n');
+
+        result.innerHTML =
+          '<h3>Estimate Summary</h3>' +
+          '<p><strong>' + escapeHtml(name) + '</strong>, here is a rough planning range for the request.</p>' +
+          '<span class="estimate-range">' + formatMoney(low) + ' - ' + formatMoney(high) + '</span>' +
+          '<p>' + escapeHtml(service.label) + ' ' + escapeHtml(service.unit) + '. Final pricing depends on the property and whether a contracted worker is available.</p>' +
+          '<ul class="info-list">' +
+            '<li><strong>Area:</strong> ' + escapeHtml(area) + '</li>' +
+            '<li><strong>Service type:</strong> ' + escapeHtml(frequency) + '</li>' +
+            '<li><strong>Property size:</strong> ' + escapeHtml(size) + '</li>' +
+          '</ul>' +
+          '<div class="cta-row">' +
+            '<button class="copy-button" type="button" onclick="copyLatest(\'estimate\')">Copy Summary</button>' +
+            '<a class="secondary-link" href="' + buildMailto('JCM estimate request', latestMessages.estimate) + '">Send by Email</a>' +
+          '</div>';
+      });
+    }
+
+    function setupContactForm() {
+      var form = document.getElementById('contactForm');
+      var result = document.getElementById('contactMessage');
+      if (!form || !result) { return; }
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!form.reportValidity()) { return; }
+
+        var name = getValue('contact-name');
+        var phone = getValue('contact-phone');
+        var email = getValue('contact-email');
+        var topic = getSelectText('contact-topic');
+        var area = getValue('contact-area');
+        var message = getValue('contact-message');
+
+        latestMessages.contact = [
+          'JCM contact message',
+          line('Name', name),
+          line('Phone', phone),
+          line('Email', email),
+          line('Topic', topic),
+          line('Area', area),
+          line('Message', message)
+        ].join('\n');
+
+        result.hidden = false;
+        result.innerHTML =
+          '<h3>Contact Message Ready</h3>' +
+          '<p>Thanks, ' + escapeHtml(name) + '. Copy this message or send it by email using the placeholder address.</p>' +
+          '<p><strong>Topic:</strong> ' + escapeHtml(topic) + '<br><strong>Area:</strong> ' + escapeHtml(area || 'Not listed') + '</p>' +
+          '<div class="cta-row">' +
+            '<button class="copy-button" type="button" onclick="copyLatest(\'contact\')">Copy Message</button>' +
+            '<a class="secondary-link" href="' + buildMailto('JCM contact message', latestMessages.contact) + '">Send by Email</a>' +
+          '</div>';
+      });
+    }
+
+    function setupContractorForm() {
+      var form = document.getElementById('contractorForm');
+      var result = document.getElementById('contractorMessage');
+      if (!form || !result) { return; }
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (!form.reportValidity()) { return; }
+
+        var checked = form.querySelectorAll('input[name="services"]:checked');
+        var services = Array.prototype.map.call(checked, function(input) {
+          return input.parentElement.textContent.trim();
+        }).join(', ');
+
+        var name = getValue('contractor-name');
+        var phone = getValue('contractor-phone');
+        var email = getValue('contractor-email');
+        var area = getValue('contractor-area');
+        var experience = getSelectText('contractor-experience');
+        var availability = getValue('contractor-availability');
+        var equipment = getValue('contractor-equipment');
+        var notes = getValue('contractor-notes');
+
+        latestMessages.contractor = [
+          'JCM contractor application',
+          line('Name', name),
+          line('Phone', phone),
+          line('Email', email),
+          line('Area available', area),
+          line('Experience', experience),
+          line('Availability', availability),
+          line('Services', services),
+          line('Equipment', equipment),
+          line('Notes', notes)
+        ].join('\n');
+
+        result.hidden = false;
+        result.innerHTML =
+          '<h3>Application Ready</h3>' +
+          '<p>Thanks, ' + escapeHtml(name) + '. Your application summary is ready to copy or send by email.</p>' +
+          '<p><strong>Area:</strong> ' + escapeHtml(area) + '<br><strong>Services:</strong> ' + escapeHtml(services || 'Not listed') + '</p>' +
+          '<div class="cta-row">' +
+            '<button class="copy-button" type="button" onclick="copyLatest(\'contractor\')">Copy Application</button>' +
+            '<a class="secondary-link" href="' + buildMailto('JCM contractor application', latestMessages.contractor) + '">Send by Email</a>' +
+          '</div>';
+      });
     }
 
     function toggleMobileMenu() {
@@ -1007,8 +1779,15 @@
 
     var bannerBg = document.getElementById('bannerBg');
     window.addEventListener('scroll', function() {
-      bannerBg.style.transform = 'translateY(' + window.scrollY * 0.2 + 'px)';
+      if (bannerBg) {
+        bannerBg.style.transform = 'translateY(' + window.scrollY * 0.2 + 'px)';
+      }
     });
+
+    setupAvailabilityForm();
+    setupEstimateForm();
+    setupContactForm();
+    setupContractorForm();
   </script>
 
 </body>
