@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>JCM Admin Dashboard</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #172417;
+      --muted: #526050;
+      --paper: #f4f7ee;
+      --panel: #fff;
+      --line: #cfddc7;
+      --green: #23713a;
+      --green-dark: #123f1e;
+      --lime: #d8ff24;
+      --blue: #075cff;
+      --coral: #ff4d2e;
+      --gold: #ffc400;
+    }
+    body {
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+    button, input, select, textarea { font: inherit; }
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        linear-gradient(135deg, rgba(18, 63, 30, 0.92), rgba(7, 92, 255, 0.7)),
+        #123f1e;
+    }
+    .login-card,
+    .panel,
+    .stat,
+    .item {
+      background: var(--panel);
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 16px 36px rgba(18, 63, 30, 0.12);
+    }
+    .login-card {
+      width: min(440px, 100%);
+      padding: 28px;
+    }
+    .login-card h1 {
+      color: var(--green-dark);
+      font-size: 2rem;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+    .login-card p { color: var(--muted); line-height: 1.55; margin-bottom: 18px; }
+    label {
+      display: block;
+      color: var(--green-dark);
+      font-size: 0.84rem;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 2px solid var(--line);
+      border-radius: 5px;
+      padding: 11px 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 2px solid var(--green-dark);
+      border-radius: 5px;
+      background: var(--lime);
+      color: var(--ink);
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 4px 4px 0 var(--coral);
+    }
+    .button.secondary { background: #fff; box-shadow: 4px 4px 0 #d9e8ff; }
+    .button.danger { background: #ffe8e2; box-shadow: 4px 4px 0 var(--coral); }
+    .hidden { display: none !important; }
+    .app-shell { min-height: 100vh; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 24px;
+      background: #fffdf5;
+      border-bottom: 4px solid var(--lime);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+    }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 50px;
+      height: 50px;
+      border: 3px solid var(--green-dark);
+      border-radius: 8px;
+      background: var(--lime);
+      box-shadow: 4px 4px 0 var(--coral);
+    }
+    main {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 22px;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    aside {
+      position: sticky;
+      top: 92px;
+      height: fit-content;
+      background: var(--green-dark);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .tab-button {
+      display: block;
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 11px 12px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      color: #fff;
+      text-align: left;
+      font-weight: 850;
+      cursor: pointer;
+    }
+    .tab-button.active,
+    .tab-button:hover {
+      background: var(--lime);
+      color: var(--green-dark);
+    }
+    .tab { display: none; }
+    .tab.active { display: block; }
+    .page-title { margin-bottom: 18px; }
+    .page-title span {
+      color: var(--blue);
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .page-title h1 {
+      margin-top: 5px;
+      color: var(--green-dark);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.05;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .stat { padding: 16px; }
+    .stat strong {
+      display: block;
+      color: var(--blue);
+      font-size: 2rem;
+      font-weight: 900;
+    }
+    .stat span { color: var(--muted); font-weight: 800; }
+    .panel { padding: 18px; margin-bottom: 18px; }
+    .panel h2 { color: var(--green-dark); margin-bottom: 12px; }
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+    .item {
+      padding: 14px;
+      border-left: 7px solid var(--green);
+    }
+    .item h3 { color: var(--green-dark); margin-bottom: 6px; }
+    .item p { color: var(--muted); line-height: 1.55; margin-bottom: 8px; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .chip {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f0fff4;
+      color: var(--green-dark);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .form-row { margin-bottom: 12px; }
+    .notice {
+      margin-top: 12px;
+      padding: 12px;
+      border: 2px solid var(--blue);
+      border-radius: 6px;
+      background: #edf4ff;
+      color: var(--ink);
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 2px solid var(--line);
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      color: var(--green-dark);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+    @media (max-width: 900px) {
+      header { align-items: flex-start; flex-direction: column; }
+      main { grid-template-columns: 1fr; padding: 14px; }
+      aside { position: static; }
+      .stats, .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <h1>JCM Admin</h1>
+      <p>Review jobs, contractor applications, support tickets, schedules, and site activity.</p>
+      <form id="loginForm">
+        <label for="adminPassword">Dashboard Password</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" required>
+        <div class="actions"><button class="button" type="submit">Sign In</button></div>
+      </form>
+      <div class="notice hidden" id="loginError">Incorrect password.</div>
+    </div>
+  </section>
+
+  <section class="app-shell hidden" id="appShell">
+    <header>
+      <div class="brand"><span class="brand-mark">JCM</span><div>Admin Dashboard<br><span style="color:#526050;font-size:.82rem;">Hidden operations prototype</span></div></div>
+      <button class="button secondary" type="button" onclick="logout()">Sign Out</button>
+    </header>
+
+    <main>
+      <aside>
+        <button class="tab-button active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+        <button class="tab-button" data-tab="review" onclick="showTab('review')">Review Queue</button>
+        <button class="tab-button" data-tab="support" onclick="showTab('support')">Support Inbox</button>
+        <button class="tab-button" data-tab="apps" onclick="showTab('apps')">Applications</button>
+        <button class="tab-button" data-tab="contractors" onclick="showTab('contractors')">Contractors</button>
+        <button class="tab-button" data-tab="schedule" onclick="showTab('schedule')">Schedules</button>
+        <button class="tab-button" data-tab="analytics" onclick="showTab('analytics')">Analytics</button>
+      </aside>
+
+      <section>
+        <div class="page-title">
+          <span>Operations</span>
+          <h1>JCM command center</h1>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><strong id="pendingCount">0</strong><span>Pending jobs</span></div>
+          <div class="stat"><strong id="openCount">0</strong><span>Open jobs</span></div>
+          <div class="stat"><strong id="supportCount">0</strong><span>Support tickets</span></div>
+          <div class="stat"><strong id="contractorCount">0</strong><span>Contractors</span></div>
+        </div>
+
+        <div class="tab active" id="tab-overview">
+          <div class="grid">
+            <div class="panel">
+              <h2>Today</h2>
+              <div id="overviewToday"></div>
+            </div>
+            <div class="panel">
+              <h2>Fast actions</h2>
+              <div class="actions">
+                <button class="button" onclick="showTab('review')">Review Jobs</button>
+                <button class="button secondary" onclick="showTab('support')">Open Support</button>
+                <button class="button secondary" onclick="showTab('apps')">Review Applications</button>
+              </div>
+              <div class="notice">This static version stores data in this browser. Production should use server-side auth, a database, and environment variables.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab" id="tab-review">
+          <div class="panel">
+            <h2>Job requests waiting for review</h2>
+            <div class="list" id="pendingJobs"></div>
+          </div>
+        </div>
+
+        <div class="tab" id="tab-support">
+          <div class="panel">
+            <h2>Support inbox</h2>
+            <div class="list" id="supportTickets"></div>
+          </div>
+        </div>
+
+        <div class="tab" id="tab-apps">
+          <div class="panel">
+            <h2>Contractor applications</h2>
+            <div class="list" id="applications"></div>
+          </div>
+        </div>
+
+        <div class="tab" id="tab-contractors">
+          <div class="panel">
+            <h2>Currently contracted employees</h2>
+            <div class="list" id="contractorList"></div>
+          </div>
+        </div>
+
+        <div class="tab" id="tab-schedule">
+          <div class="grid">
+            <div class="panel">
+              <h2>Create schedule item</h2>
+              <div class="form-row">
+                <label for="scheduleJob">Job</label>
+                <select id="scheduleJob"></select>
+              </div>
+              <div class="form-row">
+                <label for="scheduleContractor">Contractor</label>
+                <select id="scheduleContractor"></select>
+              </div>
+              <div class="form-row">
+                <label for="scheduleDate">Service date</label>
+                <input id="scheduleDate" type="date">
+              </div>
+              <button class="button" type="button" onclick="createSchedule()">Assign Job</button>
+            </div>
+            <div class="panel">
+              <h2>Schedule board</h2>
+              <div class="list" id="scheduleList"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab" id="tab-analytics">
+          <div class="panel">
+            <h2>Website analytics snapshot</h2>
+            <table>
+              <thead><tr><th>Metric</th><th>Value</th><th>Use</th></tr></thead>
+              <tbody id="analyticsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <script>
+    var ADMIN_PASSWORD = 'JCM-Land1234-Admin6!$';
+    var keys = {
+      pendingJobs: 'jcmPendingJobs',
+      approvedJobs: 'jcmApprovedJobs',
+      contractorApplications: 'jcmContractorApplications',
+      supportTickets: 'jcmSupportTickets',
+      contractors: 'jcmContractors',
+      schedules: 'jcmSchedules'
+    };
+
+    function readStore(key, fallback) {
+      try {
+        var raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function writeStore(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function ensureStores() {
+      Object.keys(keys).forEach(function(name) {
+        if (!localStorage.getItem(keys[name])) {
+          writeStore(keys[name], []);
+        }
+      });
+    }
+
+    function uid(prefix) {
+      return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, function(character) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[character];
+      });
+    }
+
+    function showApp() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('appShell').classList.remove('hidden');
+      render();
+    }
+
+    function logout() {
+      sessionStorage.removeItem('jcmAdminAuthed');
+      document.getElementById('appShell').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      if (document.getElementById('adminPassword').value === ADMIN_PASSWORD) {
+        sessionStorage.setItem('jcmAdminAuthed', 'true');
+        showApp();
+      } else {
+        document.getElementById('loginError').classList.remove('hidden');
+      }
+    });
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(function(panel) { panel.classList.remove('active'); });
+      document.querySelectorAll('.tab-button').forEach(function(button) { button.classList.remove('active'); });
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.querySelector('[data-tab="' + tab + '"]').classList.add('active');
+      render();
+    }
+
+    function approveJob(id) {
+      var pending = readStore(keys.pendingJobs, []);
+      var approved = readStore(keys.approvedJobs, []);
+      var job = pending.find(function(item) { return item.id === id; });
+      if (!job) { return; }
+      job.status = 'open';
+      job.approvedAt = new Date().toISOString();
+      approved.unshift(job);
+      pending = pending.filter(function(item) { return item.id !== id; });
+      writeStore(keys.pendingJobs, pending);
+      writeStore(keys.approvedJobs, approved);
+      render();
+    }
+
+    function rejectJob(id) {
+      var pending = readStore(keys.pendingJobs, []).filter(function(item) { return item.id !== id; });
+      writeStore(keys.pendingJobs, pending);
+      render();
+    }
+
+    function closeTicket(id) {
+      var tickets = readStore(keys.supportTickets, []);
+      tickets.forEach(function(ticket) {
+        if (ticket.id === id) { ticket.status = 'closed'; }
+      });
+      writeStore(keys.supportTickets, tickets);
+      render();
+    }
+
+    function approveApplication(id) {
+      var apps = readStore(keys.contractorApplications, []);
+      var contractors = readStore(keys.contractors, []);
+      var app = apps.find(function(item) { return item.id === id; });
+      if (!app) { return; }
+      app.status = 'approved';
+      if (!contractors.some(function(contractor) { return contractor.email === app.email; })) {
+        contractors.unshift({
+          id: uid('contractor'),
+          name: app.name,
+          email: app.email,
+          phone: app.phone,
+          area: app.area,
+          services: app.services,
+          availability: app.availability,
+          status: 'active',
+          approvedAt: new Date().toISOString()
+        });
+      }
+      writeStore(keys.contractorApplications, apps);
+      writeStore(keys.contractors, contractors);
+      render();
+    }
+
+    function rejectApplication(id) {
+      var apps = readStore(keys.contractorApplications, []);
+      apps.forEach(function(app) {
+        if (app.id === id) { app.status = 'rejected'; }
+      });
+      writeStore(keys.contractorApplications, apps);
+      render();
+    }
+
+    function setContractorStatus(id, status) {
+      var contractors = readStore(keys.contractors, []);
+      contractors.forEach(function(contractor) {
+        if (contractor.id === id) { contractor.status = status; }
+      });
+      writeStore(keys.contractors, contractors);
+      render();
+    }
+
+    function createSchedule() {
+      var jobId = document.getElementById('scheduleJob').value;
+      var contractorId = document.getElementById('scheduleContractor').value;
+      var date = document.getElementById('scheduleDate').value || new Date().toISOString().slice(0, 10);
+      var jobs = readStore(keys.approvedJobs, []);
+      var contractors = readStore(keys.contractors, []);
+      var schedules = readStore(keys.schedules, []);
+      var job = jobs.find(function(item) { return item.id === jobId; });
+      var contractor = contractors.find(function(item) { return item.id === contractorId; });
+      if (!job || !contractor) { return; }
+      job.status = 'scheduled';
+      job.contractorId = contractor.id;
+      job.claimedBy = contractor.name;
+      schedules.unshift({
+        id: uid('schedule'),
+        jobId: job.id,
+        title: job.title,
+        area: job.area,
+        service: job.service,
+        serviceDate: date,
+        contractorId: contractor.id,
+        contractorName: contractor.name,
+        status: 'scheduled'
+      });
+      writeStore(keys.approvedJobs, jobs);
+      writeStore(keys.schedules, schedules);
+      render();
+    }
+
+    function renderStats() {
+      var pending = readStore(keys.pendingJobs, []);
+      var approved = readStore(keys.approvedJobs, []);
+      var tickets = readStore(keys.supportTickets, []);
+      var contractors = readStore(keys.contractors, []);
+      document.getElementById('pendingCount').textContent = pending.length;
+      document.getElementById('openCount').textContent = approved.filter(function(job) { return job.status === 'open'; }).length;
+      document.getElementById('supportCount').textContent = tickets.filter(function(ticket) { return ticket.status !== 'closed'; }).length;
+      document.getElementById('contractorCount').textContent = contractors.filter(function(contractor) { return contractor.status === 'active'; }).length;
+    }
+
+    function renderOverview() {
+      var pending = readStore(keys.pendingJobs, []);
+      var tickets = readStore(keys.supportTickets, []);
+      var apps = readStore(keys.contractorApplications, []);
+      var schedules = readStore(keys.schedules, []);
+      document.getElementById('overviewToday').innerHTML =
+        '<p><span class="chip">' + pending.length + '</span> job requests waiting for approval.</p>' +
+        '<p><span class="chip">' + tickets.filter(function(ticket) { return ticket.status !== 'closed'; }).length + '</span> support tickets need attention.</p>' +
+        '<p><span class="chip">' + apps.filter(function(app) { return app.status === 'pending review'; }).length + '</span> contractor applications are pending.</p>' +
+        '<p><span class="chip">' + schedules.length + '</span> schedule items are being tracked.</p>';
+    }
+
+    function renderPendingJobs() {
+      var pending = readStore(keys.pendingJobs, []);
+      var container = document.getElementById('pendingJobs');
+      if (!pending.length) {
+        container.innerHTML = '<div class="item"><h3>No pending jobs</h3><p>New customer requests will appear here.</p></div>';
+        return;
+      }
+      container.innerHTML = pending.map(function(job) {
+        return '<article class="item">' +
+          '<h3>' + escapeHtml(job.title) + '</h3>' +
+          '<div class="meta"><span>' + escapeHtml(job.service) + '</span><span>' + escapeHtml(job.area) + '</span><span>' + escapeHtml(job.budget) + '</span><span>' + escapeHtml(job.date) + '</span></div>' +
+          '<p><strong>Customer:</strong> ' + escapeHtml(job.customerName) + ' | ' + escapeHtml(job.customerEmail) + ' | ' + escapeHtml(job.phone) + '</p>' +
+          '<p><strong>Address:</strong> ' + escapeHtml(job.address) + '</p>' +
+          '<p>' + escapeHtml(job.details) + '</p>' +
+          '<div class="actions"><button class="button" onclick="approveJob(\'' + escapeHtml(job.id) + '\')">Approve</button><button class="button danger" onclick="rejectJob(\'' + escapeHtml(job.id) + '\')">Reject</button></div>' +
+        '</article>';
+      }).join('');
+    }
+
+    function renderSupport() {
+      var tickets = readStore(keys.supportTickets, []);
+      var container = document.getElementById('supportTickets');
+      if (!tickets.length) {
+        container.innerHTML = '<div class="item"><h3>No support tickets</h3><p>Support messages will appear here.</p></div>';
+        return;
+      }
+      container.innerHTML = tickets.map(function(ticket) {
+        var subject = encodeURIComponent('JCM support: ' + ticket.topic);
+        var body = encodeURIComponent('Hi ' + ticket.name + ',\n\n');
+        return '<article class="item">' +
+          '<span class="chip">' + escapeHtml(ticket.status) + '</span>' +
+          '<h3>' + escapeHtml(ticket.topic) + '</h3>' +
+          '<div class="meta"><span>' + escapeHtml(ticket.name) + '</span><span>' + escapeHtml(ticket.email) + '</span><span>' + escapeHtml(ticket.priority) + '</span></div>' +
+          '<p>' + escapeHtml(ticket.message) + '</p>' +
+          '<div class="actions"><a class="button" href="mailto:' + encodeURIComponent(ticket.email) + '?subject=' + subject + '&body=' + body + '">Reply</a><button class="button secondary" onclick="closeTicket(\'' + escapeHtml(ticket.id) + '\')">Mark Closed</button></div>' +
+        '</article>';
+      }).join('');
+    }
+
+    function renderApplications() {
+      var apps = readStore(keys.contractorApplications, []);
+      var container = document.getElementById('applications');
+      if (!apps.length) {
+        container.innerHTML = '<div class="item"><h3>No applications</h3><p>Contractor applications will appear here.</p></div>';
+        return;
+      }
+      container.innerHTML = apps.map(function(app) {
+        return '<article class="item">' +
+          '<span class="chip">' + escapeHtml(app.status) + '</span>' +
+          '<h3>' + escapeHtml(app.name) + '</h3>' +
+          '<div class="meta"><span>' + escapeHtml(app.email) + '</span><span>' + escapeHtml(app.phone) + '</span><span>' + escapeHtml(app.area) + '</span><span>' + escapeHtml(app.experience) + '</span></div>' +
+          '<p><strong>Services:</strong> ' + escapeHtml((app.services || []).join(', ') || 'Not listed') + '</p>' +
+          '<p><strong>Equipment:</strong> ' + escapeHtml(app.equipment || 'Not listed') + '</p>' +
+          '<p>' + escapeHtml(app.notes || '') + '</p>' +
+          '<div class="actions"><button class="button" onclick="approveApplication(\'' + escapeHtml(app.id) + '\')">Approve</button><button class="button danger" onclick="rejectApplication(\'' + escapeHtml(app.id) + '\')">Reject</button></div>' +
+        '</article>';
+      }).join('');
+    }
+
+    function renderContractors() {
+      var contractors = readStore(keys.contractors, []);
+      var container = document.getElementById('contractorList');
+      if (!contractors.length) {
+        container.innerHTML = '<div class="item"><h3>No approved contractors</h3><p>Approved applications will populate this list.</p></div>';
+        return;
+      }
+      container.innerHTML = contractors.map(function(contractor) {
+        var nextStatus = contractor.status === 'active' ? 'paused' : 'active';
+        return '<article class="item">' +
+          '<span class="chip">' + escapeHtml(contractor.status) + '</span>' +
+          '<h3>' + escapeHtml(contractor.name) + '</h3>' +
+          '<div class="meta"><span>' + escapeHtml(contractor.email) + '</span><span>' + escapeHtml(contractor.phone) + '</span><span>' + escapeHtml(contractor.area) + '</span></div>' +
+          '<p><strong>Services:</strong> ' + escapeHtml((contractor.services || []).join(', ') || 'Not listed') + '</p>' +
+          '<p><strong>Availability:</strong> ' + escapeHtml(contractor.availability || 'Not listed') + '</p>' +
+          '<div class="actions"><button class="button secondary" onclick="setContractorStatus(\'' + escapeHtml(contractor.id) + '\', \'' + nextStatus + '\')">Set ' + nextStatus + '</button></div>' +
+        '</article>';
+      }).join('');
+    }
+
+    function renderScheduleControls() {
+      var jobs = readStore(keys.approvedJobs, []).filter(function(job) { return job.status === 'open' || job.status === 'claimed'; });
+      var contractors = readStore(keys.contractors, []).filter(function(contractor) { return contractor.status === 'active'; });
+      document.getElementById('scheduleJob').innerHTML = jobs.map(function(job) {
+        return '<option value="' + escapeHtml(job.id) + '">' + escapeHtml(job.title) + ' - ' + escapeHtml(job.area) + '</option>';
+      }).join('');
+      document.getElementById('scheduleContractor').innerHTML = contractors.map(function(contractor) {
+        return '<option value="' + escapeHtml(contractor.id) + '">' + escapeHtml(contractor.name) + ' - ' + escapeHtml(contractor.area) + '</option>';
+      }).join('');
+    }
+
+    function renderSchedules() {
+      var schedules = readStore(keys.schedules, []);
+      var container = document.getElementById('scheduleList');
+      if (!schedules.length) {
+        container.innerHTML = '<div class="item"><h3>No scheduled work</h3><p>Assigned and claimed jobs will appear here.</p></div>';
+        return;
+      }
+      container.innerHTML = schedules.map(function(item) {
+        return '<article class="item">' +
+          '<span class="chip">' + escapeHtml(item.status) + '</span>' +
+          '<h3>' + escapeHtml(item.title) + '</h3>' +
+          '<div class="meta"><span>' + escapeHtml(item.contractorName) + '</span><span>' + escapeHtml(item.area) + '</span><span>' + escapeHtml(item.serviceDate) + '</span></div>' +
+          '<p>' + escapeHtml(item.service) + '</p>' +
+        '</article>';
+      }).join('');
+    }
+
+    function renderAnalytics() {
+      var pending = readStore(keys.pendingJobs, []);
+      var approved = readStore(keys.approvedJobs, []);
+      var tickets = readStore(keys.supportTickets, []);
+      var apps = readStore(keys.contractorApplications, []);
+      var contractors = readStore(keys.contractors, []);
+      var schedules = readStore(keys.schedules, []);
+      var rows = [
+        ['Total customer job requests', pending.length + approved.length, 'Demand and lead volume'],
+        ['Approved open jobs', approved.filter(function(job) { return job.status === 'open'; }).length, 'Jobs contractors can claim'],
+        ['Claimed or scheduled jobs', schedules.length, 'Workload and follow-through'],
+        ['Pending contractor applications', apps.filter(function(app) { return app.status === 'pending review'; }).length, 'Hiring review queue'],
+        ['Active contractors', contractors.filter(function(contractor) { return contractor.status === 'active'; }).length, 'Available worker network'],
+        ['Open support tickets', tickets.filter(function(ticket) { return ticket.status !== 'closed'; }).length, 'Customer and contractor follow-up']
+      ];
+      document.getElementById('analyticsTable').innerHTML = rows.map(function(row) {
+        return '<tr><td>' + escapeHtml(row[0]) + '</td><td>' + escapeHtml(row[1]) + '</td><td>' + escapeHtml(row[2]) + '</td></tr>';
+      }).join('');
+    }
+
+    function render() {
+      ensureStores();
+      renderStats();
+      renderOverview();
+      renderPendingJobs();
+      renderSupport();
+      renderApplications();
+      renderContractors();
+      renderScheduleControls();
+      renderSchedules();
+      renderAnalytics();
+    }
+
+    ensureStores();
+    if (sessionStorage.getItem('jcmAdminAuthed') === 'true') {
+      showApp();
+    }
+  </script>
+</body>
+</html>
