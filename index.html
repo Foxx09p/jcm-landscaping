@@ -1107,7 +1107,6 @@
       </a>
       <div class="nav-links" id="desktopNavLinks">
         <button class="nav-link" onclick="navigatePage('home')">Home</button>
-        <button class="nav-link auth-required" id="navPostJob" title="Sign in to post" onclick="goPostJob()">Post a Job</button>
         <button class="nav-link contractor-only" id="navJobBoard" onclick="navigatePage('job-board')">Job Board</button>
         <button class="nav-link applicant-only" id="navApply" onclick="goContractorApply()">Apply as Contractor</button>
         <button class="nav-link" onclick="navigatePage('services')">Services</button>
@@ -1978,6 +1977,18 @@
       return { uid: firebaseUser.uid, ...snap.data() };
     }
 
+    function authProfileUser(firebaseUser) {
+      return {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || "",
+        displayName: firebaseUser.displayName || (firebaseUser.email || "JCM User").split("@")[0],
+        photoURL: firebaseUser.photoURL || "",
+        role: "user",
+        contractorStatus: null,
+        profileSyncPending: true
+      };
+    }
+
     auth.onAuthStateChanged(async function(firebaseUser) {
       detachListeners();
       state.authReady = true;
@@ -2016,6 +2027,13 @@
           renderAccountPage();
         }
       } catch (error) {
+        state.currentUser = authProfileUser(firebaseUser);
+        closeSignInModal(false);
+        renderAuthUI();
+        renderPageGuards();
+        prefillUserForms();
+        renderAccountPage();
+        state.pendingAction = null;
         toast(firebaseMessage(error), "error");
       }
     });
@@ -2097,8 +2115,6 @@
 
     function renderAuthUI() {
       const signedIn = Boolean(state.authUser && state.currentUser);
-      $("navPostJob").textContent = signedIn ? "Post a Job" : "Post a Job";
-      $("navPostJob").title = signedIn ? "Post a job" : "Sign in to post";
       $("navJobBoard").classList.toggle("hidden", !isContractorLike());
       $("navApply").classList.toggle("hidden", !signedIn || isContractorLike());
       document.querySelectorAll(".mobile-contractor-only").forEach(function(el) { el.classList.toggle("hidden", !isContractorLike()); });
