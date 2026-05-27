@@ -97,7 +97,7 @@
     }
     .brand-link img {
       width: auto;
-      height: 38px;
+      height: 48px;
       border-radius: 4px;
     }
     .nav-links {
@@ -154,10 +154,10 @@
     .dropdown-menu,
     .account-dropdown {
       position: absolute;
-      top: calc(100% - 10px);
+      top: 100%;
       right: 0;
       min-width: 220px;
-      padding-top: 10px;
+      padding-top: 8px;
       opacity: 0;
       pointer-events: none;
       transform: translateY(4px);
@@ -218,6 +218,11 @@
       color: var(--green);
       font-weight: 800;
       overflow: hidden;
+    }
+    .account-menu.signed-out .account-avatar,
+    .account-menu.signed-out .account-dropdown,
+    .account-menu.signed-out .chevron {
+      display: none !important;
     }
     .hamburger {
       display: none;
@@ -301,13 +306,6 @@
     .hero-content {
       width: min(860px, 100%);
       margin: 0 auto;
-    }
-    .hero-logo {
-      height: 72px;
-      width: auto;
-      margin: 0 auto 28px;
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-lg);
     }
     .hero h1 {
       margin: 0;
@@ -511,6 +509,33 @@
       background: transparent;
       padding: 0;
     }
+    .result-panel {
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius);
+      background: var(--green-light);
+      color: var(--green-dark);
+      margin-top: 18px;
+      padding: 16px;
+    }
+    .result-panel.error {
+      border-color: var(--red);
+      background: #fff8f8;
+      color: var(--red);
+    }
+    .posting-loading {
+      color: var(--white) !important;
+      gap: 9px;
+    }
+    .posting-loading::before {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.42);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      content: "";
+      animation: spin 700ms linear infinite;
+    }
+    .posting-loading::after { display: none !important; }
     .locked-state,
     .empty-state {
       width: min(580px, 100%);
@@ -946,23 +971,10 @@
       grid-template-columns: 1.35fr 1fr 1fr;
       gap: 34px;
     }
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .footer-brand img {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-    }
     .footer-logo {
-      height: 38px;
-      width: auto;
-      border-radius: var(--radius-sm);
-      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
     footer h3,
     footer h4 { color: var(--white); }
@@ -989,9 +1001,48 @@
       color: rgba(255,255,255,0.55);
       font-size: 0.9rem;
     }
+    .legal-links {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .legal-links a {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.82rem;
+      text-decoration: underline;
+    }
     .socials {
       display: flex;
       gap: 10px;
+    }
+    .cookie-banner {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 16px 20px;
+      background: #0f3d1f;
+      color: var(--white);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(110%);
+      transition: transform 300ms ease;
+    }
+    .cookie-banner.visible { transform: translateY(0); }
+    .cookie-banner.hiding { transform: translateY(110%); }
+    .cookie-banner p {
+      max-width: 760px;
+      color: var(--white);
+    }
+    .cookie-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
     }
     .socials a {
       width: 32px;
@@ -1028,10 +1079,12 @@
         grid-template-columns: 1fr;
       }
       .checkbox-grid { grid-template-columns: 1fr; }
-      .footer-bottom {
+      .footer-bottom,
+      .cookie-banner {
         flex-direction: column;
         align-items: flex-start;
       }
+      .cookie-banner { align-items: stretch; }
     }
     @media (max-width: 520px) {
       .nav-inner { width: min(100% - 24px, 1180px); }
@@ -1050,9 +1103,10 @@
   <nav class="app-nav" aria-label="Primary navigation">
     <div class="nav-inner">
       <a class="brand-link" href="#home" aria-label="JCM Landscaping home" onclick="navigatePage('home'); return false;">
-        <img src="JCM_Landscaping.png" alt="JCM Landscaping" height="38">
+        <img src="JCM_Landscaping.png" alt="JCM Landscaping" height="48" style="display:block;">
       </a>
       <div class="nav-links" id="desktopNavLinks">
+        <button class="nav-link" onclick="navigatePage('home')">Home</button>
         <button class="nav-link auth-required" id="navPostJob" title="Sign in to post" onclick="goPostJob()">Post a Job</button>
         <button class="nav-link contractor-only" id="navJobBoard" onclick="navigatePage('job-board')">Job Board</button>
         <button class="nav-link applicant-only" id="navApply" onclick="goContractorApply()">Apply as Contractor</button>
@@ -1101,7 +1155,7 @@
 
   <section class="hero active" id="homeHero" aria-label="JCM Landscaping Network hero">
     <div class="hero-content">
-      <img class="hero-logo" src="JCM_Landscaping.png" alt="JCM Landscaping">
+      <span class="eyebrow" style="color:rgba(255,255,255,0.82);">JCM Landscaping Network</span>
       <h1>The smarter way to get your lawn done.</h1>
       <p>Post your job, verify your email, and let approved JCM contractors come to you.</p>
       <div class="hero-actions">
@@ -1167,7 +1221,7 @@
         <button type="button" onclick="resendVerificationEmail()">Resend verification email</button>
       </div>
       <div class="form-panel">
-        <form id="jobForm" class="form-grid" novalidate>
+        <form id="jobRequestForm" class="form-grid" novalidate>
           <div class="form-field full">
             <label for="jobTitle">Job Title</label>
             <input id="jobTitle" name="title" type="text" placeholder="e.g. Front yard mow and edge, Broken Arrow OK" required>
@@ -1191,13 +1245,13 @@
             <span class="error-message"></span>
           </div>
           <div class="form-field">
-            <label for="jobCity">City</label>
-            <input id="jobCity" name="city" type="text" required>
+            <label for="job-city">City</label>
+            <input id="job-city" name="city" type="text" placeholder="City" required>
             <span class="error-message"></span>
           </div>
           <div class="form-field">
-            <label for="jobZip">ZIP Code</label>
-            <input id="jobZip" name="zipCode" type="text" inputmode="numeric" pattern="^[0-9]{5}$" required>
+            <label for="job-zip">ZIP Code</label>
+            <input id="job-zip" name="zip" type="text" inputmode="numeric" placeholder="ZIP Code" pattern="[0-9]{5}" maxlength="5" required>
             <span class="error-message"></span>
           </div>
           <div class="form-field full">
@@ -1251,18 +1305,19 @@
             <span class="error-message"></span>
           </div>
           <div class="form-field full" id="photoField">
-            <label for="photoInput">Photo Upload</label>
-            <label class="upload-zone" id="uploadZone" for="photoInput">
-              <span class="upload-icon" aria-hidden="true">+</span>
-              <strong>Upload at least one photo of the area to be worked on.</strong>
-              <span class="hint">Minimum 1 photo, maximum 8. JPG, PNG, or WebP.</span>
-              <input id="photoInput" type="file" accept="image/*" multiple>
-            </label>
-            <div class="preview-grid" id="photoPreview"></div>
+            <label>Photos of the Area (required - at least 1, up to 8)</label>
+            <div id="photoDropZone" style="border:2px dashed var(--border-dark);border-radius:8px;padding:32px;text-align:center;cursor:pointer;background:var(--surface);transition:background 150ms;">
+              <div style="font-size:2rem;margin-bottom:8px;">&#128247;</div>
+              <p style="color:var(--ink-muted);margin:0;">Click to select photos, or drag and drop here</p>
+              <p style="color:var(--ink-muted);font-size:0.82rem;margin-top:4px;">JPG, PNG, HEIC - up to 8 photos</p>
+              <input type="file" id="job-photos" name="photos" accept="image/*" multiple style="display:none;">
+            </div>
+            <div id="photoPreviewRow" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
             <span class="error-message"></span>
           </div>
           <button class="btn btn-primary full" id="submitJobBtn" type="submit">Post My Job</button>
         </form>
+        <div class="result-panel" id="jobRequestResult" hidden></div>
       </div>
     </section>
 
@@ -1492,14 +1547,11 @@
     <div class="footer-inner">
       <div class="footer-grid">
         <div>
-          <div class="footer-brand">
-            <img src="JCM_Leaf.png" alt="" aria-hidden="true">
-            <div>
-              <h3>JCM Landscaping</h3>
-              <p>Reviewed outdoor work, simplified.</p>
-            </div>
+          <div class="footer-logo">
+            <img src="JCM_Leaf.png" alt="JCM" height="40" style="display:block; margin-bottom:10px;">
+            <strong style="color:#fff;font-size:1.1rem;">JCM Landscaping</strong>
+            <p style="color:rgba(255,255,255,0.55);font-size:0.85rem;margin-top:4px;">Reviewed outdoor work, simplified.</p>
           </div>
-          <img class="footer-logo" src="JCM_Landscaping.png" alt="JCM Landscaping">
         </div>
         <div>
           <h4>Quick Links</h4>
@@ -1515,22 +1567,30 @@
         <div>
           <h4>Legal</h4>
           <div class="footer-links">
-            <a href="#" aria-label="Privacy Policy">Privacy Policy</a>
-            <a href="#" aria-label="Terms">Terms</a>
+            <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
+            <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>
             <a href="mailto:help@jcm-landscaping.com">help@jcm-landscaping.com</a>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2025 JCM Landscaping. All rights reserved.</span>
-        <div class="socials" aria-label="Social links">
-          <a href="#" aria-label="Facebook">F</a>
-          <a href="#" aria-label="Instagram">I</a>
-          <a href="#" aria-label="X">X</a>
-        </div>
+        <span>&copy; 2026 JCM Landscaping. All rights reserved.</span>
+        <span class="legal-links">
+          <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
+          <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>
+        </span>
+        <span style="color:rgba(255,255,255,0.45);font-size:0.78rem;">Site by Jaydon Scogin</span>
       </div>
     </div>
   </footer>
+
+  <div class="cookie-banner" id="cookieBanner" role="region" aria-label="Cookie consent">
+    <p>We use cookies to keep you signed in and remember your preferences. By continuing to use JCM Landscaping, you agree to our use of cookies.</p>
+    <div class="cookie-actions">
+      <button class="btn btn-primary" type="button" onclick="acceptCookies()">Accept</button>
+      <a class="btn btn-secondary" href="/privacy" target="_blank" rel="noopener">Learn More</a>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="signInModal" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
     <div class="modal-card">
@@ -1590,8 +1650,11 @@
       boardUnsubscribe: null,
       lightboxPhotos: [],
       lightboxIndex: 0,
-      preselectService: ""
+      preselectService: "",
+      routingFromPop: false
     };
+
+    const knownPageIds = ["home", "post-job", "job-board", "contractor-apply", "account", "how-it-works", "support", "services"];
 
     const serviceTypes = [
       "Residential Lawn Mowing",
@@ -1688,6 +1751,30 @@
       }, 4000);
     }
 
+    function initCookieBanner() {
+      try {
+        if (localStorage.getItem("jcm_cookies_accepted") === "true") return;
+      } catch (error) {
+        return;
+      }
+      requestAnimationFrame(function() {
+        $("cookieBanner").classList.add("visible");
+      });
+    }
+
+    function acceptCookies() {
+      try {
+        localStorage.setItem("jcm_cookies_accepted", "true");
+      } catch (error) {
+        return;
+      }
+      $("cookieBanner").classList.add("hiding");
+      setTimeout(function() {
+        $("cookieBanner").classList.remove("visible");
+        $("cookieBanner").hidden = true;
+      }, 300);
+    }
+
     function setButtonLoading(button, loading) {
       if (!button) return;
       button.disabled = loading;
@@ -1700,7 +1787,8 @@
       if (loading) button.textContent = "...";
     }
 
-    function showPage(pageId, focusFaq) {
+    function showPage(pageId, focusFaq, skipHistory) {
+      if (!knownPageIds.includes(pageId)) pageId = "home";
       const main = $("mainContent");
       main.classList.add("transitioning");
       setTimeout(function() {
@@ -1718,6 +1806,9 @@
           setTimeout(function() { $("faqList").scrollIntoView({ behavior: "smooth", block: "start" }); }, 120);
         }
         renderPageGuards();
+        if (!skipHistory && !state.routingFromPop && window.location.hash !== `#${pageId}`) {
+          window.history.pushState(null, "", `#${pageId}`);
+        }
       }, 90);
     }
 
@@ -1729,6 +1820,19 @@
       }
       if (pageId === "contractor-apply") return goContractorApply();
       showPage(pageId, focusFaq);
+    }
+
+    function routeFromHash() {
+      const page = window.location.hash.replace("#", "");
+      state.routingFromPop = true;
+      if (knownPageIds.includes(page)) {
+        navigatePage(page);
+      } else {
+        showPage("home", false, true);
+      }
+      setTimeout(function() {
+        state.routingFromPop = false;
+      }, 160);
     }
 
     function requireAuth(action) {
@@ -1969,27 +2073,30 @@
       document.querySelectorAll(".mobile-contractor-only").forEach(function(el) { el.classList.toggle("hidden", !isContractorLike()); });
       document.querySelectorAll(".mobile-applicant-only").forEach(function(el) { el.classList.toggle("hidden", !signedIn || isContractorLike()); });
       if (!signedIn) {
-        $("accountAvatar").innerHTML = "?";
-        $("accountLabel").textContent = "Account";
+        $("accountMenu").classList.add("signed-out");
+        $("accountAvatar").innerHTML = "";
+        $("accountLabel").textContent = "Sign In";
         $("accountDropdownSurface").innerHTML = "";
         $("accountChevron").classList.add("hidden");
-        $("mobileAccountButton").textContent = "Account";
+        $("mobileAccountButton").textContent = "Sign In";
         return;
       }
+      $("accountMenu").classList.remove("signed-out");
       $("accountChevron").classList.remove("hidden");
-      $("accountLabel").textContent = firstName(state.currentUser.displayName);
-      $("mobileAccountButton").textContent = `Account (${firstName(state.currentUser.displayName)})`;
+      const accountFirstName = firstName(state.currentUser.displayName || (state.currentUser.email || "").split("@")[0]);
+      $("accountLabel").textContent = accountFirstName;
+      $("mobileAccountButton").textContent = `Account (${accountFirstName})`;
       if (state.currentUser.photoURL) {
         $("accountAvatar").innerHTML = `<img src="${escapeHtml(state.currentUser.photoURL)}" alt="">`;
       } else {
-        $("accountAvatar").textContent = firstName(state.currentUser.displayName).slice(0, 1).toUpperCase();
+        $("accountAvatar").textContent = accountFirstName.slice(0, 1).toUpperCase();
       }
       const links = [
         `<button type="button" onclick="showPage('account')">My Profile</button>`
       ];
-      if (state.currentUser.role === "user") links.push(`<button type="button" onclick="showPage('account')">My Jobs</button>`);
+      links.push(`<button type="button" onclick="showPage('account')">My Jobs</button>`);
       if (isContractorLike()) links.push(`<button type="button" onclick="showPage('job-board')">Job Board</button>`);
-      if (isAdminLike()) links.push(`<a href="admin.html">Admin Dashboard</a>`);
+      if (isAdminLike()) links.push(`<a href="/admin">Admin Dashboard</a>`);
       links.push(`<div class="dropdown-divider"></div>`);
       links.push(`<button type="button" onclick="signOut()">Sign Out</button>`);
       $("accountDropdownSurface").innerHTML = links.join("");
@@ -2130,19 +2237,20 @@
     }
 
     function initPhotoUpload() {
-      const input = $("photoInput");
-      const zone = $("uploadZone");
+      const input = $("job-photos");
+      const zone = $("photoDropZone");
+      zone.addEventListener("click", function() { input.click(); });
       input.addEventListener("change", function(event) { addSelectedPhotos(event.target.files); input.value = ""; });
       ["dragenter", "dragover"].forEach(function(type) {
         zone.addEventListener(type, function(event) {
           event.preventDefault();
-          zone.classList.add("dragging");
+          zone.style.background = "var(--green-light)";
         });
       });
       ["dragleave", "drop"].forEach(function(type) {
         zone.addEventListener(type, function(event) {
           event.preventDefault();
-          zone.classList.remove("dragging");
+          zone.style.background = "var(--surface)";
         });
       });
       zone.addEventListener("drop", function(event) {
@@ -2152,18 +2260,23 @@
 
     function addSelectedPhotos(fileList) {
       const files = Array.from(fileList || []).filter(function(file) { return file.type.startsWith("image/"); });
-      files.forEach(function(file) {
-        if (state.selectedPhotos.length < 8) state.selectedPhotos.push(file);
-      });
-      if (files.length && state.selectedPhotos.length >= 8) toast("You can upload up to 8 photos.", "info");
+      const availableSlots = Math.max(0, 8 - state.selectedPhotos.length);
+      const acceptedFiles = files.slice(0, availableSlots);
+      state.selectedPhotos.push(...acceptedFiles);
       renderPhotoPreviews();
       validatePhotos();
+      if (files.length > acceptedFiles.length) {
+        const error = $("photoField").querySelector(".error-message");
+        error.style.display = "block";
+        error.textContent = "You can upload up to 8 photos. Extra files were ignored.";
+        toast("You can upload up to 8 photos. Extra files were ignored.", "info");
+      }
     }
 
     function renderPhotoPreviews() {
-      $("photoPreview").innerHTML = state.selectedPhotos.map(function(file, index) {
+      $("photoPreviewRow").innerHTML = state.selectedPhotos.map(function(file, index) {
         const url = URL.createObjectURL(file);
-        return `<div class="preview-item"><img src="${url}" alt="Selected job photo"><button class="remove-photo" type="button" aria-label="Remove photo" onclick="removeSelectedPhoto(${index})">x</button></div>`;
+        return `<div class="preview-item" style="position:relative;width:80px;height:80px;"><img src="${url}" alt="Selected job photo" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border);"><button class="remove-photo" type="button" aria-label="Remove photo" onclick="removeSelectedPhoto(${index})">x</button></div>`;
       }).join("");
     }
     function removeSelectedPhoto(index) {
@@ -2174,10 +2287,9 @@
 
     async function uploadJobPhotos() {
       const uid = state.authUser.uid;
-      const stamp = Date.now();
-      const uploads = state.selectedPhotos.map(function(file, index) {
+      const uploads = state.selectedPhotos.map(function(file) {
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `job-photos/${uid}/${stamp}_${index}_${safeName}`;
+        const path = `job-photos/${uid}/${Date.now()}_${safeName}`;
         return storage.ref(path).put(file).then(function(snapshot) { return snapshot.ref.getDownloadURL(); });
       });
       return Promise.all(uploads);
@@ -2190,25 +2302,29 @@
 
     async function submitJob(event) {
       event.preventDefault();
+      const result = $("jobRequestResult");
+      result.hidden = true;
+      result.classList.remove("error");
       if (!state.authUser) return openSignInModal();
       if (isSuspended()) {
         toast("Your account is suspended and cannot post jobs.", "error");
         return;
       }
-      const formValid = validateForm($("jobForm"));
+      const formValid = validateForm($("jobRequestForm"));
       const photosValid = validatePhotos();
       if (!formValid || !photosValid) {
         toast("Please fix the highlighted fields.", "error");
         return;
       }
       const button = $("submitJobBtn");
-      setButtonLoading(button, true);
+      button.disabled = true;
+      button.classList.add("posting-loading");
+      button.textContent = "Posting...";
       try {
         await state.authUser.reload();
         state.authUser = auth.currentUser;
         const urls = await uploadJobPhotos();
         const docRef = db.collection("jobs").doc();
-        const preferred = formValue("preferredDate") ? firebase.firestore.Timestamp.fromDate(new Date(`${formValue("preferredDate")}T12:00:00`)) : null;
         const verified = Boolean(state.authUser.emailVerified);
         await docRef.set({
           id: docRef.id,
@@ -2218,14 +2334,14 @@
           posterPhone: formValue("jobPhone"),
           title: formValue("jobTitle"),
           serviceType: formValue("serviceType"),
-          city: formValue("jobCity"),
-          zipCode: formValue("jobZip"),
+          city: formValue("job-city"),
+          zipCode: formValue("job-zip"),
           fullAddress: formValue("fullAddress"),
           propertySize: formValue("propertySize"),
           details: formValue("jobDetails"),
           budget: formValue("budget"),
           frequency: formValue("frequency"),
-          preferredDate: preferred,
+          preferredDate: formValue("preferredDate") || null,
           photoURLs: urls,
           status: verified ? "open" : "pending_verification",
           claimedBy: null,
@@ -2234,15 +2350,24 @@
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-        $("jobForm").reset();
+        $("jobRequestForm").reset();
         state.selectedPhotos = [];
         renderPhotoPreviews();
+        result.hidden = false;
+        result.classList.remove("error");
+        result.innerHTML = verified
+          ? "Your job is live! Approved contractors in your area can now see it."
+          : `Job saved! Check your inbox at ${escapeHtml(state.authUser.email)} and click the verification link to make it visible to contractors. <button class="btn btn-secondary" type="button" onclick="resendVerificationFromResult(this)">Resend verification email</button>`;
         toast(verified ? "Your job is live! Approved contractors can now see it." : `Your job has been saved. Verify ${state.authUser.email} to make it visible.`, "success");
-        showPage("account");
       } catch (error) {
+        result.hidden = false;
+        result.classList.add("error");
+        result.textContent = "Something went wrong. Please try again. If the problem continues, contact support.";
         toast(error.message || "Could not post job.", "error");
       } finally {
-        setButtonLoading(button, false);
+        button.disabled = false;
+        button.classList.remove("posting-loading");
+        button.textContent = "Post My Job";
       }
     }
 
@@ -2252,6 +2377,19 @@
         await state.authUser.sendEmailVerification();
         toast(`Verification email sent to ${state.authUser.email}.`, "success");
       } catch (error) {
+        toast(error.message || "Could not send verification email.", "error");
+      }
+    }
+
+    async function resendVerificationFromResult(button) {
+      if (!state.authUser) return;
+      button.disabled = true;
+      try {
+        await state.authUser.sendEmailVerification();
+        button.textContent = "Sent!";
+        toast(`Verification email sent to ${state.authUser.email}.`, "success");
+      } catch (error) {
+        button.disabled = false;
         toast(error.message || "Could not send verification email.", "error");
       }
     }
@@ -2544,15 +2682,12 @@
     });
 
     function wireEvents() {
-      $("jobForm").addEventListener("submit", submitJob);
+      $("jobRequestForm").addEventListener("submit", submitJob);
       $("contractorForm").addEventListener("submit", submitContractorApplication);
       $("supportForm").addEventListener("submit", submitSupport);
       $("cityFilter").addEventListener("input", renderJobBoard);
       $("zipFilter").addEventListener("input", renderJobBoard);
-      window.addEventListener("hashchange", function() {
-        const page = location.hash.replace("#", "");
-        if (page) navigatePage(page);
-      });
+      window.addEventListener("popstate", routeFromHash);
     }
 
     initStaticContent();
@@ -2561,10 +2696,8 @@
     wireEvents();
     renderAuthUI();
     renderPageGuards();
-    if (location.hash) {
-      const page = location.hash.replace("#", "");
-      setTimeout(function() { navigatePage(page); }, 120);
-    }
+    initCookieBanner();
+    setTimeout(routeFromHash, 120);
   </script>
 </body>
 </html>
