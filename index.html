@@ -1687,6 +1687,14 @@
       profileSyncNoticeShown: false
     };
 
+    let currentUser = null;
+    let currentUserDoc = null;
+
+    function syncCurrentUserAliases() {
+      currentUser = state.authUser;
+      currentUserDoc = state.currentUser;
+    }
+
     const knownPageIds = ["home", "post-job", "job-board", "contractor-apply", "account", "how-it-works", "support", "services"];
 
     const serviceTypes = [
@@ -1782,6 +1790,10 @@
         el.style.transform = "translateX(20px)";
         setTimeout(function() { el.remove(); }, 180);
       }, 4000);
+    }
+
+    function showToast(message, type) {
+      toast(message, type);
     }
 
     function firebaseMessage(error) {
@@ -2041,6 +2053,7 @@
     function handleSignedInUser(firebaseUser) {
       state.authUser = firebaseUser;
       state.currentUser = { ...authProfileUser(firebaseUser), ...(state.currentUser && state.currentUser.uid === firebaseUser.uid ? state.currentUser : {}) };
+      syncCurrentUserAliases();
       closeSignInModal(false);
       renderAuthUI();
       renderPageGuards();
@@ -2063,6 +2076,7 @@
           ...fresh.data(),
           profileSyncPending: false
         };
+        syncCurrentUserAliases();
         state.profileSyncNoticeShown = false;
         renderAuthUI();
         renderPageGuards();
@@ -2087,6 +2101,7 @@
       if (!firebaseUser) {
         state.authUser = null;
         state.currentUser = null;
+        syncCurrentUserAliases();
         state.profileSyncNoticeShown = false;
         closeSignInModal(false);
         renderAuthUI();
@@ -2137,6 +2152,7 @@
           if (!snapshot.exists) return;
           const previousRole = state.currentUser ? state.currentUser.role : null;
           state.currentUser = { ...state.currentUser, ...snapshot.data(), uid: state.authUser.uid };
+          syncCurrentUserAliases();
           renderAuthUI();
           renderPageGuards();
           prefillUserForms();

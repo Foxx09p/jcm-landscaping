@@ -1,0 +1,2920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JCM Landscaping Network</title>
+  <meta name="description" content="Post outdoor work, verify your email, and let approved JCM contractors claim jobs in your area.">
+  <meta name="theme-color" content="#1e6b3a">
+  <link rel="icon" href="JCM_Leaf.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script>
+    /* Firebase config - JCM Landscaping production project */
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5NGwKqXSb5d0kHdz-GWxL_ECIG7uPHAI",
+      authDomain: "jcm-landscaping-8df87.firebaseapp.com",
+      projectId: "jcm-landscaping-8df87",
+      storageBucket: "jcm-landscaping-8df87.firebasestorage.app",
+      messagingSenderId: "419377251087",
+      appId: "1:419377251087:web:a9cbf6a82603cedafd747a",
+      measurementId: "G-S77N6VNR4D"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  <style>
+    :root {
+      --white: #ffffff;
+      --off-white: #f8faf7;
+      --surface: #f1f5f0;
+      --border: #d8e4d4;
+      --border-dark: #b2c9ac;
+      --ink: #0f1f0d;
+      --ink-muted: #4a6147;
+      --green: #1e6b3a;
+      --green-dark: #0f3d1f;
+      --green-light: #e8f5e3;
+      --green-accent: #2e9e58;
+      --lime: #aaee55;
+      --red: #d13f3f;
+      --gold: #e8a020;
+      --blue: #1a5fb4;
+      --shadow-sm: 0 1px 4px rgba(15,31,13,0.07);
+      --shadow-md: 0 4px 16px rgba(15,31,13,0.10);
+      --shadow-lg: 0 12px 40px rgba(15,31,13,0.13);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --radius-pill: 999px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--white);
+      color: var(--ink);
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    body.modal-open { overflow: hidden; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.65; }
+    :focus-visible {
+      outline: 3px solid rgba(46, 158, 88, 0.36);
+      outline-offset: 3px;
+    }
+    .material-symbols-rounded {
+      display: inline-flex;
+      font-family: "Material Symbols Rounded";
+      font-size: 24px;
+      font-style: normal;
+      font-weight: normal;
+      letter-spacing: 0;
+      line-height: 1;
+      text-transform: none;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: "liga";
+      -webkit-font-smoothing: antialiased;
+      font-feature-settings: "liga";
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    }
+
+    .app-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+    }
+    .nav-inner {
+      width: min(1180px, calc(100% - 32px));
+      min-height: 96px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      text-decoration: none;
+    }
+    .brand-link img {
+      width: auto;
+      height: 72px;
+      border-radius: 4px;
+    }
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-link,
+    .dropdown-trigger,
+    .account-trigger,
+    .hamburger {
+      min-height: 40px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--ink-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 150ms ease, background 150ms ease;
+    }
+    .nav-link:hover,
+    .dropdown:hover .dropdown-trigger,
+    .account-menu:hover .account-trigger,
+    .nav-link.active {
+      color: var(--green-dark);
+      background: var(--green-light);
+    }
+    .nav-link.disabled {
+      color: rgba(74,97,71,0.6);
+    }
+    .chevron {
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 150ms ease;
+      margin-top: -4px;
+    }
+    .dropdown:hover .chevron,
+    .dropdown:focus-within .chevron,
+    .account-menu:hover .chevron,
+    .account-menu:focus-within .chevron {
+      transform: rotate(225deg);
+      margin-top: 4px;
+    }
+    .dropdown,
+    .account-menu { position: relative; }
+    .dropdown-menu,
+    .account-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      min-width: 220px;
+      padding-top: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: opacity 140ms ease, transform 140ms ease;
+      z-index: 70;
+    }
+    .dropdown:hover .dropdown-menu,
+    .dropdown:focus-within .dropdown-menu,
+    .account-menu:hover .account-dropdown,
+    .account-menu:focus-within .account-dropdown,
+    .account-menu.open .account-dropdown {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .dropdown-surface {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      padding: 8px;
+    }
+    .dropdown-surface a,
+    .dropdown-surface button {
+      width: 100%;
+      min-height: 40px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      text-align: left;
+      text-decoration: none;
+      font-weight: 650;
+    }
+    .dropdown-surface a:hover,
+    .dropdown-surface button:hover {
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 7px 0;
+    }
+    .account-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      object-fit: cover;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-weight: 800;
+      overflow: hidden;
+    }
+    .account-menu.signed-out .account-avatar,
+    .account-menu.signed-out .account-dropdown,
+    .account-menu.signed-out .chevron {
+      display: none !important;
+    }
+    .hamburger {
+      display: none;
+      width: 44px;
+      justify-content: center;
+      margin-left: auto;
+    }
+    .hamburger span,
+    .hamburger span::before,
+    .hamburger span::after {
+      display: block;
+      width: 21px;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--green-dark);
+      content: "";
+    }
+    .hamburger span::before { transform: translateY(-7px); }
+    .hamburger span::after { transform: translateY(5px); }
+    .mobile-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.98);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+    .mobile-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-panel {
+      width: min(460px, calc(100% - 40px));
+      margin: 28px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .mobile-panel header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .mobile-panel button,
+    .mobile-panel a {
+      min-height: 52px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      text-decoration: none;
+      font-weight: 750;
+    }
+    .close-mobile {
+      width: 44px;
+      min-height: 44px !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      font-size: 1.4rem;
+    }
+
+    .hero {
+      min-height: 560px;
+      padding: 84px 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--white);
+      background:
+        linear-gradient(115deg, rgba(15,61,31,0.92), rgba(15,61,31,0.48)),
+        url("https://images.pexels.com/photos/589/garden-grass-meadow-green.jpg?auto=compress&cs=tinysrgb&w=1800") center/cover;
+    }
+    .hero.active { display: flex; }
+    .hero-content {
+      width: min(860px, 100%);
+      margin: 0 auto;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2.65rem, 7vw, 5.75rem);
+      line-height: 1.02;
+      letter-spacing: 0;
+      color: var(--white);
+      font-weight: 800;
+    }
+    .hero p {
+      width: min(660px, 100%);
+      margin: 22px auto 0;
+      color: rgba(255,255,255,0.84);
+      font-size: 1.12rem;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 34px;
+    }
+
+    main {
+      min-height: 520px;
+      background: var(--white);
+      opacity: 1;
+      transition: opacity 60ms ease;
+    }
+    main.transitioning { opacity: 0; }
+    .page {
+      display: none;
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 64px 0 78px;
+    }
+    .page.active { display: block; }
+    .page.narrow { width: min(880px, calc(100% - 32px)); }
+    .page-header {
+      width: min(820px, 100%);
+      margin-bottom: 30px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      margin-bottom: 10px;
+      color: var(--green);
+      font-size: 0.77rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, h4 {
+      margin: 0;
+      color: var(--green-dark);
+      line-height: 1.05;
+    }
+    h1 { font-size: clamp(2.25rem, 5vw, 4.2rem); font-weight: 800; }
+    h2 { font-size: clamp(1.75rem, 3vw, 2.85rem); font-weight: 800; }
+    h3 { font-size: 1.18rem; font-weight: 750; }
+    p { margin: 0; color: var(--ink-muted); }
+    .lead {
+      margin-top: 14px;
+      font-size: 1.06rem;
+      color: var(--ink-muted);
+    }
+
+    .btn {
+      min-height: 44px;
+      border-radius: var(--radius-sm);
+      border: 2px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      text-decoration: none;
+      font-weight: 750;
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-primary {
+      background: var(--green-accent);
+      color: var(--white);
+      border-color: var(--green-accent);
+    }
+    .btn-primary:hover { background: var(--green); border-color: var(--green); }
+    .btn-secondary {
+      background: var(--white);
+      border-color: var(--border-dark);
+      color: var(--green-dark);
+    }
+    .btn-danger {
+      background: #fdeaea;
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .btn.full { width: 100%; }
+    .btn.loading {
+      color: transparent !important;
+      position: relative;
+    }
+    .btn.loading::after {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.45);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      content: "";
+      animation: spin 700ms linear infinite;
+    }
+    .btn-secondary.loading::after,
+    .google-btn.loading::after {
+      border-color: rgba(46,158,88,0.25);
+      border-top-color: var(--green);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    }
+    .feature-card:hover,
+    .job-card:hover,
+    .service-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-dark);
+    }
+    .icon-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--green-light);
+      color: var(--green);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .icon-badge .material-symbols-rounded { font-size: 25px; }
+    .home-section { margin-top: 54px; }
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .timeline-step {
+      position: relative;
+      padding-top: 4px;
+    }
+    .timeline-number {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--green);
+      color: var(--white);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .contractor-callout {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      background: linear-gradient(135deg, var(--green-light), #f7fff3);
+    }
+
+    .notice {
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius);
+      background: var(--green-light);
+      padding: 16px;
+      margin-bottom: 22px;
+      color: var(--green-dark);
+    }
+    .notice a,
+    .notice button {
+      color: var(--green);
+      font-weight: 800;
+      text-decoration: underline;
+      border: 0;
+      background: transparent;
+      padding: 0;
+    }
+    .result-panel {
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius);
+      background: var(--green-light);
+      color: var(--green-dark);
+      margin-top: 18px;
+      padding: 16px;
+    }
+    .result-panel.error {
+      border-color: var(--red);
+      background: #fff8f8;
+      color: var(--red);
+    }
+    .posting-loading {
+      color: var(--white) !important;
+      gap: 9px;
+    }
+    .posting-loading::before {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.42);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      content: "";
+      animation: spin 700ms linear infinite;
+    }
+    .posting-loading::after { display: none !important; }
+    .locked-state,
+    .empty-state {
+      width: min(580px, 100%);
+      margin: 38px auto;
+      text-align: center;
+    }
+    .empty-illustration {
+      width: 120px;
+      height: 92px;
+      margin: 0 auto 18px;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius);
+      background: var(--green-light);
+      font-size: 4rem;
+    }
+
+    .form-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+      padding: 26px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .form-field.full { grid-column: 1 / -1; }
+    label,
+    legend {
+      color: var(--ink-muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 10px 12px;
+      transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--border-dark);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(46,158,88,0.12);
+      outline: none;
+    }
+    textarea { min-height: 128px; resize: vertical; }
+    input[readonly] {
+      color: var(--ink-muted);
+      background: #e9eee7;
+    }
+    .hint {
+      font-size: 0.86rem;
+      color: var(--ink-muted);
+    }
+    .error-message {
+      display: none;
+      color: var(--red);
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+    .form-field.invalid input,
+    .form-field.invalid select,
+    .form-field.invalid textarea,
+    .form-field.invalid .upload-zone,
+    .checkbox-wrap.invalid {
+      border-color: var(--red);
+      background: #fff8f8;
+    }
+    .form-field.invalid .error-message,
+    .checkbox-wrap.invalid .error-message { display: block; }
+    .checkbox-wrap {
+      grid-column: 1 / -1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      padding: 15px;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .checkbox-grid label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .checkbox-grid input { width: auto; min-height: auto; }
+    .upload-zone {
+      min-height: 170px;
+      border: 2px dashed var(--border-dark);
+      border-radius: var(--radius);
+      background: var(--off-white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-align: center;
+      padding: 18px;
+      transition: background 150ms ease, border-color 150ms ease;
+    }
+    .upload-zone.dragging {
+      background: var(--green-light);
+      border-color: var(--green);
+    }
+    .upload-zone input { display: none; }
+    .upload-icon { font-size: 2rem; }
+    .preview-grid,
+    .photo-strip {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .preview-item {
+      position: relative;
+      width: 86px;
+      height: 86px;
+    }
+    .preview-item img,
+    .photo-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .remove-photo {
+      position: absolute;
+      top: -8px;
+      right: -2px;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .filter-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+    .job-board-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .job-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+    .job-card h3 { padding-right: 90px; }
+    .job-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      color: var(--ink-muted);
+      font-size: 0.92rem;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      border-radius: var(--radius-pill);
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+    .job-card .status-badge {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+    }
+    .status-open { background: var(--green-light); color: var(--green); }
+    .status-claimed { background: #e8f0fe; color: var(--blue); }
+    .status-pending,
+    .status-pending_verification { background: #fff3cd; color: var(--gold); }
+    .status-rejected { background: #fdeaea; color: var(--red); }
+    .status-completed { background: #e2e8e0; color: var(--green-dark); }
+    .read-more {
+      border: 0;
+      background: transparent;
+      color: var(--green);
+      padding: 0;
+      font-weight: 800;
+    }
+    .lightbox-trigger {
+      border: 0;
+      background: transparent;
+      padding: 0;
+    }
+
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .profile-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .compact-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .compact-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      padding: 16px;
+    }
+    .compact-card-header {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .details-block {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .compact-card.open .details-block { display: block; }
+
+    .faq-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--white);
+      overflow: hidden;
+    }
+    .faq-question {
+      width: 100%;
+      border: 0;
+      background: var(--white);
+      color: var(--green-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      text-align: left;
+      font-weight: 750;
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 220ms ease;
+    }
+    .faq-answer p { padding: 0 20px 18px; }
+    .faq-item.open .faq-answer { max-height: 220px; }
+
+    .service-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .service-card .btn { margin-top: auto; }
+    .service-icon {
+      width: 42px;
+      height: 42px;
+      color: var(--green);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      background: var(--green-light);
+      font-size: 27px;
+    }
+
+    .modal-backdrop,
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      background: rgba(15,31,13,0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active,
+    .lightbox.active {
+      display: flex;
+      animation: fadeIn 140ms ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-card {
+      width: min(440px, 100%);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      padding: 28px;
+      text-align: center;
+    }
+    .modal-logo {
+      height: 48px;
+      width: auto;
+      margin: 0 auto 18px;
+      border-radius: var(--radius-sm);
+    }
+    .google-btn {
+      width: 100%;
+      min-height: 48px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      font-weight: 750;
+      transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+    }
+    .google-btn:hover {
+      border-color: var(--border-dark);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .lightbox-inner {
+      position: relative;
+      width: min(960px, 100%);
+      height: min(720px, 82vh);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox img {
+      max-height: 100%;
+      max-width: 100%;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      object-fit: contain;
+      background: var(--white);
+    }
+    .lightbox-button {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--green-dark);
+      font-size: 1.6rem;
+      box-shadow: var(--shadow-md);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-prev { left: 10px; }
+    .lightbox-next { right: 10px; }
+    .lightbox-close { top: 10px; right: 10px; }
+
+    .toast-region {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 150;
+      display: grid;
+      gap: 10px;
+      width: min(360px, calc(100% - 36px));
+    }
+    .toast {
+      border-left: 4px solid var(--green);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      padding: 14px 16px;
+      animation: toastIn 180ms ease;
+      color: var(--ink);
+      font-weight: 650;
+    }
+    .toast.error { border-left-color: var(--red); }
+    .toast.info { border-left-color: var(--blue); }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    footer {
+      background: var(--green-dark);
+      color: var(--white);
+      padding: 44px 0 24px;
+    }
+    .footer-inner {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1fr;
+      gap: 34px;
+    }
+    .footer-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    footer h3,
+    footer h4 { color: var(--white); }
+    footer p { color: rgba(255,255,255,0.55); }
+    .footer-links {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .footer-links a {
+      color: rgba(255,255,255,0.82);
+      text-decoration: none;
+      font-weight: 650;
+    }
+    .footer-links a:hover { color: var(--white); text-decoration: underline; }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 34px;
+      padding-top: 20px;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.9rem;
+    }
+    .legal-links {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .legal-links a {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.82rem;
+      text-decoration: underline;
+    }
+    .socials {
+      display: flex;
+      gap: 10px;
+    }
+    .cookie-banner {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 16px 20px;
+      background: #0f3d1f;
+      color: var(--white);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(110%);
+      transition: transform 300ms ease;
+    }
+    .cookie-banner.visible { transform: translateY(0); }
+    .cookie-banner.hiding { transform: translateY(110%); }
+    .cookie-banner p {
+      max-width: 760px;
+      color: var(--white);
+    }
+    .cookie-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+    }
+    .socials a {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(255,255,255,0.24);
+      border-radius: 50%;
+      color: var(--white);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    [hidden],
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hamburger { display: inline-flex; }
+      .hero { min-height: 520px; }
+      .grid,
+      .grid.two,
+      .grid.four,
+      .timeline,
+      .job-board-grid,
+      .profile-layout,
+      .footer-grid,
+      .contractor-callout {
+        grid-template-columns: 1fr;
+      }
+      .form-grid,
+      .filter-bar {
+        grid-template-columns: 1fr;
+      }
+      .checkbox-grid { grid-template-columns: 1fr; }
+      .footer-bottom,
+      .cookie-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .cookie-banner { align-items: stretch; }
+    }
+    .mobile-bottom-nav {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-top: 1px solid #d8e4d4;
+        z-index: 500;
+        padding: 8px 0 env(safe-area-inset-bottom, 0px);
+        box-shadow: 0 -2px 12px rgba(15,31,13,0.08);
+      }
+      .mobile-bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        min-height: 52px;
+        padding: 6px 4px;
+        color: #4a6147;
+        font-size: 0.68rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        background: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mobile-bottom-nav-item.active {
+        color: #1e6b3a;
+      }
+      .mobile-bottom-nav-item .material-symbols-rounded {
+        font-size: 22px;
+      }
+      main {
+        padding-bottom: 80px !important;
+      }
+      button, a, .nav-links a, .job-card button {
+        min-height: 44px;
+      }
+      form {
+        grid-template-columns: 1fr !important;
+      }
+      .job-board-grid {
+        grid-template-columns: 1fr !important;
+      }
+      nav .nav-links {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .nav-inner { width: min(100% - 24px, 1180px); }
+      .page { width: min(100% - 24px, 1180px); padding-top: 46px; }
+      .hero { padding: 70px 16px; min-height: 500px; }
+      .hero-actions,
+      .modal-actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .form-panel,
+      .card { padding: 20px; }
+      .job-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="app-nav" aria-label="Primary navigation">
+    <div class="nav-inner">
+      <a class="brand-link" href="#home" aria-label="JCM Landscaping home" onclick="navigatePage('home'); return false;">
+        <img src="JCM_Landscaping.png" alt="JCM Landscaping" height="72" style="display:block;">
+      </a>
+      <div class="nav-links" id="desktopNavLinks">
+        <button class="nav-link" onclick="navigatePage('home')">Home</button>
+        <button class="nav-link contractor-only" id="navJobBoard" onclick="navigatePage('job-board')">Job Board</button>
+        <button class="nav-link" onclick="navigatePage('services')">Services</button>
+        <button class="nav-link" onclick="navigatePage('how-it-works')">How It Works</button>
+        <div class="dropdown">
+          <button class="dropdown-trigger" type="button">More <span class="chevron" aria-hidden="true"></span></button>
+          <div class="dropdown-menu">
+            <div class="dropdown-surface">
+              <button type="button" onclick="navigatePage('how-it-works', true)">FAQ</button>
+              <button type="button" onclick="navigatePage('support')">Support/Contact</button>
+            </div>
+          </div>
+        </div>
+        <div class="account-menu" id="accountMenu">
+          <button class="account-trigger" id="accountTrigger" type="button" onclick="accountTriggerClick(event)">
+            <span class="account-avatar" id="accountAvatar" aria-hidden="true">?</span>
+            <span id="accountLabel">Account</span>
+            <span class="chevron" id="accountChevron" aria-hidden="true"></span>
+          </button>
+          <div class="account-dropdown" id="accountDropdown">
+            <div class="dropdown-surface" id="accountDropdownSurface"></div>
+          </div>
+        </div>
+      </div>
+      <button class="hamburger" type="button" aria-label="Open menu" onclick="toggleMobileMenu(true)"><span></span></button>
+    </div>
+  </nav>
+
+  <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true">
+    <div class="mobile-panel">
+      <header>
+        <img src="JCM_Landscaping.png" alt="JCM Landscaping" height="38">
+        <button class="close-mobile" type="button" aria-label="Close menu" onclick="toggleMobileMenu(false)"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+      </header>
+      <button type="button" onclick="mobileNavigate('home')">Home</button>
+      <button type="button" onclick="mobilePostJob()">Post a Job</button>
+      <button type="button" class="mobile-contractor-only" onclick="mobileNavigate('job-board')">Job Board</button>
+      <button type="button" class="mobile-applicant-only" onclick="mobileApply()">Apply as Contractor</button>
+      <button type="button" onclick="mobileNavigate('services')">Services</button>
+      <button type="button" onclick="mobileNavigate('how-it-works')">How It Works</button>
+      <button type="button" onclick="mobileNavigate('support')">Support/Contact</button>
+      <button type="button" onclick="mobileAccountAction()" id="mobileAccountButton">Account</button>
+    </div>
+  </div>
+
+  <section class="hero active" id="homeHero" aria-label="JCM Landscaping Network hero">
+    <div class="hero-content">
+      <span class="eyebrow" style="color:rgba(255,255,255,0.82);">JCM Landscaping Network</span>
+      <h1>The smarter way to get your lawn done.</h1>
+      <p>Post your job, verify your email, and let approved JCM contractors come to you.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" type="button" onclick="goPostJob()">Post a Job</button>
+        <button class="btn btn-secondary" type="button" onclick="navigatePage('how-it-works')">How It Works</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="mainContent">
+    <section class="page active" id="page-home">
+      <div class="grid">
+        <article class="card feature-card">
+          <span class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">yard</span></span>
+          <h3>Post Your Job</h3>
+          <p>Tell JCM what you need done, where the property is, and what the area looks like. Photos help contractors understand the work before anyone claims it.</p>
+        </article>
+        <article class="card feature-card">
+          <span class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">verified</span></span>
+          <h3>Get Verified</h3>
+          <p>Your email and job details keep the network cleaner. Jobs from verified accounts can go live for approved contractors to view and claim.</p>
+        </article>
+        <article class="card feature-card">
+          <span class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">assignment_turned_in</span></span>
+          <h3>Contractor Claims It</h3>
+          <p>Approved JCM contractors browse open work, claim jobs that fit their schedule, and receive the private address after committing.</p>
+        </article>
+      </div>
+
+      <section class="home-section">
+        <div class="page-header">
+          <span class="eyebrow">Process</span>
+          <h2>How the network works</h2>
+        </div>
+        <div class="timeline">
+          <article class="timeline-step"><span class="timeline-number">1</span><h3>Post your job request</h3><p>Add photos, access notes, budget, timing, and the outdoor work you need completed.</p></article>
+          <article class="timeline-step"><span class="timeline-number">2</span><h3>Verify your email</h3><p>Verification helps protect contractors from spam and keeps your job ready to go live.</p></article>
+          <article class="timeline-step"><span class="timeline-number">3</span><h3>A contractor claims it</h3><p>An approved JCM contractor sees the job board and chooses work that fits their route.</p></article>
+          <article class="timeline-step"><span class="timeline-number">4</span><h3>They show up</h3><p>The contractor receives the address and contact details after claiming. Job done.</p></article>
+        </div>
+      </section>
+
+      <section class="home-section">
+        <div class="card contractor-callout">
+          <div>
+            <span class="eyebrow">For Contractors</span>
+            <h2>Want to pick up jobs in your area?</h2>
+            <p class="lead">Apply to become an approved JCM contractor. Once accepted, you'll see available jobs near you and claim the ones that fit your schedule.</p>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="goContractorApply()">Apply as a Contractor</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="page narrow" id="page-post-job">
+      <div class="page-header">
+        <span class="eyebrow">Post a Job</span>
+        <h1>Tell contractors what needs to be done.</h1>
+        <p class="lead">Your exact address stays hidden until an approved contractor claims the job.</p>
+      </div>
+      <div class="notice" id="emailVerifyNotice" hidden>
+        Check your inbox. You need to verify your email before your job goes live.
+        <button type="button" onclick="resendVerificationEmail()">Resend verification email</button>
+      </div>
+      <div class="form-panel">
+        <form id="jobRequestForm" class="form-grid" novalidate>
+          <div class="form-field full">
+            <label for="jobTitle">Job Title</label>
+            <input id="jobTitle" name="title" type="text" placeholder="e.g. Front yard mow and edge, Broken Arrow OK" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="serviceType">Service Type</label>
+            <select id="serviceType" name="serviceType" required></select>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="propertySize">Property Size</label>
+            <select id="propertySize" name="propertySize" required>
+              <option value="">Choose property size</option>
+              <option>Small yard (under 2,000 sq ft)</option>
+              <option>Medium yard (2,000-5,000 sq ft)</option>
+              <option>Large yard (5,000-10,000 sq ft)</option>
+              <option>Very large / estate (10,000+ sq ft)</option>
+              <option>Commercial property</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="job-city">City</label>
+            <input id="job-city" name="city" type="text" placeholder="City" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="job-zip">ZIP Code</label>
+            <input id="job-zip" name="zip" type="text" inputmode="numeric" placeholder="ZIP Code" pattern="[0-9]{5}" maxlength="5" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full">
+            <label for="jobPhone">Customer Phone</label>
+            <input id="jobPhone" name="posterPhone" type="tel" required>
+            <span class="hint">This is hidden from the public board and shown only to the contractor who claims your job.</span>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full">
+            <label for="fullAddress">Full Property Address</label>
+            <input id="fullAddress" name="fullAddress" type="text" required>
+            <span class="hint">Your exact address is hidden from the job board. Contractors only see your city and ZIP until they claim your job.</span>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="budget">Budget Range</label>
+            <select id="budget" name="budget" required>
+              <option value="">Choose budget</option>
+              <option>Under $75</option>
+              <option>$75-$150</option>
+              <option>$150-$300</option>
+              <option>$300-$600</option>
+              <option>$600-$1,000</option>
+              <option>$1,000-$2,500</option>
+              <option>$2,500+</option>
+              <option>I'm not sure / need a quote</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="frequency">Frequency</label>
+            <select id="frequency" name="frequency" required>
+              <option value="">Choose frequency</option>
+              <option>One-time job</option>
+              <option>Weekly recurring</option>
+              <option>Every other week</option>
+              <option>Monthly</option>
+              <option>Seasonal (one-time per season)</option>
+              <option>Flexible / to be determined</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="preferredDate">Preferred Date</label>
+            <input id="preferredDate" name="preferredDate" type="date">
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full">
+            <label for="jobDetails">Job Details</label>
+            <textarea id="jobDetails" name="details" placeholder="Describe the work in as much detail as possible. Include access notes (gate codes, dogs, parking), problem areas, materials needed, and anything the contractor should know." required></textarea>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full" id="photoField">
+            <label>Photos of the Area (required - at least 1, up to 8)</label>
+            <div id="photoDropZone" style="border:2px dashed var(--border-dark);border-radius:8px;padding:32px;text-align:center;cursor:pointer;background:var(--surface);transition:background 150ms;">
+              <div class="material-symbols-rounded upload-icon" aria-hidden="true" style="margin-bottom:8px;">photo_camera</div>
+              <p style="color:var(--ink-muted);margin:0;">Click to select photos, or drag and drop here</p>
+              <p style="color:var(--ink-muted);font-size:0.82rem;margin-top:4px;">JPG, PNG, HEIC - up to 8 photos</p>
+              <input type="file" id="job-photos" name="photos" accept="image/*" multiple style="display:none;">
+            </div>
+            <div id="photoPreviewRow" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+            <span class="error-message"></span>
+          </div>
+          <button class="btn btn-primary full" id="submitJobBtn" type="submit">Post My Job</button>
+        </form>
+        <div class="result-panel" id="jobRequestResult" hidden></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-job-board">
+      <div class="page-header">
+        <span class="eyebrow">Contractor Board</span>
+        <h1>Open jobs near you.</h1>
+        <p class="lead">Browse verified jobs and claim the ones you are ready to complete.</p>
+      </div>
+      <div id="boardLocked" class="card locked-state" hidden>
+        <div class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">lock</span></div>
+        <h2>This board is for approved JCM contractors only.</h2>
+        <p class="lead">Apply as a contractor to request access to open jobs.</p>
+        <div class="hero-actions"><button class="btn btn-primary" type="button" onclick="goContractorApply()">Apply as a Contractor</button></div>
+      </div>
+      <div id="boardContent">
+        <div class="filter-bar">
+          <div class="form-field">
+            <label for="cityFilter">City</label>
+            <input id="cityFilter" type="text" placeholder="Filter by city">
+          </div>
+          <div class="form-field">
+            <label for="zipFilter">ZIP Code</label>
+            <input id="zipFilter" type="text" placeholder="Filter by ZIP">
+          </div>
+          <button class="btn btn-secondary" type="button" onclick="clearBoardFilters()">Clear Filters</button>
+        </div>
+        <div class="job-board-grid" id="jobBoardGrid"></div>
+      </div>
+    </section>
+
+    <section class="page narrow" id="page-contractor-apply">
+      <div class="page-header">
+        <span class="eyebrow">Contractors</span>
+        <h1>Apply to join the JCM contractor network.</h1>
+        <p class="lead">Approved contractors can browse open jobs and claim work that fits their schedule.</p>
+      </div>
+      <div id="contractorStatusCard" class="card" hidden></div>
+      <div class="form-panel" id="contractorFormPanel">
+        <form id="contractorForm" class="form-grid" novalidate>
+          <div class="form-field">
+            <label for="contractorName">Full Name</label>
+            <input id="contractorName" name="name" type="text" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="contractorEmail">Email</label>
+            <input id="contractorEmail" name="email" type="email" readonly required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="contractorPhone">Phone Number</label>
+            <input id="contractorPhone" name="phone" type="tel" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="contractorCity">City</label>
+            <input id="contractorCity" name="city" type="text" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="contractorZip">ZIP Code</label>
+            <input id="contractorZip" name="zipCode" type="text" inputmode="numeric" pattern="^[0-9]{5}$" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="serviceRadius">Service Radius</label>
+            <select id="serviceRadius" name="serviceRadius" required>
+              <option value="">Choose radius</option>
+              <option>Within 10 miles</option>
+              <option>Within 20 miles</option>
+              <option>Within 30 miles</option>
+              <option>Within 50 miles</option>
+              <option>Flexible</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="checkbox-wrap" id="skillsGroup">
+            <legend>Skills / Services Offered</legend>
+            <div class="checkbox-grid" id="skillsOptions"></div>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full">
+            <label for="equipment">Equipment Owned</label>
+            <textarea id="equipment" name="equipment" placeholder="List your mowers, trimmers, blowers, trucks, trailers, and any specialized equipment you own or have consistent access to." required></textarea>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="experience">Years of Experience</label>
+            <select id="experience" name="experience" required>
+              <option value="">Choose experience</option>
+              <option>Less than 1 year</option>
+              <option>1-2 years</option>
+              <option>3-5 years</option>
+              <option>6-10 years</option>
+              <option>10+ years</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="checkbox-wrap" id="availabilityGroup">
+            <legend>Availability</legend>
+            <div class="checkbox-grid" id="availabilityOptions"></div>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full">
+            <label for="whyJCM">Why do you want to work with JCM?</label>
+            <textarea id="whyJCM" name="whyJCM" placeholder="Tell us a bit about yourself and why you'd be a good fit for the JCM contractor network." required></textarea>
+            <span class="error-message"></span>
+          </div>
+          <button class="btn btn-primary full" id="submitApplicationBtn" type="submit">Submit Application</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="page" id="page-account">
+      <div class="page-header">
+        <span class="eyebrow">Account</span>
+        <h1>My Profile</h1>
+      </div>
+      <div id="accountSignedOut" class="card locked-state">
+        <h2>Sign in to view your profile.</h2>
+        <p class="lead">Your profile shows your posted jobs, contractor status, and claimed work.</p>
+        <div class="hero-actions"><button class="btn btn-primary" type="button" onclick="openSignInModal()">Continue with Google</button></div>
+      </div>
+      <div id="accountContent" hidden>
+        <div class="profile-layout">
+          <aside class="card">
+            <img class="profile-photo" id="profilePhoto" src="" alt="">
+            <h2 id="profileName"></h2>
+            <p id="profileEmail"></p>
+            <div style="margin-top:14px"><span class="status-badge" id="profileRoleBadge"></span></div>
+          </aside>
+          <section class="card">
+            <h2>Status</h2>
+            <p class="lead" id="contractorStatusMessage"></p>
+            <div class="hero-actions" id="profileActions"></div>
+          </section>
+        </div>
+        <section class="home-section">
+          <h2>My Posted Jobs</h2>
+          <div class="compact-list" id="myPostedJobs"></div>
+        </section>
+        <section class="home-section" id="claimedJobsSection" hidden>
+          <h2>Jobs I've Claimed</h2>
+          <div class="compact-list" id="myClaimedJobs"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="page narrow" id="page-how-it-works">
+      <div class="page-header">
+        <span class="eyebrow">Guide</span>
+        <h1>How JCM Works</h1>
+      </div>
+      <div class="compact-list">
+        <article class="card timeline-step"><span class="timeline-number">1</span><h3>Post your job request with photos and details</h3><p>Clear photos, accurate location, budget, and access notes help contractors decide whether the work fits.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">2</span><h3>Verify your email to make your job live</h3><p>Verified accounts keep the job board useful and reduce low-quality posts.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">3</span><h3>An approved JCM contractor claims it</h3><p>Contractors see your city, ZIP, photos, budget, and details before they commit.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">4</span><h3>They show up. Job done.</h3><p>Once claimed, the contractor receives the full address and customer contact details.</p></article>
+      </div>
+      <section class="home-section">
+        <h2>FAQ</h2>
+        <div class="faq-list" id="faqList"></div>
+      </section>
+    </section>
+
+    <section class="page narrow" id="page-support">
+      <div class="page-header">
+        <span class="eyebrow">Support</span>
+        <h1>Contact JCM</h1>
+        <p class="lead">Send a message about jobs, accounts, contractor access, billing, or general questions.</p>
+      </div>
+      <div class="form-panel">
+        <form id="supportForm" class="form-grid" novalidate>
+          <div class="form-field">
+            <label for="supportName">Name</label>
+            <input id="supportName" name="name" type="text" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="supportEmail">Email</label>
+            <input id="supportEmail" name="email" type="email" required>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="supportTopic">Topic</label>
+            <select id="supportTopic" name="topic" required>
+              <option value="">Choose topic</option>
+              <option>General Question</option>
+              <option>Job Issue</option>
+              <option>Contractor Issue</option>
+              <option>Account Problem</option>
+              <option>Billing</option>
+              <option>Other</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field">
+            <label for="supportPriority">Priority</label>
+            <select id="supportPriority" name="priority" required>
+              <option>Normal</option>
+              <option>Urgent</option>
+            </select>
+            <span class="error-message"></span>
+          </div>
+          <div class="form-field full">
+            <label for="supportMessage">Message</label>
+            <textarea id="supportMessage" name="message" required></textarea>
+            <span class="error-message"></span>
+          </div>
+          <button class="btn btn-primary full" id="submitSupportBtn" type="submit">Send Message</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="page" id="page-services">
+      <div class="page-header">
+        <span class="eyebrow">Services</span>
+        <h1>Post the outdoor work you need.</h1>
+        <p class="lead">Choose a category, describe the property, and add photos so approved contractors can understand the job.</p>
+      </div>
+      <div class="grid four" id="servicesGrid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">
+            <img src="JCM_Leaf.png" alt="JCM" height="40" style="display:block; margin-bottom:10px;">
+            <strong style="color:#fff;font-size:1.1rem;">JCM Landscaping</strong>
+            <p style="color:rgba(255,255,255,0.55);font-size:0.85rem;margin-top:4px;">Reviewed outdoor work, simplified.</p>
+          </div>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <div class="footer-links">
+            <a href="#home" onclick="navigatePage('home'); return false;">Home</a>
+            <a href="#post-job" onclick="goPostJob(); return false;">Post a Job</a>
+            <a href="#job-board" onclick="navigatePage('job-board'); return false;">Job Board</a>
+            <a href="#contractor-apply" onclick="goContractorApply(); return false;">Apply as Contractor</a>
+            <a href="#how-it-works" onclick="navigatePage('how-it-works'); return false;">How It Works</a>
+            <a href="#support" onclick="navigatePage('support'); return false;">Support</a>
+          </div>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <div class="footer-links">
+            <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
+            <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>
+            <a href="mailto:help@jcm-landscaping.com">help@jcm-landscaping.com</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 JCM Landscaping. All rights reserved.</span>
+        <span class="legal-links">
+          <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
+          <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>
+        </span>
+        <span style="color:rgba(255,255,255,0.45);font-size:0.78rem;">Site by Jaydon Scogin</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="cookie-banner" id="cookieBanner" role="region" aria-label="Cookie consent">
+    <p>We use cookies to keep you signed in and remember your preferences. By continuing to use JCM Landscaping, you agree to our use of cookies.</p>
+    <div class="cookie-actions">
+      <button class="btn btn-primary" type="button" onclick="acceptCookies()">Accept</button>
+      <a class="btn btn-secondary" href="/privacy" target="_blank" rel="noopener">Learn More</a>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="signInModal" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
+    <div class="modal-card">
+      <img class="modal-logo" src="JCM_Landscaping.png" alt="JCM Landscaping">
+      <h2 id="signInTitle">Sign in to continue</h2>
+      <p>Use your Google account to post jobs, apply as a contractor, or manage your JCM profile.</p>
+      <button class="google-btn" id="googleSignInBtn" type="button" onclick="signInWithGoogle()">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.4.2 24 .2 14.7.2 6.7 5.5 2.8 13.2l7.9 6.1C12.6 13.5 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-2.8-.4-4.1H24v8.1h13.6c-.3 2.1-1.7 5.2-4.9 7.3l7.7 6c4.6-4.2 7.1-10.4 7.1-17.3z"/><path fill="#FBBC05" d="M10.7 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C1.1 16.5.2 20.1.2 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 47.8c6.4 0 11.8-2.1 15.7-5.8l-7.7-6c-2.1 1.4-4.8 2.4-8 2.4-6.1 0-11.4-4.1-13.3-9.7l-7.9 6.1C6.7 42.5 14.7 47.8 24 47.8z"/></svg>
+        Continue with Google
+      </button>
+      <button class="nav-link" type="button" style="margin:14px auto 0;" onclick="closeSignInModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="claimModal" role="dialog" aria-modal="true" aria-labelledby="claimTitle">
+    <div class="modal-card">
+      <h2 id="claimTitle">Claim this job?</h2>
+      <p>Once claimed, you'll receive the customer's full address and contact information. You are committing to completing this work.</p>
+      <div class="modal-actions">
+        <button class="btn btn-primary full" id="confirmClaimBtn" type="button" onclick="confirmClaimJob()">Yes, Claim It</button>
+        <button class="btn btn-secondary full" type="button" onclick="closeClaimModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="photoLightbox" role="dialog" aria-modal="true" aria-label="Job photos" onclick="lightboxBackdropClick(event)">
+    <div class="lightbox-inner">
+      <button class="lightbox-button lightbox-close" type="button" aria-label="Close lightbox" onclick="closeLightbox()"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+      <button class="lightbox-button lightbox-prev" type="button" aria-label="Previous photo" onclick="moveLightbox(-1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_left</span></button>
+      <img id="lightboxImage" src="" alt="Job photo">
+      <button class="lightbox-button lightbox-next" type="button" aria-label="Next photo" onclick="moveLightbox(1)"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
+    </div>
+  </div>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile app navigation">
+    <button class="mobile-bottom-nav-item" onclick="showPage('home')" id="mbnHome" type="button">
+      <span class="material-symbols-rounded" aria-hidden="true">home</span>
+      <span>Home</span>
+    </button>
+    <button class="mobile-bottom-nav-item" onclick="navigatePage('job-board')" id="mbnJobs" type="button">
+      <span class="material-symbols-rounded" aria-hidden="true">work</span>
+      <span>Jobs</span>
+    </button>
+    <button class="mobile-bottom-nav-item" onclick="goPostJob()" id="mbnPost" type="button">
+      <span class="material-symbols-rounded" aria-hidden="true">add_circle</span>
+      <span>Post Job</span>
+    </button>
+    <button class="mobile-bottom-nav-item" onclick="goContractorApply()" id="mbnApply" type="button">
+      <span class="material-symbols-rounded" aria-hidden="true">badge</span>
+      <span>Apply</span>
+    </button>
+    <button class="mobile-bottom-nav-item" onclick="state.authUser ? showPage('account') : openSignInModal()" id="mbnAccount" type="button">
+      <span class="material-symbols-rounded" aria-hidden="true">account_circle</span>
+      <span>Account</span>
+    </button>
+  </nav>
+
+  <script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    db.settings({ experimentalAutoDetectLongPolling: true });
+    const storage = firebase.storage();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+
+    const state = {
+      authUser: null,
+      currentUser: null,
+      authReady: false,
+      activePage: "home",
+      pendingAction: null,
+      selectedPhotos: [],
+      openJobs: [],
+      myPostedJobs: [],
+      myClaimedJobs: [],
+      justClaimedJobs: {},
+      pendingClaimId: null,
+      unsubscribes: [],
+      boardUnsubscribe: null,
+      lightboxPhotos: [],
+      lightboxIndex: 0,
+      preselectService: "",
+      routingFromPop: false,
+      profileSyncNoticeShown: false
+    };
+
+    let currentUser = null;
+    let currentUserDoc = null;
+
+    function syncCurrentUserAliases() {
+      currentUser = state.authUser;
+      currentUserDoc = state.currentUser;
+    }
+
+    const knownPageIds = ["home", "post-job", "job-board", "contractor-apply", "account", "how-it-works", "support", "services"];
+
+    const serviceTypes = [
+      "Residential Lawn Mowing",
+      "Commercial Mowing",
+      "Edging & Trimming",
+      "Weed Control & Fertilization",
+      "Leaf Removal & Cleanup",
+      "Landscape Planting & Beds",
+      "Mulching",
+      "Aeration & Overseeding",
+      "Snow & Ice Removal",
+      "Holiday Lighting Installation",
+      "Holiday Lighting Removal",
+      "General Outdoor Cleanup",
+      "Other"
+    ];
+    const contractorSkills = [
+      "Residential Lawn Mowing",
+      "Commercial Mowing",
+      "Edging & Trimming",
+      "Weed Control",
+      "Fertilization",
+      "Leaf Removal",
+      "Landscape & Bed Work",
+      "Mulching",
+      "Aeration & Overseeding",
+      "Snow & Ice Removal",
+      "Holiday Lighting",
+      "Hauling & Cleanup"
+    ];
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const serviceCards = [
+      ["Lawn Mowing & Edging", "Residential Lawn Mowing", "Regular mowing, edging, trimming, and clean finish work for residential lawns."],
+      ["Weed Control & Fertilization", "Weed Control & Fertilization", "Post treatment needs with property details so contractors understand the lawn condition."],
+      ["Leaf Removal & Cleanup", "Leaf Removal & Cleanup", "Seasonal leaf pickup, debris cleanup, bagging, and haul-off requests."],
+      ["Landscape Design & Beds", "Landscape Planting & Beds", "Planting, bed cleanup, edging, and refresh work for front or backyard spaces."],
+      ["Mulching", "Mulching", "Mulch refreshes, bed preparation, edging, and material placement for clean curb appeal."],
+      ["Aeration & Overseeding", "Aeration & Overseeding", "Soil aeration and overseeding work for stronger seasonal lawn growth."],
+      ["Snow & Ice Removal", "Snow & Ice Removal", "Driveway, walkway, and small commercial snow or ice removal requests."],
+      ["Holiday Lighting", "Holiday Lighting Installation", "Lighting installation and removal jobs for seasonal outdoor displays."]
+    ];
+    const faqs = [
+      ["How does a job go live?", "A signed-in user submits a job with photos. If their email is verified, the job can become open on the contractor board. If not, it stays pending verification until the email is verified."],
+      ["What can contractors see before claiming?", "Contractors see the service type, city, ZIP code, property size, budget, frequency, preferred date, notes, and photos. The exact address is hidden until the job is claimed."],
+      ["How do I become a contractor?", "Sign in with Google and submit the contractor application. JCM reviews your location, skills, equipment, experience, and availability before approving access."],
+      ["Why is my address hidden?", "The job board is designed to protect customers. Full address and contact details are only shown to the contractor after they claim the work."],
+      ["Can I cancel a job?", "Contact JCM through the support form with your job title and email address. An admin can reject or close the job from the dashboard."],
+      ["What happens after a contractor claims my job?", "The job is removed from the open board, and the contractor receives the private address and customer contact details needed to complete the work."],
+      ["Can contractors choose any job?", "Approved contractors can browse open work and claim jobs they are ready to complete. Claiming a job is a commitment to follow through."],
+      ["How do I contact JCM?", "Use the support form on this site or email help@jcm-landscaping.com for account, contractor, or job questions."],
+      ["Can JCM edit a post?", "Admins can clean up unclear titles or details before or after a job becomes visible so the board stays easy to use."]
+    ];
+
+    function $(id) { return document.getElementById(id); }
+    function escapeHtml(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, function(char) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[char];
+      });
+    }
+    function formatDate(value) {
+      if (!value) return "Flexible";
+      const date = value.toDate ? value.toDate() : new Date(value);
+      return Number.isNaN(date.getTime()) ? "Flexible" : date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    }
+    function normalizeStatus(status) {
+      return String(status || "pending").replace(/_/g, " ");
+    }
+    function statusBadge(status) {
+      const key = String(status || "pending").toLowerCase();
+      return `<span class="status-badge status-${escapeHtml(key)}">${escapeHtml(normalizeStatus(status))}</span>`;
+    }
+    function firstName(name) {
+      return String(name || "Account").trim().split(/\s+/)[0] || "Account";
+    }
+    function isAdminLike() {
+      return state.currentUser && (state.currentUser.role === "admin" || state.currentUser.role === "moderator");
+    }
+    function isContractorLike() {
+      return state.currentUser && (state.currentUser.role === "contractor" || state.currentUser.role === "admin" || state.currentUser.role === "moderator");
+    }
+    function isSuspended() {
+      return Boolean(state.currentUser && state.currentUser.suspended);
+    }
+
+    function toast(message, type) {
+      const el = document.createElement("div");
+      el.className = `toast ${type || "success"}`;
+      el.textContent = message;
+      $("toastRegion").appendChild(el);
+      setTimeout(function() {
+        el.style.opacity = "0";
+        el.style.transform = "translateX(20px)";
+        setTimeout(function() { el.remove(); }, 180);
+      }, 4000);
+    }
+
+    function showToast(message, type) {
+      toast(message, type);
+    }
+
+    function firebaseMessage(error) {
+      const text = String((error && (error.message || error.code)) || "");
+      if (text.toLowerCase().includes("unauthorized-domain")) {
+        return "Google sign-in is not authorized for this domain yet. Add jcm-landscaping.com in Firebase Authentication authorized domains.";
+      }
+      if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
+        return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
+      }
+      return text || "Something went wrong. Please try again.";
+    }
+
+    function initCookieBanner() {
+      try {
+        if (localStorage.getItem("jcm_cookies_accepted") === "true") return;
+      } catch (error) {
+        return;
+      }
+      requestAnimationFrame(function() {
+        $("cookieBanner").classList.add("visible");
+      });
+    }
+
+    function acceptCookies() {
+      try {
+        localStorage.setItem("jcm_cookies_accepted", "true");
+      } catch (error) {
+        return;
+      }
+      $("cookieBanner").classList.add("hiding");
+      setTimeout(function() {
+        $("cookieBanner").classList.remove("visible");
+        $("cookieBanner").hidden = true;
+      }, 300);
+    }
+
+    function setButtonLoading(button, loading) {
+      if (!button) return;
+      button.disabled = loading;
+      button.classList.toggle("loading", loading);
+      if (loading && !button.dataset.originalText) button.dataset.originalText = button.textContent;
+      if (!loading && button.dataset.originalText) {
+        button.textContent = button.dataset.originalText;
+        delete button.dataset.originalText;
+      }
+      if (loading) button.textContent = "...";
+    }
+
+    function showPage(pageId, focusFaq, skipHistory) {
+      if (!knownPageIds.includes(pageId)) pageId = "home";
+      const main = $("mainContent");
+      main.classList.add("transitioning");
+      setTimeout(function() {
+        document.querySelectorAll(".page").forEach(function(page) {
+          page.classList.toggle("active", page.id === `page-${pageId}`);
+        });
+        $("homeHero").classList.toggle("active", pageId === "home");
+        state.activePage = pageId;
+        updateMobileBottomNav(pageId);
+        document.querySelectorAll(".nav-link").forEach(function(link) {
+          link.classList.toggle("active", link.textContent.trim().toLowerCase().includes(pageId.replace("-", " ")));
+        });
+        main.classList.remove("transitioning");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        if (focusFaq) {
+          setTimeout(function() { $("faqList").scrollIntoView({ behavior: "smooth", block: "start" }); }, 120);
+        }
+        renderPageGuards();
+        if (!skipHistory && !state.routingFromPop && window.location.hash !== `#${pageId}`) {
+          window.history.pushState(null, "", `#${pageId}`);
+        }
+      }, 90);
+    }
+
+    function updateMobileBottomNav(pageId) {
+      const map = {
+        home: "mbnHome",
+        "job-board": "mbnJobs",
+        "post-job": "mbnPost",
+        "contractor-apply": "mbnApply",
+        account: "mbnAccount"
+      };
+      document.querySelectorAll(".mobile-bottom-nav-item").forEach(function(item) {
+        item.classList.toggle("active", item.id === map[pageId]);
+      });
+    }
+
+    function navigatePage(pageId, focusFaq) {
+      if (pageId === "post-job") return goPostJob();
+      if (pageId === "job-board" && !isContractorLike()) {
+        showPage("job-board");
+        return;
+      }
+      if (pageId === "contractor-apply") return goContractorApply();
+      showPage(pageId, focusFaq);
+    }
+
+    function routeFromHash() {
+      const page = window.location.hash.replace("#", "");
+      state.routingFromPop = true;
+      if (knownPageIds.includes(page)) {
+        navigatePage(page);
+      } else {
+        showPage("home", false, true);
+      }
+      setTimeout(function() {
+        state.routingFromPop = false;
+      }, 160);
+    }
+
+    function requireAuth(action) {
+      if (state.authUser) {
+        action();
+        return;
+      }
+      state.pendingAction = action;
+      openSignInModal();
+    }
+    function goPostJob() {
+      requireAuth(function() {
+        if (isSuspended()) {
+          toast("Your account is suspended and cannot post jobs.", "error");
+          return;
+        }
+        showPage("post-job");
+      });
+    }
+    function goContractorApply() {
+      requireAuth(function() {
+        if (isContractorLike()) {
+          showPage("job-board");
+          return;
+        }
+        showPage("contractor-apply");
+      });
+    }
+    function mobileNavigate(pageId) {
+      toggleMobileMenu(false);
+      navigatePage(pageId);
+    }
+    function mobilePostJob() {
+      toggleMobileMenu(false);
+      goPostJob();
+    }
+    function mobileApply() {
+      toggleMobileMenu(false);
+      goContractorApply();
+    }
+    function mobileAccountAction() {
+      toggleMobileMenu(false);
+      if (state.authUser) showPage("account");
+      else openSignInModal();
+    }
+    function toggleMobileMenu(open) {
+      $("mobileOverlay").classList.toggle("active", open);
+      $("mobileOverlay").setAttribute("aria-hidden", open ? "false" : "true");
+      document.body.classList.toggle("modal-open", open);
+    }
+
+    function openSignInModal() {
+      $("signInModal").classList.add("active");
+      document.body.classList.add("modal-open");
+    }
+    function closeSignInModal(clearPending) {
+      $("signInModal").classList.remove("active");
+      document.body.classList.remove("modal-open");
+      if (clearPending !== false) state.pendingAction = null;
+    }
+    async function signInWithGoogle() {
+      const button = $("googleSignInBtn");
+      setButtonLoading(button, true);
+      try {
+        const result = await auth.signInWithPopup(provider);
+        if (result && result.user) {
+          handleSignedInUser(result.user);
+        }
+      } catch (error) {
+        toast(firebaseMessage(error), "error");
+      } finally {
+        setButtonLoading(button, false);
+      }
+    }
+    async function signOut() {
+      try {
+        await auth.signOut();
+        toast("Signed out.", "info");
+        showPage("home");
+      } catch (error) {
+        toast(firebaseMessage(error), "error");
+      }
+    }
+    function accountTriggerClick(event) {
+      if (!state.authUser) {
+        event.preventDefault();
+        openSignInModal();
+        return;
+      }
+      $("accountMenu").classList.toggle("open");
+    }
+
+    function canBypassSignedOutGuard(target) {
+      if (target.closest("#signInModal")) return true;
+      if (target.closest("#cookieBanner")) return true;
+      const link = target.closest("a");
+      if (link) {
+        const href = link.getAttribute("href") || "";
+        if (link.target === "_blank" || href.startsWith("mailto:") || href === "/terms" || href === "/privacy") return true;
+      }
+      return false;
+    }
+
+    function signedOutClickGuard(event) {
+      if (state.authUser) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const interactive = target.closest("button, a[onclick], a[href^='#']");
+      if (!interactive || canBypassSignedOutGuard(interactive)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openSignInModal();
+    }
+
+    async function ensureUserDoc(firebaseUser) {
+      const ref = db.collection("users").doc(firebaseUser.uid);
+      const snap = await ref.get();
+      if (!snap.exists) {
+        const payload = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email || "",
+          displayName: firebaseUser.displayName || "",
+          photoURL: firebaseUser.photoURL || "",
+          role: "user",
+          contractorStatus: null,
+          createdAt: serverTimestamp(),
+          lastSeen: serverTimestamp()
+        };
+        await ref.set(payload);
+        return payload;
+      }
+      await ref.set({
+        displayName: snap.data().displayName || firebaseUser.displayName || "",
+        photoURL: snap.data().photoURL || firebaseUser.photoURL || "",
+        lastSeen: serverTimestamp()
+      }, { merge: true });
+      return { uid: firebaseUser.uid, ...snap.data() };
+    }
+
+    function authProfileUser(firebaseUser) {
+      return {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || "",
+        displayName: firebaseUser.displayName || (firebaseUser.email || "JCM User").split("@")[0],
+        photoURL: firebaseUser.photoURL || "",
+        role: "user",
+        contractorStatus: null,
+        profileSyncPending: true
+      };
+    }
+
+    function finishPendingAuthAction() {
+      if (state.pendingAction) {
+        const action = state.pendingAction;
+        state.pendingAction = null;
+        action();
+      } else {
+        renderAccountPage();
+      }
+    }
+
+    function handleSignedInUser(firebaseUser) {
+      state.authUser = firebaseUser;
+      state.currentUser = { ...authProfileUser(firebaseUser), ...(state.currentUser && state.currentUser.uid === firebaseUser.uid ? state.currentUser : {}) };
+      syncCurrentUserAliases();
+      closeSignInModal(false);
+      renderAuthUI();
+      renderPageGuards();
+      prefillUserForms();
+      finishPendingAuthAction();
+    }
+
+    async function syncSignedInProfile(firebaseUser, attempt) {
+      try {
+        const userDoc = await ensureUserDoc(firebaseUser);
+        const fresh = await db.collection("users").doc(firebaseUser.uid).get();
+        if (!state.authUser || state.authUser.uid !== firebaseUser.uid) return;
+        state.currentUser = {
+          ...authProfileUser(firebaseUser),
+          email: firebaseUser.email || userDoc.email || "",
+          displayName: firebaseUser.displayName || userDoc.displayName || "",
+          photoURL: firebaseUser.photoURL || userDoc.photoURL || "",
+          role: "user",
+          contractorStatus: null,
+          ...fresh.data(),
+          profileSyncPending: false
+        };
+        syncCurrentUserAliases();
+        state.profileSyncNoticeShown = false;
+        renderAuthUI();
+        renderPageGuards();
+        prefillUserForms();
+        attachUserListeners();
+        attachJobBoardListener();
+        renderAccountPage();
+      } catch (error) {
+        if (!state.profileSyncNoticeShown) {
+          state.profileSyncNoticeShown = true;
+          toast("You're signed in, but JCM is still connecting to Firebase for your profile. Some account features may take a moment.", "info");
+        }
+        if ((attempt || 0) < 3 && state.authUser && state.authUser.uid === firebaseUser.uid) {
+          setTimeout(function() { syncSignedInProfile(firebaseUser, (attempt || 0) + 1); }, 4000);
+        }
+      }
+    }
+
+    auth.onAuthStateChanged(function(firebaseUser) {
+      detachListeners();
+      state.authReady = true;
+      if (!firebaseUser) {
+        state.authUser = null;
+        state.currentUser = null;
+        syncCurrentUserAliases();
+        state.profileSyncNoticeShown = false;
+        closeSignInModal(false);
+        renderAuthUI();
+        renderPageGuards();
+        renderAccountPage();
+        return;
+      }
+      handleSignedInUser(firebaseUser);
+      syncSignedInProfile(firebaseUser, 0);
+    });
+
+    function detachListeners() {
+      state.unsubscribes.forEach(function(unsub) {
+        try { unsub(); } catch (error) { return; }
+      });
+      state.unsubscribes = [];
+      state.boardUnsubscribe = null;
+    }
+
+    function attachJobBoardListener() {
+      if (state.boardUnsubscribe) {
+        try { state.boardUnsubscribe(); } catch (error) { return; }
+        state.unsubscribes = state.unsubscribes.filter(function(unsub) { return unsub !== state.boardUnsubscribe; });
+        state.boardUnsubscribe = null;
+      }
+      if (!isContractorLike()) {
+        state.openJobs = [];
+        renderJobBoard();
+        return;
+      }
+      const unsub = db.collection("jobs")
+        .where("status", "==", "open")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(function(snapshot) {
+          state.openJobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; });
+          renderJobBoard();
+        }, function(error) {
+          toast(firebaseMessage(error), "error");
+        });
+      state.boardUnsubscribe = unsub;
+      state.unsubscribes.push(unsub);
+    }
+
+    function attachUserListeners() {
+      if (!state.authUser) return;
+      const profileUnsub = db.collection("users").doc(state.authUser.uid)
+        .onSnapshot(function(snapshot) {
+          if (!snapshot.exists) return;
+          const previousRole = state.currentUser ? state.currentUser.role : null;
+          state.currentUser = { ...state.currentUser, ...snapshot.data(), uid: state.authUser.uid };
+          syncCurrentUserAliases();
+          renderAuthUI();
+          renderPageGuards();
+          prefillUserForms();
+          if (previousRole !== state.currentUser.role) attachJobBoardListener();
+        }, function(error) {
+          toast(firebaseMessage(error), "error");
+        });
+      state.unsubscribes.push(profileUnsub);
+      const postedUnsub = db.collection("jobs")
+        .where("postedBy", "==", state.authUser.uid)
+        .onSnapshot(function(snapshot) {
+          state.myPostedJobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
+            .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
+          renderAccountPage();
+        }, function(error) {
+          toast(firebaseMessage(error), "error");
+        });
+      state.unsubscribes.push(postedUnsub);
+      const claimedUnsub = db.collection("jobs")
+        .where("claimedBy", "==", state.authUser.uid)
+        .onSnapshot(function(snapshot) {
+          state.myClaimedJobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
+            .sort(function(a, b) { return timestampMs(b.claimedAt || b.updatedAt) - timestampMs(a.claimedAt || a.updatedAt); });
+          renderAccountPage();
+        }, function(error) {
+          toast(firebaseMessage(error), "error");
+        });
+      state.unsubscribes.push(claimedUnsub);
+    }
+
+    function timestampMs(value) {
+      if (!value) return 0;
+      if (value.toDate) return value.toDate().getTime();
+      return new Date(value).getTime() || 0;
+    }
+
+    function renderAuthUI() {
+      const signedIn = Boolean(state.authUser && state.currentUser);
+      $("navJobBoard").classList.toggle("hidden", !isContractorLike());
+      document.querySelectorAll(".mobile-contractor-only").forEach(function(el) { el.classList.toggle("hidden", !isContractorLike()); });
+      document.querySelectorAll(".mobile-applicant-only").forEach(function(el) { el.classList.toggle("hidden", !signedIn || isContractorLike()); });
+      if (!signedIn) {
+        $("accountMenu").classList.add("signed-out");
+        $("accountAvatar").innerHTML = "";
+        $("accountLabel").textContent = "Sign In";
+        $("accountDropdownSurface").innerHTML = "";
+        $("accountChevron").classList.add("hidden");
+        $("mobileAccountButton").textContent = "Sign In";
+        return;
+      }
+      $("accountMenu").classList.remove("signed-out");
+      $("accountChevron").classList.remove("hidden");
+      const accountFirstName = firstName(state.currentUser.displayName || (state.currentUser.email || "").split("@")[0]);
+      $("accountLabel").textContent = accountFirstName;
+      $("mobileAccountButton").textContent = `Account (${accountFirstName})`;
+      if (state.currentUser.photoURL) {
+        $("accountAvatar").innerHTML = `<img src="${escapeHtml(state.currentUser.photoURL)}" alt="">`;
+      } else {
+        $("accountAvatar").textContent = accountFirstName.slice(0, 1).toUpperCase();
+      }
+      const links = [
+        `<button type="button" onclick="showPage('account')">My Profile</button>`
+      ];
+      links.push(`<button type="button" onclick="showPage('account')">My Jobs</button>`);
+      if (isContractorLike()) links.push(`<button type="button" onclick="showPage('job-board')">Job Board</button>`);
+      if (isAdminLike()) links.push(`<a href="/admin">Admin Dashboard</a>`);
+      links.push(`<div class="dropdown-divider"></div>`);
+      links.push(`<button type="button" onclick="signOut()">Sign Out</button>`);
+      $("accountDropdownSurface").innerHTML = links.join("");
+    }
+
+    function renderPageGuards() {
+      $("emailVerifyNotice").hidden = !(state.authUser && !state.authUser.emailVerified);
+      const canBoard = isContractorLike();
+      $("boardLocked").hidden = canBoard;
+      $("boardContent").hidden = !canBoard;
+      renderContractorApplicationState();
+      renderJobBoard();
+      renderAccountPage();
+    }
+
+    function prefillUserForms() {
+      if (!state.authUser) return;
+      $("contractorName").value = state.currentUser.displayName || state.authUser.displayName || "";
+      $("contractorEmail").value = state.currentUser.email || state.authUser.email || "";
+      $("supportName").value = state.currentUser.displayName || state.authUser.displayName || "";
+      $("supportEmail").value = state.currentUser.email || state.authUser.email || "";
+    }
+
+    function renderContractorApplicationState() {
+      const statusCard = $("contractorStatusCard");
+      const panel = $("contractorFormPanel");
+      if (!state.currentUser) {
+        statusCard.hidden = true;
+        panel.hidden = false;
+        return;
+      }
+      const status = state.currentUser.contractorStatus;
+      if (isContractorLike()) {
+        statusCard.hidden = false;
+        panel.hidden = true;
+        statusCard.innerHTML = `<h2>You're approved.</h2><p class="lead">You're an approved contractor. You can view the job board and claim available work.</p><div class="hero-actions"><button class="btn btn-primary" type="button" onclick="showPage('job-board')">View Job Board</button></div>`;
+      } else if (status === "pending") {
+        statusCard.hidden = false;
+        panel.hidden = true;
+        statusCard.innerHTML = `<h2>Your application is under review.</h2><p class="lead">We'll contact you at ${escapeHtml(state.currentUser.email)} once a decision has been made.</p>`;
+      } else if (status === "rejected") {
+        statusCard.hidden = false;
+        panel.hidden = true;
+        statusCard.innerHTML = `<h2>Your application was not approved.</h2><p class="lead">Contact support if you believe more information would help JCM review your account again.</p><div class="hero-actions"><button class="btn btn-secondary" type="button" onclick="showPage('support')">Contact Support</button></div>`;
+      } else {
+        statusCard.hidden = true;
+        panel.hidden = false;
+      }
+    }
+
+    function initStaticContent() {
+      const select = $("serviceType");
+      select.innerHTML = `<option value="">Choose service type</option>` + serviceTypes.map(function(type) {
+        return `<option>${escapeHtml(type)}</option>`;
+      }).join("");
+      $("skillsOptions").innerHTML = contractorSkills.map(function(skill) {
+        return `<label><input type="checkbox" name="skills" value="${escapeHtml(skill)}"> ${escapeHtml(skill)}</label>`;
+      }).join("");
+      $("availabilityOptions").innerHTML = days.map(function(day) {
+        return `<label><input type="checkbox" name="availability" value="${escapeHtml(day)}"> ${escapeHtml(day)}</label>`;
+      }).join("");
+      $("faqList").innerHTML = faqs.map(function(item, index) {
+        return `<article class="faq-item"><button class="faq-question" type="button" onclick="toggleFaq(${index})"><span>${escapeHtml(item[0])}</span><span class="chevron" aria-hidden="true"></span></button><div class="faq-answer"><p>${escapeHtml(item[1])}</p></div></article>`;
+      }).join("");
+      $("servicesGrid").innerHTML = serviceCards.map(function(card) {
+        return `<article class="card service-card">
+          <span class="material-symbols-rounded service-icon" aria-hidden="true">eco</span>
+          <h3>${escapeHtml(card[0])}</h3>
+          <p>${escapeHtml(card[2])}</p>
+          <button class="btn btn-secondary" type="button" onclick="postThisService('${escapeHtml(card[1])}')">Post This Job</button>
+        </article>`;
+      }).join("");
+    }
+
+    function toggleFaq(index) {
+      const items = document.querySelectorAll(".faq-item");
+      if (items[index]) items[index].classList.toggle("open");
+    }
+
+    function postThisService(service) {
+      state.preselectService = service;
+      goPostJob();
+      setTimeout(function() { $("serviceType").value = service; }, 160);
+    }
+
+    function validateField(field) {
+      const wrapper = field.closest(".form-field");
+      if (!wrapper) return true;
+      let valid = true;
+      let message = "";
+      if (field.required && !String(field.value || "").trim()) {
+        valid = false;
+        message = "This field is required.";
+      } else if (field.pattern && field.value && !(new RegExp(field.pattern).test(field.value))) {
+        valid = false;
+        message = "Enter a valid value.";
+      } else if (field.type === "email" && field.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value)) {
+        valid = false;
+        message = "Enter a valid email address.";
+      }
+      wrapper.classList.toggle("invalid", !valid);
+      const error = wrapper.querySelector(".error-message");
+      if (error) error.textContent = message;
+      return valid;
+    }
+
+    function validateForm(form) {
+      let valid = true;
+      form.querySelectorAll("input, select, textarea").forEach(function(field) {
+        if (field.type !== "file" && !validateField(field)) valid = false;
+      });
+      return valid;
+    }
+
+    function validateCheckboxGroup(id, name) {
+      const group = $(id);
+      const checked = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(function(input) { return input.value; });
+      const valid = checked.length > 0;
+      group.classList.toggle("invalid", !valid);
+      const error = group.querySelector(".error-message");
+      if (error) error.textContent = valid ? "" : "Choose at least one option.";
+      return valid;
+    }
+
+    function validatePhotos() {
+      const field = $("photoField");
+      const valid = state.selectedPhotos.length >= 1 && state.selectedPhotos.length <= 8;
+      field.classList.toggle("invalid", !valid);
+      field.querySelector(".error-message").textContent = valid ? "" : "Upload between 1 and 8 photos.";
+      return valid;
+    }
+
+    function initFormValidation() {
+      document.querySelectorAll("input, select, textarea").forEach(function(field) {
+        field.addEventListener("input", function() { validateField(field); });
+        field.addEventListener("blur", function() { validateField(field); });
+      });
+    }
+
+    function initPhotoUpload() {
+      const input = $("job-photos");
+      const zone = $("photoDropZone");
+      zone.addEventListener("click", function() { input.click(); });
+      input.addEventListener("change", function(event) { addSelectedPhotos(event.target.files); input.value = ""; });
+      ["dragenter", "dragover"].forEach(function(type) {
+        zone.addEventListener(type, function(event) {
+          event.preventDefault();
+          zone.style.background = "var(--green-light)";
+        });
+      });
+      ["dragleave", "drop"].forEach(function(type) {
+        zone.addEventListener(type, function(event) {
+          event.preventDefault();
+          zone.style.background = "var(--surface)";
+        });
+      });
+      zone.addEventListener("drop", function(event) {
+        addSelectedPhotos(event.dataTransfer.files);
+      });
+    }
+
+    function addSelectedPhotos(fileList) {
+      const files = Array.from(fileList || []).filter(function(file) { return file.type.startsWith("image/"); });
+      const availableSlots = Math.max(0, 8 - state.selectedPhotos.length);
+      const acceptedFiles = files.slice(0, availableSlots);
+      state.selectedPhotos.push(...acceptedFiles);
+      renderPhotoPreviews();
+      validatePhotos();
+      if (files.length > acceptedFiles.length) {
+        const error = $("photoField").querySelector(".error-message");
+        error.style.display = "block";
+        error.textContent = "You can upload up to 8 photos. Extra files were ignored.";
+        toast("You can upload up to 8 photos. Extra files were ignored.", "info");
+      }
+    }
+
+    function renderPhotoPreviews() {
+      $("photoPreviewRow").innerHTML = state.selectedPhotos.map(function(file, index) {
+        const url = URL.createObjectURL(file);
+        return `<div class="preview-item" style="position:relative;width:80px;height:80px;"><img src="${url}" alt="Selected job photo" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border);"><button class="remove-photo" type="button" aria-label="Remove photo" onclick="removeSelectedPhoto(${index})"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px;">close</span></button></div>`;
+      }).join("");
+    }
+    function removeSelectedPhoto(index) {
+      state.selectedPhotos.splice(index, 1);
+      renderPhotoPreviews();
+      validatePhotos();
+    }
+
+    async function uploadJobPhotos() {
+      const uid = state.authUser.uid;
+      const uploads = state.selectedPhotos.map(function(file) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `job-photos/${uid}/${Date.now()}_${safeName}`;
+        return storage.ref(path).put(file).then(function(snapshot) { return snapshot.ref.getDownloadURL(); });
+      });
+      return Promise.all(uploads);
+    }
+
+    function formValue(id) { return $(id).value.trim(); }
+    function selectedValues(name) {
+      return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(function(input) { return input.value; });
+    }
+
+    async function submitJob(event) {
+      event.preventDefault();
+      const result = $("jobRequestResult");
+      result.hidden = true;
+      result.classList.remove("error");
+      if (!state.authUser) return openSignInModal();
+      if (isSuspended()) {
+        toast("Your account is suspended and cannot post jobs.", "error");
+        return;
+      }
+      const formValid = validateForm($("jobRequestForm"));
+      const photosValid = validatePhotos();
+      if (!formValid || !photosValid) {
+        toast("Please fix the highlighted fields.", "error");
+        return;
+      }
+      const button = $("submitJobBtn");
+      button.disabled = true;
+      button.classList.add("posting-loading");
+      button.textContent = "Posting...";
+      try {
+        await state.authUser.reload();
+        state.authUser = auth.currentUser;
+        const urls = await uploadJobPhotos();
+        const docRef = db.collection("jobs").doc();
+        const verified = Boolean(state.authUser.emailVerified);
+        await docRef.set({
+          id: docRef.id,
+          postedBy: state.authUser.uid,
+          posterName: state.currentUser.displayName || state.authUser.displayName || "",
+          posterEmail: state.currentUser.email || state.authUser.email || "",
+          posterPhone: formValue("jobPhone"),
+          title: formValue("jobTitle"),
+          serviceType: formValue("serviceType"),
+          city: formValue("job-city"),
+          zipCode: formValue("job-zip"),
+          fullAddress: formValue("fullAddress"),
+          propertySize: formValue("propertySize"),
+          details: formValue("jobDetails"),
+          budget: formValue("budget"),
+          frequency: formValue("frequency"),
+          preferredDate: formValue("preferredDate") || null,
+          photoURLs: urls,
+          status: verified ? "open" : "pending_verification",
+          claimedBy: null,
+          claimedByName: null,
+          claimedAt: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        $("jobRequestForm").reset();
+        state.selectedPhotos = [];
+        renderPhotoPreviews();
+        result.hidden = false;
+        result.classList.remove("error");
+        result.innerHTML = verified
+          ? "Your job is live! Approved contractors in your area can now see it."
+          : `Job saved! Check your inbox at ${escapeHtml(state.authUser.email)} and click the verification link to make it visible to contractors. <button class="btn btn-secondary" type="button" onclick="resendVerificationFromResult(this)">Resend verification email</button>`;
+        toast(verified ? "Your job is live! Approved contractors can now see it." : `Your job has been saved. Verify ${state.authUser.email} to make it visible.`, "success");
+      } catch (error) {
+        result.hidden = false;
+        result.classList.add("error");
+        result.textContent = "Something went wrong. Please try again. If the problem continues, contact support.";
+        toast(firebaseMessage(error), "error");
+      } finally {
+        button.disabled = false;
+        button.classList.remove("posting-loading");
+        button.textContent = "Post My Job";
+      }
+    }
+
+    async function resendVerificationEmail() {
+      if (!state.authUser) return;
+      try {
+        await state.authUser.sendEmailVerification();
+        toast(`Verification email sent to ${state.authUser.email}.`, "success");
+      } catch (error) {
+        toast(firebaseMessage(error), "error");
+      }
+    }
+
+    async function resendVerificationFromResult(button) {
+      if (!state.authUser) return;
+      button.disabled = true;
+      try {
+        await state.authUser.sendEmailVerification();
+        button.textContent = "Sent!";
+        toast(`Verification email sent to ${state.authUser.email}.`, "success");
+      } catch (error) {
+        button.disabled = false;
+        toast(firebaseMessage(error), "error");
+      }
+    }
+
+    async function submitContractorApplication(event) {
+      event.preventDefault();
+      if (!state.authUser) return openSignInModal();
+      const formValid = validateForm($("contractorForm"));
+      const skillsValid = validateCheckboxGroup("skillsGroup", "skills");
+      const availabilityValid = validateCheckboxGroup("availabilityGroup", "availability");
+      if (!formValid || !skillsValid || !availabilityValid) {
+        toast("Please fix the highlighted fields.", "error");
+        return;
+      }
+      const button = $("submitApplicationBtn");
+      setButtonLoading(button, true);
+      try {
+        const docRef = db.collection("contractorApplications").doc();
+        await docRef.set({
+          id: docRef.id,
+          uid: state.authUser.uid,
+          name: formValue("contractorName"),
+          email: formValue("contractorEmail"),
+          phone: formValue("contractorPhone"),
+          city: formValue("contractorCity"),
+          zipCode: formValue("contractorZip"),
+          serviceRadius: formValue("serviceRadius"),
+          skills: selectedValues("skills"),
+          equipment: formValue("equipment"),
+          experience: formValue("experience"),
+          availability: selectedValues("availability").join(", "),
+          whyJCM: formValue("whyJCM"),
+          status: "pending",
+          submittedAt: serverTimestamp(),
+          reviewedAt: null,
+          reviewedBy: null
+        });
+        await db.collection("users").doc(state.authUser.uid).set({ contractorStatus: "pending" }, { merge: true });
+        state.currentUser.contractorStatus = "pending";
+        $("contractorForm").reset();
+        prefillUserForms();
+        renderContractorApplicationState();
+        toast(`Application submitted! We'll contact you at ${state.currentUser.email}.`, "success");
+      } catch (error) {
+        toast(firebaseMessage(error), "error");
+      } finally {
+        setButtonLoading(button, false);
+      }
+    }
+
+    async function submitSupport(event) {
+      event.preventDefault();
+      if (!state.authUser) {
+        state.pendingAction = function() { showPage("support"); };
+        openSignInModal();
+        toast("Sign in to send a support message.", "info");
+        return;
+      }
+      if (!validateForm($("supportForm"))) {
+        toast("Please fix the highlighted fields.", "error");
+        return;
+      }
+      const button = $("submitSupportBtn");
+      setButtonLoading(button, true);
+      try {
+        const docRef = db.collection("supportTickets").doc();
+        await docRef.set({
+          id: docRef.id,
+          name: formValue("supportName"),
+          email: formValue("supportEmail"),
+          topic: formValue("supportTopic"),
+          message: formValue("supportMessage"),
+          priority: formValue("supportPriority"),
+          status: "open",
+          createdAt: serverTimestamp()
+        });
+        $("supportForm").reset();
+        prefillUserForms();
+        toast("Support message sent.", "success");
+      } catch (error) {
+        toast(firebaseMessage(error), "error");
+      } finally {
+        setButtonLoading(button, false);
+      }
+    }
+
+    function renderJobBoard() {
+      if (!isContractorLike()) return;
+      const city = $("cityFilter").value.trim().toLowerCase();
+      const zip = $("zipFilter").value.trim();
+      const justClaimed = Object.values(state.justClaimedJobs);
+      let jobs = state.openJobs.concat(justClaimed.filter(function(job) {
+        return !state.openJobs.some(function(openJob) { return openJob.id === job.id; });
+      }));
+      jobs = jobs.filter(function(job) {
+        const cityOk = !city || String(job.city || "").toLowerCase().includes(city);
+        const zipOk = !zip || String(job.zipCode || "").includes(zip);
+        return cityOk && zipOk;
+      });
+      const grid = $("jobBoardGrid");
+      if (!jobs.length) {
+        grid.innerHTML = `<div class="card empty-state" style="grid-column:1/-1">
+          <span class="material-symbols-rounded empty-illustration" aria-hidden="true">psychiatry</span>
+          <h2>No open jobs right now.</h2>
+          <p class="lead">Check back soon, or make sure you've set up your profile area.</p>
+        </div>`;
+        return;
+      }
+      grid.innerHTML = jobs.map(renderJobCard).join("");
+    }
+
+    function renderJobCard(job) {
+      const claimedByYou = job.claimedBy && state.authUser && job.claimedBy === state.authUser.uid;
+      const status = claimedByYou ? "claimed" : job.status;
+      const details = String(job.details || "");
+      const preview = details.length > 140 ? `${escapeHtml(details.slice(0, 140))}<span id="details-more-${job.id}" hidden>${escapeHtml(details.slice(140))}</span><button class="read-more" type="button" onclick="expandDetails('${job.id}')">...read more</button>` : escapeHtml(details);
+      const photos = (job.photoURLs || []).slice(0, 3).map(function(url, index) {
+        return `<button class="lightbox-trigger" type="button" onclick='openLightbox(${JSON.stringify(job.photoURLs || [])}, ${index})'><img class="photo-thumb" src="${escapeHtml(url)}" alt="Job photo ${index + 1}"></button>`;
+      }).join("");
+      const privateInfo = claimedByYou ? `<div class="notice"><strong>Claimed by You</strong><br>${escapeHtml(job.fullAddress || "")}<br>${escapeHtml(job.posterPhone || "Customer phone not provided")}<br>${escapeHtml(job.posterEmail || "")}</div>` : "";
+      const action = claimedByYou
+        ? `<span class="status-badge status-claimed" style="position:static">Claimed by You</span>`
+        : `<button class="btn btn-primary full" type="button" onclick="openClaimModal('${job.id}')">Claim This Job</button>`;
+      return `<article class="card job-card">
+        ${statusBadge(status)}
+        <h3>${escapeHtml(job.serviceType || job.title || "Outdoor Work")}</h3>
+        <p><strong>${escapeHtml(job.title || "")}</strong></p>
+        <div class="job-meta">
+          <span>${escapeHtml(job.city || "")}, TX ${escapeHtml(job.zipCode || "")}</span>
+          <span>${escapeHtml(job.propertySize || "")}</span>
+          <span>${escapeHtml(job.budget || "")}</span>
+          <span>${escapeHtml(job.frequency || "")}</span>
+          <span>Preferred: ${escapeHtml(formatDate(job.preferredDate))}</span>
+        </div>
+        <p>${preview}</p>
+        <div class="photo-strip">${photos}</div>
+        ${privateInfo}
+        ${action}
+      </article>`;
+    }
+
+    function expandDetails(id) {
+      const more = $(`details-more-${id}`);
+      if (!more) return;
+      more.hidden = false;
+      const button = more.nextElementSibling;
+      if (button) button.remove();
+    }
+
+    function clearBoardFilters() {
+      $("cityFilter").value = "";
+      $("zipFilter").value = "";
+      renderJobBoard();
+    }
+
+    function openClaimModal(jobId) {
+      if (!state.authUser) return openSignInModal();
+      if (!isContractorLike()) {
+        toast("Only approved contractors can claim jobs.", "error");
+        return;
+      }
+      if (isSuspended()) {
+        toast("Your account is suspended and cannot claim jobs.", "error");
+        return;
+      }
+      state.pendingClaimId = jobId;
+      $("claimModal").classList.add("active");
+      document.body.classList.add("modal-open");
+    }
+    function closeClaimModal() {
+      state.pendingClaimId = null;
+      $("claimModal").classList.remove("active");
+      document.body.classList.remove("modal-open");
+    }
+    async function confirmClaimJob() {
+      const jobId = state.pendingClaimId;
+      if (!jobId) return;
+      const button = $("confirmClaimBtn");
+      setButtonLoading(button, true);
+      try {
+        const ref = db.collection("jobs").doc(jobId);
+        await db.runTransaction(async function(transaction) {
+          const snap = await transaction.get(ref);
+          if (!snap.exists) throw new Error("This job no longer exists.");
+          const job = snap.data();
+          if (job.status !== "open") throw new Error("This job is no longer open.");
+          transaction.update(ref, {
+            status: "claimed",
+            claimedBy: state.authUser.uid,
+            claimedByName: state.currentUser.displayName || state.authUser.displayName || "",
+            claimedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        });
+        const updated = await ref.get();
+        state.justClaimedJobs[jobId] = { id: jobId, ...updated.data() };
+        closeClaimModal();
+        renderJobBoard();
+        toast("Job claimed. Address and contact details are now visible.", "success");
+      } catch (error) {
+        toast(firebaseMessage(error), "error");
+      } finally {
+        setButtonLoading(button, false);
+      }
+    }
+
+    function renderAccountPage() {
+      const signedIn = Boolean(state.authUser && state.currentUser);
+      $("accountSignedOut").hidden = signedIn;
+      $("accountContent").hidden = !signedIn;
+      if (!signedIn) return;
+      $("profilePhoto").src = state.currentUser.photoURL || "JCM_Leaf.png";
+      $("profilePhoto").alt = `${state.currentUser.displayName || "User"} profile photo`;
+      $("profileName").textContent = state.currentUser.displayName || "JCM User";
+      $("profileEmail").textContent = state.currentUser.email || "";
+      $("profileRoleBadge").textContent = state.currentUser.role || "user";
+      $("profileRoleBadge").className = `status-badge ${isContractorLike() ? "status-open" : "status-completed"}`;
+      const status = state.currentUser.contractorStatus;
+      const action = $("profileActions");
+      action.innerHTML = "";
+      if (isContractorLike()) {
+        $("contractorStatusMessage").textContent = "You're an approved contractor. View the job board to claim available work.";
+        action.innerHTML = `<button class="btn btn-primary" type="button" onclick="showPage('job-board')">View Job Board</button>`;
+      } else if (status === "pending") {
+        $("contractorStatusMessage").textContent = "Your contractor application is under review.";
+      } else {
+        $("contractorStatusMessage").textContent = "You're signed in as a regular user. Want to do jobs? Apply to become a contractor.";
+        action.innerHTML = `<button class="btn btn-secondary" type="button" onclick="showPage('contractor-apply')">Apply to Become a Contractor</button>`;
+      }
+      renderCompactJobs("myPostedJobs", state.myPostedJobs, false);
+      $("claimedJobsSection").hidden = !isContractorLike();
+      renderCompactJobs("myClaimedJobs", state.myClaimedJobs, true);
+    }
+
+    function renderCompactJobs(containerId, jobs, showPrivate) {
+      const container = $(containerId);
+      if (!container) return;
+      if (!jobs.length) {
+        container.innerHTML = `<div class="card"><p>No jobs to show yet.</p></div>`;
+        return;
+      }
+      container.innerHTML = jobs.map(function(job) {
+        const extra = showPrivate ? `<p><strong>Address:</strong> ${escapeHtml(job.fullAddress || "")}</p><p><strong>Customer:</strong> ${escapeHtml(job.posterName || "")} ${escapeHtml(job.posterEmail || "")} ${escapeHtml(job.posterPhone || "")}</p>` : `<p>${escapeHtml(job.details || "")}</p>`;
+        return `<article class="compact-card" id="compact-${job.id}">
+          <div class="compact-card-header">
+            <div><h3>${escapeHtml(job.title || "Untitled job")}</h3><p>${escapeHtml(formatDate(job.createdAt))}</p></div>
+            ${statusBadge(job.status)}
+          </div>
+          <button class="read-more" type="button" onclick="toggleCompact('${job.id}')">View Details</button>
+          <div class="details-block">${extra}</div>
+        </article>`;
+      }).join("");
+    }
+    function toggleCompact(id) {
+      const card = $(`compact-${id}`);
+      if (card) card.classList.toggle("open");
+    }
+
+    function openLightbox(photos, index) {
+      state.lightboxPhotos = photos || [];
+      state.lightboxIndex = index || 0;
+      updateLightboxImage();
+      $("photoLightbox").classList.add("active");
+      document.body.classList.add("modal-open");
+    }
+    function updateLightboxImage() {
+      $("lightboxImage").src = state.lightboxPhotos[state.lightboxIndex] || "";
+    }
+    function moveLightbox(delta) {
+      if (!state.lightboxPhotos.length) return;
+      state.lightboxIndex = (state.lightboxIndex + delta + state.lightboxPhotos.length) % state.lightboxPhotos.length;
+      updateLightboxImage();
+    }
+    function closeLightbox() {
+      $("photoLightbox").classList.remove("active");
+      document.body.classList.remove("modal-open");
+      $("lightboxImage").src = "";
+    }
+    function lightboxBackdropClick(event) {
+      if (event.target.id === "photoLightbox") closeLightbox();
+    }
+    document.addEventListener("keydown", function(event) {
+      if ($("photoLightbox").classList.contains("active")) {
+        if (event.key === "Escape") closeLightbox();
+        if (event.key === "ArrowLeft") moveLightbox(-1);
+        if (event.key === "ArrowRight") moveLightbox(1);
+      }
+      if (event.key === "Escape" && $("signInModal").classList.contains("active")) closeSignInModal();
+      if (event.key === "Escape" && $("claimModal").classList.contains("active")) closeClaimModal();
+    });
+
+    function wireEvents() {
+      document.addEventListener("click", signedOutClickGuard, true);
+      $("jobRequestForm").addEventListener("submit", submitJob);
+      $("contractorForm").addEventListener("submit", submitContractorApplication);
+      $("supportForm").addEventListener("submit", submitSupport);
+      $("cityFilter").addEventListener("input", renderJobBoard);
+      $("zipFilter").addEventListener("input", renderJobBoard);
+      window.addEventListener("popstate", routeFromHash);
+    }
+
+    initStaticContent();
+    initFormValidation();
+    initPhotoUpload();
+    wireEvents();
+    renderAuthUI();
+    renderPageGuards();
+    initCookieBanner();
+    setTimeout(routeFromHash, 120);
+  </script>
+</body>
+</html>

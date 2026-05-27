@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">JCM Landscaping</string>
+    <string name="title_activity_main">JCM Landscaping</string>
+    <string name="package_name">com.jcmlandscaping.app</string>
+    <string name="custom_url_scheme">com.jcmlandscaping.app</string>
+</resources>

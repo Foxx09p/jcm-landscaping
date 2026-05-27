@@ -774,6 +774,14 @@
       lightboxIndex: 0
     };
 
+    let adminUser = null;
+    let adminUserDoc = null;
+
+    function syncAdminAliases() {
+      adminUser = state.authUser;
+      adminUserDoc = state.adminUser;
+    }
+
     const serviceTypes = [
       "Residential Lawn Mowing",
       "Commercial Mowing",
@@ -824,6 +832,9 @@
         setTimeout(function() { el.remove(); }, 180);
       }, 4000);
     }
+    function showToast(message, type) {
+      toast(message, type);
+    }
     function firebaseMessage(error) {
       const text = String((error && (error.message || error.code)) || "");
       if (text.toLowerCase().includes("unauthorized-domain")) {
@@ -862,14 +873,23 @@
         setButtonLoading(button, false);
       }
     }
+    function adminSignIn() {
+      return signInWithGoogle();
+    }
     async function signOut() {
       try {
         detachListeners();
         await auth.signOut();
         showOnly("auth");
+        state.authUser = null;
+        state.adminUser = null;
+        syncAdminAliases();
       } catch (error) {
         toast(firebaseMessage(error), "error");
       }
+    }
+    function adminSignOut() {
+      return signOut();
     }
     async function ensureUserDoc(firebaseUser) {
       const ref = db.collection("users").doc(firebaseUser.uid);
@@ -895,6 +915,7 @@
       detachListeners();
       state.authUser = firebaseUser;
       state.adminUser = null;
+      syncAdminAliases();
       if (!firebaseUser) {
         showOnly("auth");
         return;
@@ -911,6 +932,7 @@
           ...userDoc,
           ...fresh.data()
         };
+        syncAdminAliases();
         if (!isModeratorOrAdmin()) {
           showOnly("denied");
           return;
