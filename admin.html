@@ -805,6 +805,9 @@
     }
     function firebaseMessage(error) {
       const text = String((error && (error.message || error.code)) || "");
+      if (text.toLowerCase().includes("unauthorized-domain")) {
+        return "Google sign-in is not authorized for this domain yet. Add jcm-landscaping.com in Firebase Authentication authorized domains.";
+      }
       if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
         return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
       }

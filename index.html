@@ -1651,7 +1651,8 @@
       lightboxPhotos: [],
       lightboxIndex: 0,
       preselectService: "",
-      routingFromPop: false
+      routingFromPop: false,
+      profileSyncNoticeShown: false
     };
 
     const knownPageIds = ["home", "post-job", "job-board", "contractor-apply", "account", "how-it-works", "support", "services"];
@@ -1753,6 +1754,9 @@
 
     function firebaseMessage(error) {
       const text = String((error && (error.message || error.code)) || "");
+      if (text.toLowerCase().includes("unauthorized-domain")) {
+        return "Google sign-in is not authorized for this domain yet. Add jcm-landscaping.com in Firebase Authentication authorized domains.";
+      }
       if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
         return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
       }
@@ -1905,7 +1909,10 @@
       const button = $("googleSignInBtn");
       setButtonLoading(button, true);
       try {
-        await auth.signInWithPopup(provider);
+        const result = await auth.signInWithPopup(provider);
+        if (result && result.user) {
+          handleSignedInUser(result.user);
+        }
       } catch (error) {
         toast(firebaseMessage(error), "error");
       } finally {
@@ -1989,53 +1996,74 @@
       };
     }
 
-    auth.onAuthStateChanged(async function(firebaseUser) {
+    function finishPendingAuthAction() {
+      if (state.pendingAction) {
+        const action = state.pendingAction;
+        state.pendingAction = null;
+        action();
+      } else {
+        renderAccountPage();
+      }
+    }
+
+    function handleSignedInUser(firebaseUser) {
+      state.authUser = firebaseUser;
+      state.currentUser = { ...authProfileUser(firebaseUser), ...(state.currentUser && state.currentUser.uid === firebaseUser.uid ? state.currentUser : {}) };
+      closeSignInModal(false);
+      renderAuthUI();
+      renderPageGuards();
+      prefillUserForms();
+      finishPendingAuthAction();
+    }
+
+    async function syncSignedInProfile(firebaseUser, attempt) {
+      try {
+        const userDoc = await ensureUserDoc(firebaseUser);
+        const fresh = await db.collection("users").doc(firebaseUser.uid).get();
+        if (!state.authUser || state.authUser.uid !== firebaseUser.uid) return;
+        state.currentUser = {
+          ...authProfileUser(firebaseUser),
+          email: firebaseUser.email || userDoc.email || "",
+          displayName: firebaseUser.displayName || userDoc.displayName || "",
+          photoURL: firebaseUser.photoURL || userDoc.photoURL || "",
+          role: "user",
+          contractorStatus: null,
+          ...fresh.data(),
+          profileSyncPending: false
+        };
+        state.profileSyncNoticeShown = false;
+        renderAuthUI();
+        renderPageGuards();
+        prefillUserForms();
+        attachUserListeners();
+        attachJobBoardListener();
+        renderAccountPage();
+      } catch (error) {
+        if (!state.profileSyncNoticeShown) {
+          state.profileSyncNoticeShown = true;
+          toast("You're signed in, but JCM is still connecting to Firebase for your profile. Some account features may take a moment.", "info");
+        }
+        if ((attempt || 0) < 3 && state.authUser && state.authUser.uid === firebaseUser.uid) {
+          setTimeout(function() { syncSignedInProfile(firebaseUser, (attempt || 0) + 1); }, 4000);
+        }
+      }
+    }
+
+    auth.onAuthStateChanged(function(firebaseUser) {
       detachListeners();
       state.authReady = true;
-      state.authUser = firebaseUser;
-      state.currentUser = null;
       if (!firebaseUser) {
+        state.authUser = null;
+        state.currentUser = null;
+        state.profileSyncNoticeShown = false;
         closeSignInModal(false);
         renderAuthUI();
         renderPageGuards();
         renderAccountPage();
         return;
       }
-      try {
-        const userDoc = await ensureUserDoc(firebaseUser);
-        const fresh = await db.collection("users").doc(firebaseUser.uid).get();
-        state.currentUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || userDoc.email || "",
-          displayName: firebaseUser.displayName || userDoc.displayName || "",
-          photoURL: firebaseUser.photoURL || userDoc.photoURL || "",
-          role: "user",
-          contractorStatus: null,
-          ...fresh.data()
-        };
-        closeSignInModal(false);
-        renderAuthUI();
-        renderPageGuards();
-        prefillUserForms();
-        attachUserListeners();
-        attachJobBoardListener();
-        if (state.pendingAction) {
-          const action = state.pendingAction;
-          state.pendingAction = null;
-          action();
-        } else {
-          renderAccountPage();
-        }
-      } catch (error) {
-        state.currentUser = authProfileUser(firebaseUser);
-        closeSignInModal(false);
-        renderAuthUI();
-        renderPageGuards();
-        prefillUserForms();
-        renderAccountPage();
-        state.pendingAction = null;
-        toast(firebaseMessage(error), "error");
-      }
+      handleSignedInUser(firebaseUser);
+      syncSignedInProfile(firebaseUser, 0);
     });
 
     function detachListeners() {
