@@ -1108,7 +1108,6 @@
       <div class="nav-links" id="desktopNavLinks">
         <button class="nav-link" onclick="navigatePage('home')">Home</button>
         <button class="nav-link contractor-only" id="navJobBoard" onclick="navigatePage('job-board')">Job Board</button>
-        <button class="nav-link applicant-only" id="navApply" onclick="goContractorApply()">Apply as Contractor</button>
         <button class="nav-link" onclick="navigatePage('services')">Services</button>
         <button class="nav-link" onclick="navigatePage('how-it-works')">How It Works</button>
         <div class="dropdown">
@@ -2144,7 +2143,6 @@
     function renderAuthUI() {
       const signedIn = Boolean(state.authUser && state.currentUser);
       $("navJobBoard").classList.toggle("hidden", !isContractorLike());
-      $("navApply").classList.toggle("hidden", !signedIn || isContractorLike());
       document.querySelectorAll(".mobile-contractor-only").forEach(function(el) { el.classList.toggle("hidden", !isContractorLike()); });
       document.querySelectorAll(".mobile-applicant-only").forEach(function(el) { el.classList.toggle("hidden", !signedIn || isContractorLike()); });
       if (!signedIn) {
