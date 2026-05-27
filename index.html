@@ -1630,6 +1630,7 @@
   <script>
     const auth = firebase.auth();
     const db = firebase.firestore();
+    db.settings({ experimentalAutoDetectLongPolling: true });
     const storage = firebase.storage();
     const provider = new firebase.auth.GoogleAuthProvider();
     const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
@@ -1749,6 +1750,14 @@
         el.style.transform = "translateX(20px)";
         setTimeout(function() { el.remove(); }, 180);
       }, 4000);
+    }
+
+    function firebaseMessage(error) {
+      const text = String((error && (error.message || error.code)) || "");
+      if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
+        return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
+      }
+      return text || "Something went wrong. Please try again.";
     }
 
     function initCookieBanner() {
@@ -1899,7 +1908,7 @@
       try {
         await auth.signInWithPopup(provider);
       } catch (error) {
-        toast(error.message || "Google sign-in failed.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1910,7 +1919,7 @@
         toast("Signed out.", "info");
         showPage("home");
       } catch (error) {
-        toast(error.message || "Could not sign out.", "error");
+        toast(firebaseMessage(error), "error");
       }
     }
     function accountTriggerClick(event) {
@@ -1985,7 +1994,7 @@
           renderAccountPage();
         }
       } catch (error) {
-        toast(error.message || "Could not load account.", "error");
+        toast(firebaseMessage(error), "error");
       }
     });
 
@@ -2015,7 +2024,7 @@
           state.openJobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; });
           renderJobBoard();
         }, function(error) {
-          toast(error.message || "Could not load jobs.", "error");
+          toast(firebaseMessage(error), "error");
         });
       state.boardUnsubscribe = unsub;
       state.unsubscribes.push(unsub);
@@ -2033,7 +2042,7 @@
           prefillUserForms();
           if (previousRole !== state.currentUser.role) attachJobBoardListener();
         }, function(error) {
-          toast(error.message || "Could not refresh your profile.", "error");
+          toast(firebaseMessage(error), "error");
         });
       state.unsubscribes.push(profileUnsub);
       const postedUnsub = db.collection("jobs")
@@ -2043,7 +2052,7 @@
             .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
           renderAccountPage();
         }, function(error) {
-          toast(error.message || "Could not load your posted jobs.", "error");
+          toast(firebaseMessage(error), "error");
         });
       state.unsubscribes.push(postedUnsub);
       const claimedUnsub = db.collection("jobs")
@@ -2053,7 +2062,7 @@
             .sort(function(a, b) { return timestampMs(b.claimedAt || b.updatedAt) - timestampMs(a.claimedAt || a.updatedAt); });
           renderAccountPage();
         }, function(error) {
-          toast(error.message || "Could not load claimed jobs.", "error");
+          toast(firebaseMessage(error), "error");
         });
       state.unsubscribes.push(claimedUnsub);
     }
@@ -2363,7 +2372,7 @@
         result.hidden = false;
         result.classList.add("error");
         result.textContent = "Something went wrong. Please try again. If the problem continues, contact support.";
-        toast(error.message || "Could not post job.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         button.disabled = false;
         button.classList.remove("posting-loading");
@@ -2377,7 +2386,7 @@
         await state.authUser.sendEmailVerification();
         toast(`Verification email sent to ${state.authUser.email}.`, "success");
       } catch (error) {
-        toast(error.message || "Could not send verification email.", "error");
+        toast(firebaseMessage(error), "error");
       }
     }
 
@@ -2390,7 +2399,7 @@
         toast(`Verification email sent to ${state.authUser.email}.`, "success");
       } catch (error) {
         button.disabled = false;
-        toast(error.message || "Could not send verification email.", "error");
+        toast(firebaseMessage(error), "error");
       }
     }
 
@@ -2434,7 +2443,7 @@
         renderContractorApplicationState();
         toast(`Application submitted! We'll contact you at ${state.currentUser.email}.`, "success");
       } catch (error) {
-        toast(error.message || "Could not submit application.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -2470,7 +2479,7 @@
         prefillUserForms();
         toast("Support message sent.", "success");
       } catch (error) {
-        toast(error.message || "Could not send support message.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -2590,7 +2599,7 @@
         renderJobBoard();
         toast("Job claimed. Address and contact details are now visible.", "success");
       } catch (error) {
-        toast(error.message || "Could not claim job.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }

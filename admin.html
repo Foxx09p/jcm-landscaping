@@ -732,6 +732,7 @@
   <script>
     const auth = firebase.auth();
     const db = firebase.firestore();
+    db.settings({ experimentalAutoDetectLongPolling: true });
     const provider = new firebase.auth.GoogleAuthProvider();
     const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
 
@@ -802,6 +803,13 @@
         setTimeout(function() { el.remove(); }, 180);
       }, 4000);
     }
+    function firebaseMessage(error) {
+      const text = String((error && (error.message || error.code)) || "");
+      if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
+        return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
+      }
+      return text || "Something went wrong. Please try again.";
+    }
     function setButtonLoading(button, loading) {
       if (!button) return;
       button.disabled = loading;
@@ -825,7 +833,7 @@
       try {
         await auth.signInWithPopup(provider);
       } catch (error) {
-        toast(error.message || "Google sign-in failed.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -836,7 +844,7 @@
         await auth.signOut();
         showOnly("auth");
       } catch (error) {
-        toast(error.message || "Could not sign out.", "error");
+        toast(firebaseMessage(error), "error");
       }
     }
     async function ensureUserDoc(firebaseUser) {
@@ -891,7 +899,7 @@
         showTab(state.activeTab);
         attachListeners();
       } catch (error) {
-        toast(error.message || "Could not verify dashboard access.", "error");
+        toast(firebaseMessage(error), "error");
         showOnly("denied");
       }
     });
@@ -907,24 +915,24 @@
         state.jobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
           .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
         renderAll();
-      }, function(error) { toast(error.message || "Could not load jobs.", "error"); });
+      }, function(error) { toast(firebaseMessage(error), "error"); });
       const appsUnsub = db.collection("contractorApplications").onSnapshot(function(snapshot) {
         state.applications = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
           .sort(function(a, b) { return timestampMs(b.submittedAt) - timestampMs(a.submittedAt); });
         renderAll();
-      }, function(error) { toast(error.message || "Could not load applications.", "error"); });
+      }, function(error) { toast(firebaseMessage(error), "error"); });
       const supportUnsub = db.collection("supportTickets").onSnapshot(function(snapshot) {
         state.tickets = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
           .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
         renderAll();
-      }, function(error) { toast(error.message || "Could not load support tickets.", "error"); });
+      }, function(error) { toast(firebaseMessage(error), "error"); });
       state.unsubscribes.push(jobsUnsub, appsUnsub, supportUnsub);
       if (isAdmin()) {
         const usersUnsub = db.collection("users").onSnapshot(function(snapshot) {
           state.users = snapshot.docs.map(function(doc) { return { uid: doc.id, ...doc.data() }; })
             .sort(function(a, b) { return String(a.displayName || a.email || "").localeCompare(String(b.displayName || b.email || "")); });
           renderAll();
-        }, function(error) { toast(error.message || "Could not load users.", "error"); });
+        }, function(error) { toast(firebaseMessage(error), "error"); });
         state.unsubscribes.push(usersUnsub);
       }
     }
@@ -1064,7 +1072,7 @@
         });
         toast("Job updated.", "success");
       } catch (error) {
-        toast(error.message || "Could not update job.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1075,7 +1083,7 @@
         await db.collection("jobs").doc(id).update({ status: "rejected", updatedAt: serverTimestamp() });
         toast("Job rejected.", "success");
       } catch (error) {
-        toast(error.message || "Could not reject job.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1086,7 +1094,7 @@
         await db.collection("jobs").doc(id).update({ status: "completed", updatedAt: serverTimestamp() });
         toast("Job marked complete.", "success");
       } catch (error) {
-        toast(error.message || "Could not complete job.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1135,7 +1143,7 @@
           .commit();
         toast("Contractor approved.", "success");
       } catch (error) {
-        toast(error.message || "Could not approve contractor.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1155,7 +1163,7 @@
           .commit();
         toast("Application rejected.", "success");
       } catch (error) {
-        toast(error.message || "Could not reject application.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1216,7 +1224,7 @@
         closeManageUser();
         toast("User updated.", "success");
       } catch (error) {
-        toast(error.message || "Could not update user.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1267,7 +1275,7 @@
         await db.collection("supportTickets").doc(id).update({ status: "closed" });
         toast("Ticket closed.", "success");
       } catch (error) {
-        toast(error.message || "Could not close ticket.", "error");
+        toast(firebaseMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
