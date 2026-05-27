@@ -1836,7 +1836,6 @@
         return payload;
       }
       await ref.set({
-        email: firebaseUser.email || snap.data().email || "",
         displayName: snap.data().displayName || firebaseUser.displayName || "",
         photoURL: snap.data().photoURL || firebaseUser.photoURL || "",
         lastSeen: serverTimestamp()
@@ -2305,6 +2304,12 @@
 
     async function submitSupport(event) {
       event.preventDefault();
+      if (!state.authUser) {
+        state.pendingAction = function() { showPage("support"); };
+        openSignInModal();
+        toast("Sign in to send a support message.", "info");
+        return;
+      }
       if (!validateForm($("supportForm"))) {
         toast("Please fix the highlighted fields.", "error");
         return;
