@@ -1931,6 +1931,28 @@
       $("accountMenu").classList.toggle("open");
     }
 
+    function canBypassSignedOutGuard(target) {
+      if (target.closest("#signInModal")) return true;
+      if (target.closest("#cookieBanner")) return true;
+      const link = target.closest("a");
+      if (link) {
+        const href = link.getAttribute("href") || "";
+        if (link.target === "_blank" || href.startsWith("mailto:") || href === "/terms" || href === "/privacy") return true;
+      }
+      return false;
+    }
+
+    function signedOutClickGuard(event) {
+      if (state.authUser) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const interactive = target.closest("button, a[onclick], a[href^='#']");
+      if (!interactive || canBypassSignedOutGuard(interactive)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openSignInModal();
+    }
+
     async function ensureUserDoc(firebaseUser) {
       const ref = db.collection("users").doc(firebaseUser.uid);
       const snap = await ref.get();
@@ -2691,6 +2713,7 @@
     });
 
     function wireEvents() {
+      document.addEventListener("click", signedOutClickGuard, true);
       $("jobRequestForm").addEventListener("submit", submitJob);
       $("contractorForm").addEventListener("submit", submitContractorApplication);
       $("supportForm").addEventListener("submit", submitSupport);
