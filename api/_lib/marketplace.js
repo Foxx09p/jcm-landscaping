@@ -861,7 +861,7 @@ async function releasePayment(user, job, reason, options = {}) {
   const contractor = await getUser(job.acceptedContractorId);
   requirePayoutReady(contractor);
   if (payment.contractorAmountCents !== moneySplit(payment.finalAmountCents).contractorAmountCents) {
-    throw httpError(409, "Stored contractor payout does not match the server-side 70% calculation.");
+    throw httpError(409, "Stored contractor payout does not match the server-side calculation.");
   }
   await systemWrite([
     operation("update", `jobPayments/${payment.id}`, { paymentStatus: "release_requested", releaseStatus: "release_requested", updatedAt: nowMarker() }),
@@ -899,7 +899,7 @@ async function releasePayment(user, job, reason, options = {}) {
     operation("set", `users/${job.acceptedContractorId}`, { completedJobCount: completedJobs, updatedAt: nowMarker() }, true),
     statusHistoryOperation(user, job.id, job.status, "completed", reason),
     paymentEventOperation(payment.id, job.id, "transfer.released", { stripeObjectId: transfer.id, note: reason }),
-    systemMessageOperation(job.id, "Payment was released after completion. The contractor receives 70% and JCM keeps the 30% platform fee.", "payment_released"),
+    systemMessageOperation(job.id, "Payment was released after completion.", "payment_released"),
     auditOperation(user, "payment.released", "jobPayment", payment.id, { reason, newValue: { stripeTransferId: transfer.id } })
   ], "Release JCM contractor payment");
   return { payment: { ...payment, stripeTransferId: transfer.id, paymentStatus: "released_to_contractor" }, alreadyReleased: false };
@@ -1460,7 +1460,7 @@ async function markStripePaymentHeld(payment, object, event) {
     operation("update", `jobs/${job.id}`, { status: "payment_held", paymentStatus: "held_pending_completion", updatedAt: nowMarker() }),
     statusHistoryOperation(null, job.id, job.status, "payment_held", "Stripe confirmed buyer payment."),
     paymentEventOperation(payment.id, job.id, event.type, { stripeEventId: event.id, stripeObjectId: object.id }),
-    systemMessageOperation(job.id, "Buyer payment succeeded through Stripe. Payment is held until completion and the job can move to scheduling.", "buyer_paid"),
+    systemMessageOperation(job.id, "Buyer payment succeeded through Stripe. The job can move to scheduling.", "buyer_paid"),
     auditOperation(null, "payment.succeeded", "jobPayment", payment.id, { newValue: { stripePaymentIntentId: paymentIntentId || "", stripeChargeId: chargeId || "" } })
   ], "Record JCM Stripe payment success");
 }

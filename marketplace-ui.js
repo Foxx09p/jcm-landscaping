@@ -462,7 +462,7 @@
     else if (job.status === "quotes_received") next = "Review contractor quotes.";
     else if (job.status === "awaiting_final_offer") next = "Discuss scope, price, and timing in chat. The contractor submits the formal final offer.";
     else if (job.status === "awaiting_payment") next = "Secure Job Payment is required before scheduling.";
-    else if (job.status === "payment_held") next = "Payment is held until completion. The contractor can propose a schedule.";
+    else if (job.status === "payment_held") next = "Payment received. The contractor can propose a schedule.";
     else if (job.status === "contractor_completed") next = "Buyer confirmation or dispute is required.";
     return '<article class="compact-card"><div class="compact-card-header"><div><h3>' + esc(job.title || "Service request") + '</h3><p>' + esc(job.serviceType || "") + '</p></div>' + statusBadge(job.status) + '</div><p>' + esc(next) + '</p><div class="market-actions"><button class="btn btn-secondary" type="button" onclick="openMarketplaceJob(\'' + esc(job.id) + '\')">View Details</button></div></article>';
   }
@@ -503,7 +503,7 @@
   function payment(detail) {
     if (!detail.payment) return "";
     var item = detail.payment;
-    return '<div class="market-section"><h3>Secure Job Payment</h3><div class="market-grid"><div><strong>Buyer pays</strong><p>' + money(item.finalAmountCents) + '</p></div><div><strong>JCM platform fee (30%)</strong><p>' + money(item.platformFeeCents) + '</p></div><div><strong>Contractor payout (70%)</strong><p>' + money(item.contractorAmountCents) + '</p></div><div><strong>Payment status</strong><p>' + esc(item.paymentStatus) + '</p></div></div><p class="market-muted">Payment is processed through Stripe and held until completion is confirmed or an admin resolves the job.</p></div>';
+    return '<div class="market-section"><h3>Secure Job Payment</h3><div class="market-grid"><div><strong>Buyer pays</strong><p>' + money(item.finalAmountCents) + '</p></div><div><strong>Payment status</strong><p>' + esc(item.paymentStatus) + '</p></div></div></div>';
   }
 
   function finalOffers(detail) {

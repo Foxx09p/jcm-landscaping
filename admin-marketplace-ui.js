@@ -176,7 +176,7 @@
       return;
     }
     byId("paymentsList").innerHTML = data.payments.length ? data.payments.map(function (item) {
-      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(item.jobId) + '</h3><p>Stripe processing metadata</p></div>' + statusBadge(item.paymentStatus) + '</div><p><strong>Final price:</strong> ' + money(item.finalAmountCents) + '</p><p><strong>JCM 30% fee:</strong> ' + money(item.platformFeeCents) + '</p><p><strong>Contractor 70% payout:</strong> ' + money(item.contractorAmountCents) + '</p><p><strong>Release:</strong> ' + esc(item.releaseStatus) + '</p><p><strong>Refund:</strong> ' + esc(item.refundStatus) + '</p><p><strong>Payment Intent:</strong> ' + esc(item.stripePaymentIntentId || "Not created") + '</p><p><strong>Transfer:</strong> ' + esc(item.stripeTransferId || "Not released") + '</p></article>';
+      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(item.jobId) + '</h3><p>Stripe processing metadata</p></div>' + statusBadge(item.paymentStatus) + '</div><p><strong>Final price:</strong> ' + money(item.finalAmountCents) + '</p><p><strong>Release:</strong> ' + esc(item.releaseStatus) + '</p><p><strong>Refund:</strong> ' + esc(item.refundStatus) + '</p><p><strong>Payment Intent:</strong> ' + esc(item.stripePaymentIntentId || "Not created") + '</p><p><strong>Transfer:</strong> ' + esc(item.stripeTransferId || "Not released") + '</p></article>';
     }).join("") : '<div class="card"><p>No payment records yet.</p></div>';
   }
 
