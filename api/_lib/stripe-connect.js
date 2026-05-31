@@ -15,6 +15,10 @@ function stripeMode() {
   return mode;
 }
 
+function stripeTestSimulationEnabled() {
+  return stripeMode() === "test" && String(process.env.STRIPE_TEST_SIMULATED || "false").toLowerCase() === "true";
+}
+
 function configuredSecretKey() {
   const mode = stripeMode();
   const legacy = process.env.STRIPE_SECRET_KEY || "";
@@ -68,6 +72,7 @@ function stripeModeSummary() {
     stripeMode: mode,
     stripeModeLabel: mode === "live" ? "Live Mode" : "Test Mode",
     stripeLiveEnabled: mode === "live",
+    stripeTestSimulated: stripeTestSimulationEnabled(),
     stripePublishableKey: stripePublishableKey()
   };
 }
@@ -164,6 +169,18 @@ async function findUidByStripeAccountId(accountId) {
 }
 
 async function createOrRetrieveAccount(user) {
+  if (stripeTestSimulationEnabled()) {
+    const account = {
+      id: `sim_acct_${user.uid}`,
+      object: "account",
+      charges_enabled: true,
+      payouts_enabled: true,
+      details_submitted: true,
+      requirements: { currently_due: [] }
+    };
+    const status = await updateUserStripeStatus(user.uid, account);
+    return { account, status };
+  }
   const stripe = getStripe();
   if (user.profile.stripeAccountId) {
     const account = await getConnectedAccount(stripe, user.profile.stripeAccountId);
@@ -246,6 +263,7 @@ async function createCheckoutSession(req, payment, job, buyer) {
 
 async function createContractorTransfer(payment) {
   assertPaymentStripeMode(payment);
+  if (stripeTestSimulationEnabled()) return { id: `sim_transfer_${payment.id}` };
   const stripe = getStripe();
   let chargeId = payment.stripeChargeId || "";
   if (!chargeId && payment.stripePaymentIntentId) {
@@ -273,6 +291,7 @@ async function createContractorTransfer(payment) {
 
 async function createFullRefund(payment, reason) {
   assertPaymentStripeMode(payment);
+  if (stripeTestSimulationEnabled()) return { id: `sim_refund_${payment.id}` };
   if (!payment.stripePaymentIntentId) throw httpError(409, "This job does not have a refundable Stripe payment.");
   return getStripe().refunds.create({
     payment_intent: payment.stripePaymentIntentId,
@@ -302,6 +321,7 @@ module.exports = {
   stripeMode,
   stripeModeSummary,
   stripePublishableKey,
+  stripeTestSimulationEnabled,
   stripeWebhookSecret,
   updateUserStripeStatus
 };

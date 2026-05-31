@@ -6,6 +6,7 @@ const {
   getConnectedAccount,
   getStripe,
   stripeModeSummary,
+  stripeTestSimulationEnabled,
   updateUserStripeStatus
 } = require("../_lib/stripe-connect");
 
@@ -53,6 +54,9 @@ async function requirePaymentUser(req, summaryOnly) {
 
 async function createOnboardingLink(req, user) {
   const { account, status } = await createOrRetrieveAccount(user);
+  if (stripeTestSimulationEnabled()) {
+    return { simulated: true, stripeAccountId: account.id, profile: status, ...stripeModeSummary() };
+  }
   const baseUrl = appBaseUrl(req);
   const stripe = getStripe();
   const link = await stripe.v2.core.accountLinks.create({
@@ -71,12 +75,18 @@ async function createOnboardingLink(req, user) {
 
 async function createDashboardLink(user) {
   const { account } = await createOrRetrieveAccount(user);
+  if (stripeTestSimulationEnabled()) {
+    return { simulated: true, stripeAccountId: account.id, ...stripeModeSummary() };
+  }
   const link = await getStripe().accounts.createLoginLink(account.id);
   return { url: link.url, stripeAccountId: account.id, ...stripeModeSummary() };
 }
 
 async function refreshAccount(user) {
   const { account } = await createOrRetrieveAccount(user);
+  if (stripeTestSimulationEnabled()) {
+    return { simulated: true, stripeAccountId: account.id, profile: await updateUserStripeStatus(user.uid, account), ...stripeModeSummary() };
+  }
   const fresh = await getConnectedAccount(getStripe(), account.id);
   const status = await updateUserStripeStatus(user.uid, fresh);
   return { stripeAccountId: account.id, profile: status, ...stripeModeSummary() };
@@ -84,14 +94,17 @@ async function refreshAccount(user) {
 
 async function paymentSummary(user) {
   const { account } = await createOrRetrieveAccount(user);
-  const stripe = getStripe();
   const mode = stripeModeSummary();
-  const [freshAccount, balance, payouts, releaseSnapshot] = await Promise.all([
-    getConnectedAccount(stripe, account.id),
-    stripe.balance.retrieve({}, { stripeAccount: account.id }),
-    stripe.payouts.list({ limit: 25 }, { stripeAccount: account.id }),
-    db().collection("payoutRecords").where("contractorId", "==", user.uid).get()
-  ]);
+  const simulated = stripeTestSimulationEnabled();
+  const stripe = simulated ? null : getStripe();
+  const [freshAccount, balance, payouts, releaseSnapshot] = simulated
+    ? [account, { pending: [] }, { data: [] }, await db().collection("payoutRecords").where("contractorId", "==", user.uid).get()]
+    : await Promise.all([
+      getConnectedAccount(stripe, account.id),
+      stripe.balance.retrieve({}, { stripeAccount: account.id }),
+      stripe.payouts.list({ limit: 25 }, { stripeAccount: account.id }),
+      db().collection("payoutRecords").where("contractorId", "==", user.uid).get()
+    ]);
   const status = await updateUserStripeStatus(user.uid, freshAccount);
   const now = new Date();
   const today = startOfDaySeconds(now);
@@ -138,6 +151,7 @@ async function paymentSummary(user) {
     }));
   return {
     ...mode,
+    simulated,
     profile: status,
     stripeAccountId: account.id,
     stripeChargesEnabled: status.stripeChargesEnabled,

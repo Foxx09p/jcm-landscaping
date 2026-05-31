@@ -148,7 +148,7 @@
         '  <div id="paymentContent" hidden>',
         '    <div class="payment-grid">',
         '      <section class="card">',
-        '        <div class="item-header"><div><h2>Stripe Setup</h2><p id="stripeStatusSummary">Checking Stripe status...</p></div><span class="status-badge" id="stripeStatusBadge">unknown</span></div>',
+        '        <div class="item-header"><div><h2>Payment Setup</h2><p id="stripeStatusSummary">Checking payment status...</p></div><span class="status-badge" id="stripeStatusBadge">unknown</span></div>',
         '        <div class="item-meta payment-meta">',
         '          <span><strong>Can receive payouts:</strong> <span id="payoutsStatus">Unknown</span></span>',
         '          <span><strong>Onboarding complete:</strong> <span id="onboardingStatus">Unknown</span></span>',
@@ -157,7 +157,7 @@
         '        <div class="notice" id="paymentIssue" hidden></div>',
         '        <div id="requirementsList" class="compact-list"></div>',
         '        <div class="hero-actions">',
-        '          <button class="btn btn-primary" id="stripeSetupBtn" type="button" onclick="startStripeOnboarding(this)">Set Up Payments with Stripe</button>',
+        '          <button class="btn btn-primary" id="stripeSetupBtn" type="button" onclick="startStripeOnboarding(this)">Enable Test Payments</button>',
         '          <button class="btn btn-secondary" id="stripeDashboardBtn" type="button" onclick="openStripeDashboard(this)">Open Stripe Dashboard</button>',
         '          <button class="btn btn-secondary" id="stripeRefreshBtn" type="button" onclick="refreshStripeStatus(this)">Refresh Status</button>',
         '        </div>',
@@ -902,6 +902,12 @@
     setButtonLoading(button, true);
     try {
       var data = await authFetch("/api/stripe/connect?action=onboarding-link", { method: "POST", body: JSON.stringify({}) });
+      if (data.simulated) {
+        if (data.profile) state.currentUser = { ...state.currentUser, ...data.profile };
+        await loadPaymentSummary();
+        toast("Test payment setup is complete.", "success");
+        return;
+      }
       if (!data.url) throw new Error("Stripe did not return an onboarding link.");
       window.location.href = data.url;
     } catch (error) {
@@ -917,7 +923,7 @@
       var data = await authFetch("/api/stripe/connect?action=refresh-account", { method: "POST", body: JSON.stringify({}) });
       state.currentUser = { ...state.currentUser, ...(data.profile || {}) };
       await loadPaymentSummary();
-      toast("Stripe status refreshed.", "success");
+      toast("Payment status refreshed.", "success");
     } catch (error) {
       toast(error.message || "Stripe status could not be refreshed.", "error");
     } finally {
@@ -929,6 +935,10 @@
     setLoading(button, true);
     try {
       var data = await authFetch("/api/stripe/connect?action=dashboard-link", { method: "POST", body: JSON.stringify({}) });
+      if (data.simulated) {
+        toast("Test payments are managed inside JCM.", "success");
+        return;
+      }
       if (!data.url) throw new Error("Stripe did not return a dashboard link.");
       window.location.assign(data.url);
     } catch (error) {
@@ -959,6 +969,7 @@
       return;
     }
     var summary = state.paymentSummary || {};
+    var simulated = Boolean(summary.simulated || summary.stripeTestSimulated);
     var canPayout = Boolean(state.currentUser.stripePayoutsEnabled || summary.stripePayoutsEnabled);
     var onboardingComplete = Boolean(state.currentUser.stripeOnboardingComplete || summary.stripeOnboardingComplete);
     var hasStripeAccount = Boolean(state.currentUser.stripeAccountId || summary.stripeAccountId);
@@ -966,21 +977,21 @@
     badge.textContent = onboardingComplete && canPayout ? "ready" : "incomplete";
     badge.className = "status-badge " + (onboardingComplete && canPayout ? "status-open" : "status-pending");
     safe("stripeStatusSummary").textContent = onboardingComplete && canPayout
-      ? "Stripe setup is complete. You can receive payouts."
+      ? (simulated ? "Test payment setup is complete. Simulated payouts are enabled." : "Stripe setup is complete. You can receive payouts.")
       : "Complete Payment Setup before quoting paid jobs.";
     safe("payoutsStatus").textContent = canPayout ? "Yes" : "No";
     safe("onboardingStatus").textContent = onboardingComplete ? "Complete" : "Incomplete";
     safe("stripeLastSync").textContent = state.currentUser.lastStripeStatusSync && state.currentUser.lastStripeStatusSync.toDate
       ? formatDate(state.currentUser.lastStripeStatusSync)
       : (summary.lastStripeStatusSync ? formatDate(summary.lastStripeStatusSync) : "Not synced");
-    safe("stripeDashboardBtn").hidden = !hasStripeAccount;
+    safe("stripeDashboardBtn").hidden = simulated || !hasStripeAccount;
     var issue = summary.error || state.currentUser.stripeDisabledReason || "";
     safe("paymentIssue").hidden = !issue;
     safe("paymentIssue").textContent = issue;
     var due = summary.stripeRequirementsCurrentlyDue || state.currentUser.stripeRequirementsCurrentlyDue || [];
     safe("requirementsList").innerHTML = due.length
       ? due.map(function (item) { return '<div class="compact-card"><strong>Stripe requirement</strong><p>' + escapeHtml(item) + '</p></div>'; }).join("")
-      : '<div class="compact-card"><p>No open Stripe requirements reported.</p></div>';
+      : '<div class="compact-card"><p>No open payment setup requirements.</p></div>';
     var totals = summary.totals || {};
     safe("paidToday").textContent = formatMoney(totals.paidToday || 0, totals.currency || "usd");
     safe("paidWeek").textContent = formatMoney(totals.paidWeek || 0, totals.currency || "usd");

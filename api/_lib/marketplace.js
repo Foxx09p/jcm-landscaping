@@ -26,7 +26,8 @@ const {
   createContractorTransfer,
   createFullRefund,
   stripeMode,
-  stripeModeSummary
+  stripeModeSummary,
+  stripeTestSimulationEnabled
 } = require("./stripe-connect");
 
 const MAX_TEXT = 4000;
@@ -753,6 +754,28 @@ async function startCheckout(user, req, body) {
   if (payment.paymentStatus !== "awaiting_payment") {
     if (payment.stripeCheckoutSessionUrl) return { url: payment.stripeCheckoutSessionUrl, mode: stripeModeSummary() };
     throw httpError(409, "This job payment is not awaiting checkout.");
+  }
+  if (stripeTestSimulationEnabled()) {
+    const checkoutSessionId = `sim_checkout_${payment.id}`;
+    const paymentIntentId = `sim_intent_${payment.id}`;
+    const chargeId = `sim_charge_${payment.id}`;
+    await systemWrite([
+      operation("update", `jobPayments/${payment.id}`, {
+        stripeCheckoutSessionId: checkoutSessionId,
+        stripePaymentIntentId: paymentIntentId,
+        stripeChargeId: chargeId,
+        paymentStatus: "held_pending_completion",
+        releaseStatus: "not_released",
+        paidAt: nowMarker(),
+        updatedAt: nowMarker()
+      }),
+      operation("update", `jobs/${job.id}`, { status: "payment_held", paymentStatus: "held_pending_completion", updatedAt: nowMarker() }),
+      statusHistoryOperation(user, job.id, job.status, "payment_held", "Simulated test payment recorded."),
+      paymentEventOperation(payment.id, job.id, "checkout.simulated", { stripeObjectId: checkoutSessionId }),
+      systemMessageOperation(job.id, "Test payment recorded. The job can move to scheduling.", "buyer_paid"),
+      auditOperation(user, "payment.simulated", "jobPayment", payment.id, { newValue: { stripeCheckoutSessionId: checkoutSessionId, stripePaymentIntentId: paymentIntentId } })
+    ], "Record JCM simulated test payment");
+    return { simulated: true, mode: stripeModeSummary() };
   }
   const session = await createCheckoutSession(req, payment, job, user);
   await systemWrite([

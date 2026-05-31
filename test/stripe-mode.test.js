@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { assertPaymentStripeMode, configuredSecretKey, stripeMode } = require("../api/_lib/stripe-connect");
+const { assertPaymentStripeMode, configuredSecretKey, stripeMode, stripeTestSimulationEnabled } = require("../api/_lib/stripe-connect");
 
 function withEnv(values, callback) {
   const previous = {};
@@ -57,5 +57,20 @@ test("Stripe test mode rejects live-mode payment records", () => {
   withEnv({ STRIPE_MODE: "test", STRIPE_LIVE_ENABLED: "false" }, () => {
     assert.throws(() => assertPaymentStripeMode({ stripeMode: "live" }), /different Stripe environment/i);
     assert.doesNotThrow(() => assertPaymentStripeMode({ stripeMode: "test" }));
+  });
+});
+
+test("Stripe test simulation requires the explicit sandbox flag", () => {
+  withEnv({ STRIPE_MODE: "test", STRIPE_TEST_SIMULATED: "false" }, () => {
+    assert.equal(stripeTestSimulationEnabled(), false);
+  });
+  withEnv({ STRIPE_MODE: "test", STRIPE_TEST_SIMULATED: "true" }, () => {
+    assert.equal(stripeTestSimulationEnabled(), true);
+  });
+});
+
+test("Stripe test simulation can never run in live mode", () => {
+  withEnv({ STRIPE_MODE: "live", STRIPE_LIVE_ENABLED: "true", STRIPE_TEST_SIMULATED: "true" }, () => {
+    assert.equal(stripeTestSimulationEnabled(), false);
   });
 });
