@@ -7,11 +7,24 @@ module.exports = asyncHandler(async (req, res) => {
   const mode = stripeMode();
   const webhookConfigured = Boolean(stripeWebhookSecret());
   let stripeApiReachable = false;
+  let stripeApiStatus = "ready";
   try {
     await getStripe().balance.retrieve();
     stripeApiReachable = true;
-  } catch {
+  } catch (error) {
     stripeApiReachable = false;
+    const statusCode = Number(error.statusCode || error.status || 0);
+    const code = String(error.code || "");
+    const message = String(error.message || "");
+    stripeApiStatus = /not configured/i.test(message)
+      ? "missing_credentials"
+      : statusCode === 401 || /invalid|expired/i.test(code)
+        ? "invalid_credentials"
+        : statusCode === 403
+          ? "insufficient_permissions"
+          : statusCode >= 500
+            ? "stripe_unavailable"
+            : "stripe_api_error";
   }
   const ok = mode === "test" && webhookConfigured && stripeApiReachable;
   return sendJson(res, ok ? 200 : 503, {
@@ -20,6 +33,7 @@ module.exports = asyncHandler(async (req, res) => {
     testPaymentsOnly: mode === "test",
     livePaymentsEnabled: mode === "live",
     webhookConfigured,
-    stripeApiReachable
+    stripeApiReachable,
+    stripeApiStatus
   });
 });
