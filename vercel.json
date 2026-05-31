@@ -16,6 +16,22 @@
     {
       "source": "/privacy",
       "destination": "/privacy.html"
+    },
+    {
+      "source": "/api/stripe/payment-summary",
+      "destination": "/api/stripe/connect?action=payment-summary"
+    },
+    {
+      "source": "/api/stripe/onboarding-link",
+      "destination": "/api/stripe/connect?action=onboarding-link"
+    },
+    {
+      "source": "/api/stripe/refresh-account",
+      "destination": "/api/stripe/connect?action=refresh-account"
+    },
+    {
+      "source": "/api/stripe/dashboard-link",
+      "destination": "/api/stripe/connect?action=dashboard-link"
     }
   ]
 }

@@ -885,7 +885,7 @@
     state.paymentLoading = true;
     renderPaymentPage();
     try {
-      var data = await authFetch("/api/stripe/payment-summary", { method: "GET" });
+      var data = await authFetch("/api/stripe/connect?action=payment-summary", { method: "GET" });
       state.paymentSummary = data;
       if (data.profile) state.currentUser = { ...state.currentUser, ...data.profile };
       renderPaymentPage();
@@ -901,7 +901,7 @@
   window.startStripeOnboarding = async function (button) {
     setButtonLoading(button, true);
     try {
-      var data = await authFetch("/api/stripe/onboarding-link", { method: "POST", body: JSON.stringify({}) });
+      var data = await authFetch("/api/stripe/connect?action=onboarding-link", { method: "POST", body: JSON.stringify({}) });
       if (!data.url) throw new Error("Stripe did not return an onboarding link.");
       window.location.href = data.url;
     } catch (error) {
@@ -914,7 +914,7 @@
   window.refreshStripeStatus = async function (button) {
     setButtonLoading(button, true);
     try {
-      var data = await authFetch("/api/stripe/refresh-account", { method: "POST", body: JSON.stringify({}) });
+      var data = await authFetch("/api/stripe/connect?action=refresh-account", { method: "POST", body: JSON.stringify({}) });
       state.currentUser = { ...state.currentUser, ...(data.profile || {}) };
       await loadPaymentSummary();
       toast("Stripe status refreshed.", "success");
@@ -928,7 +928,7 @@
   window.openStripeDashboard = async function (button) {
     setLoading(button, true);
     try {
-      var data = await authFetch("/api/stripe/dashboard-link", { method: "POST", body: JSON.stringify({}) });
+      var data = await authFetch("/api/stripe/connect?action=dashboard-link", { method: "POST", body: JSON.stringify({}) });
       if (!data.url) throw new Error("Stripe did not return a dashboard link.");
       window.location.assign(data.url);
     } catch (error) {
