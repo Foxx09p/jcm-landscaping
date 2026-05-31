@@ -7,9 +7,15 @@ module.exports = asyncHandler(async (req, res) => {
   const mode = stripeMode();
   const webhookConfigured = Boolean(stripeWebhookSecret());
   let stripeApiReachable = false;
+  let stripeBalanceReadable = false;
+  let stripeAccountsReadable = false;
   let stripeApiStatus = "ready";
   try {
-    await getStripe().balance.retrieve();
+    const stripe = getStripe();
+    await stripe.balance.retrieve();
+    stripeBalanceReadable = true;
+    await stripe.v2.core.accounts.list({ limit: 1 });
+    stripeAccountsReadable = true;
     stripeApiReachable = true;
   } catch (error) {
     stripeApiReachable = false;
@@ -34,6 +40,8 @@ module.exports = asyncHandler(async (req, res) => {
     livePaymentsEnabled: mode === "live",
     webhookConfigured,
     stripeApiReachable,
+    stripeBalanceReadable,
+    stripeAccountsReadable,
     stripeApiStatus
   });
 });

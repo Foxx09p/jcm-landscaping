@@ -31,13 +31,21 @@ function asyncHandler(handler) {
       await handler(req, res);
     } catch (error) {
       const status = error.statusCode || error.status || 500;
+      const stripeType = String(error.type || "");
+      const stripeMessage = String(error.message || "");
+      const code = /StripePermissionError/i.test(stripeType) || /API Key does not have permission/i.test(stripeMessage)
+        ? "stripe_permissions_insufficient"
+        : /StripeAuthenticationError/i.test(stripeType) || /Invalid API Key/i.test(stripeMessage)
+          ? "stripe_test_credentials_invalid"
+          : error.code;
       const publicServerErrors = {
         stripe_test_credentials_missing: "Test payment setup is not configured yet. Please contact JCM support.",
-        stripe_test_credentials_invalid: "Test payment setup is temporarily unavailable. Please contact JCM support."
+        stripe_test_credentials_invalid: "Test payment setup is temporarily unavailable. Please contact JCM support.",
+        stripe_permissions_insufficient: "Test payment setup needs additional Stripe permissions. Please contact JCM support."
       };
       sendJson(res, status, {
-        error: status >= 500 ? publicServerErrors[error.code] || "Server error." : error.message,
-        code: error.code || undefined
+        error: publicServerErrors[code] || (status >= 500 ? "Server error." : error.message),
+        code: code || undefined
       });
     }
   };
