@@ -131,19 +131,19 @@
       contractorApplyPage.insertAdjacentHTML("beforebegin", [
         '<section class="page" id="page-payment">',
         '  <div class="page-header">',
-        '    <span class="eyebrow">Contractor Payment</span>',
-        '    <h1>Payment</h1>',
-        '    <p class="lead">Set up Stripe Connect before quoting paid jobs and review payout readiness.</p>',
+        '    <span class="eyebrow">Payments</span>',
+        '    <h1>Payment Center</h1>',
+        '    <p class="lead">Review service-request payments or manage contractor payout setup.</p>',
         '  </div>',
         '  <div id="paymentSignedOut" class="card locked-state" hidden>',
         '    <h2>Sign in to manage payments.</h2>',
-        '    <p class="lead">Contractor payment details are available only to the signed-in contractor.</p>',
+        '    <p class="lead">Sign in to review service-request payments or contractor payout setup.</p>',
         '    <div class="hero-actions"><button class="btn btn-primary" type="button" onclick="openSignInModal()">Sign In</button></div>',
         '  </div>',
-        '  <div id="paymentLocked" class="card locked-state" hidden>',
-        '    <h2>Payment is for approved contractors.</h2>',
-        '    <p class="lead" id="paymentLockedMessage">Your contractor application must be approved before Stripe setup is available.</p>',
-        '    <div class="hero-actions"><button class="btn btn-secondary" type="button" onclick="goContractorApply()">Apply as a Contractor</button></div>',
+        '  <div id="buyerPaymentContent" class="card" hidden>',
+        '    <h2>My Service-Request Payments</h2>',
+        '    <p class="lead">Payments appear here after you accept a contractor&apos;s final offer.</p>',
+        '    <div class="compact-list" id="buyerPaymentList"></div>',
         '  </div>',
         '  <div id="paymentContent" hidden>',
         '    <div class="payment-grid">',
@@ -505,9 +505,9 @@
     else safe("accountAvatar").textContent = accountFirstName.slice(0, 1).toUpperCase();
     var links = ['<button type="button" onclick="showPageAndClose(\'account\')">My Profile</button>'];
     links.push('<button type="button" onclick="showPageAndClose(\'account\')">My Service Requests</button>');
+    links.push('<button type="button" onclick="showPageAndClose(\'payment\')">Payments</button>');
     if (isContractorLike()) {
       links.push('<button type="button" onclick="showPageAndClose(\'job-board\')">Jobs</button>');
-      links.push('<button type="button" onclick="showPageAndClose(\'payment\')">Payment</button>');
     }
     if (isModeratorLike()) links.push('<a href="/admin">Admin Dashboard</a>');
     links.push('<div class="dropdown-divider"></div>');
@@ -942,17 +942,20 @@
     var signedIn = Boolean(state.authUser && state.currentUser);
     safe("paymentSignedOut").hidden = signedIn;
     var contractor = signedIn && isContractorLike();
-    safe("paymentLocked").hidden = !signedIn || contractor;
+    safe("buyerPaymentContent").hidden = !signedIn || contractor;
     safe("paymentContent").hidden = !signedIn || !contractor;
-    if (!signedIn || !contractor) {
-      if (signedIn && safe("paymentLockedMessage")) {
-        var status = state.currentUser.contractorStatus;
-        safe("paymentLockedMessage").textContent = status === "pending"
-          ? "Your contractor application is still pending."
-          : status === "rejected"
-            ? "Your contractor application was not approved."
-            : "Your contractor application must be approved before Stripe setup is available.";
-      }
+    if (!signedIn) return;
+    if (!contractor) {
+      var buyerJobs = (state.myPostedJobs || []).filter(function (job) {
+        return job.paymentStatus && job.paymentStatus !== "not_required";
+      });
+      safe("buyerPaymentList").innerHTML = buyerJobs.length
+        ? buyerJobs.map(function (job) {
+          var status = String(job.paymentStatus || "not_required").replace(/_/g, " ");
+          var label = job.status === "awaiting_payment" ? "Open Request to Pay" : "Open Request";
+          return '<article class="compact-card"><div class="compact-card-header"><div><h3>' + escapeHtml(job.title || "Service request") + '</h3><p>Status: ' + escapeHtml(status) + '</p></div></div><div class="hero-actions"><button class="btn btn-secondary" type="button" onclick="openMarketplaceJob(\'' + escapeHtml(job.id) + '\')">' + label + '</button></div></article>';
+        }).join("")
+        : '<div class="compact-card"><p>No service-request payments yet.</p></div>';
       return;
     }
     var summary = state.paymentSummary || {};

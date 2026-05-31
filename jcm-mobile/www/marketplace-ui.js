@@ -152,8 +152,8 @@
     if (paymentPage) {
       var header = paymentPage.querySelector(".page-header");
       if (header) {
-        header.querySelector("h1").textContent = "Payment Setup";
-        header.querySelector(".lead").textContent = "Complete Stripe Connect onboarding before quoting paid jobs and review payout readiness.";
+        header.querySelector("h1").textContent = "Payment Center";
+        header.querySelector(".lead").textContent = "Review service-request payments or manage contractor payout setup.";
       }
     }
     var accountTitle = document.querySelector("#page-account h1");
@@ -196,6 +196,7 @@
       renderMarketplaceAccount();
       renderMarketplaceContractorStatus();
       if (typeof renderAuthUI === "function") renderAuthUI();
+      if (typeof renderPaymentPage === "function") renderPaymentPage();
     } catch (error) {
       if (!silent) notify(error, "Could not load your JCM dashboard.");
     }
