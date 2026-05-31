@@ -22,10 +22,10 @@ function configuredSecretKey() {
     ? process.env.STRIPE_LIVE_SECRET_KEY
     : process.env.STRIPE_TEST_SECRET_KEY || (/^[sr]k_test_/.test(legacy) ? legacy : "");
   if (!key) {
-    throw httpError(503, `Stripe ${mode} key is not configured.`);
+    throw httpError(503, `Stripe ${mode} key is not configured.`, mode === "test" ? "stripe_test_credentials_missing" : undefined);
   }
   if (mode === "test" && !/^[sr]k_test_/.test(key)) {
-    throw httpError(503, "Stripe test mode requires a test key.");
+    throw httpError(503, "Stripe test mode requires a test key.", "stripe_test_credentials_invalid");
   }
   if (mode === "live" && !/^[sr]k_live_/.test(key)) {
     throw httpError(503, "Stripe live mode requires a live key.");

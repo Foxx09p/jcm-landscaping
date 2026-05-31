@@ -31,8 +31,12 @@ function asyncHandler(handler) {
       await handler(req, res);
     } catch (error) {
       const status = error.statusCode || error.status || 500;
+      const publicServerErrors = {
+        stripe_test_credentials_missing: "Test payment setup is not configured yet. Please contact JCM support.",
+        stripe_test_credentials_invalid: "Test payment setup is temporarily unavailable. Please contact JCM support."
+      };
       sendJson(res, status, {
-        error: status >= 500 ? "Server error." : error.message,
+        error: status >= 500 ? publicServerErrors[error.code] || "Server error." : error.message,
         code: error.code || undefined
       });
     }
