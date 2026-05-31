@@ -16,7 +16,7 @@ Use a deployed preview with a private GitHub data repository and Stripe test-mod
 1. Submit a contractor application and confirm it remains pending.
 2. Sign in as admin, approve or reject the application, and confirm it immediately leaves the pending list.
 3. Confirm an unapproved or suspended contractor cannot quote.
-4. Confirm an approved contractor without Stripe Test Mode onboarding is prompted to complete `Payment Setup`.
+4. Confirm an approved contractor without completed Payment Setup is prompted to complete `Payment Setup`.
 5. Complete Stripe test onboarding, refresh status, add a service location, and submit a quote.
 6. Confirm non-accepted contractors see only public request details and never receive address, phone, email, or exact coordinates.
 
@@ -26,13 +26,14 @@ Use a deployed preview with a private GitHub data repository and Stripe test-mod
 2. Reveal private details as the accepted contractor and verify an audit record is created.
 3. Submit a contractor final offer with scope, final price, and proposed timing.
 4. Accept the offer as buyer and confirm server-calculated 30% / 70% amounts.
-5. Open Stripe Checkout in Test Mode and complete a test payment.
+5. Open Stripe Checkout and complete a test payment with a Stripe test card.
 6. Deliver Stripe webhooks and confirm the job becomes `payment_held`.
 7. Confirm payout release has not occurred yet.
 8. Propose and confirm the schedule.
 9. Mark the job in progress, upload optional completion photos, and mark complete.
 10. Confirm completion as buyer and verify one Stripe test transfer releases 70% to the contractor while JCM retains 30%.
-11. Attempt the completion action again and verify duplicate payout release is blocked or returns the existing release.
+11. Open the contractor Payment page and confirm Payment History shows the JCM payout release record.
+12. Attempt the completion action again and verify duplicate payout release is blocked or returns the existing release.
 
 ## Disputes and Admin
 

@@ -225,7 +225,17 @@ function requireApprovedContractor(user) {
 function requirePayoutReady(profile) {
   if (!PLATFORM_PAYMENTS_REQUIRED) return;
   if (!profile.stripeAccountId || !profile.stripeOnboardingComplete || !profile.stripePayoutsEnabled) {
-    throw httpError(402, "Complete Stripe Test Mode payment setup before using paid job actions.", "stripe_setup_required");
+    throw httpError(402, "Complete Payment Setup before using paid job actions.", "stripe_setup_required");
+  }
+}
+
+function paymentInCurrentStripeMode(payment) {
+  return Boolean(payment && (!payment.stripeMode || payment.stripeMode === stripeMode()));
+}
+
+function assertPaymentCurrentStripeMode(payment) {
+  if (!paymentInCurrentStripeMode(payment)) {
+    throw httpError(409, "This payment belongs to a different Stripe environment.");
   }
 }
 
@@ -739,8 +749,10 @@ async function startCheckout(user, req, body) {
   if (job.status !== "awaiting_payment" || !job.paymentId) throw httpError(409, "This job is not awaiting payment.");
   const payment = await get("jobPayments", job.paymentId);
   if (!payment) throw httpError(409, "The job payment record is missing.");
-  if (payment.paymentStatus !== "awaiting_payment" && payment.stripeCheckoutSessionUrl) {
-    return { url: payment.stripeCheckoutSessionUrl, mode: stripeModeSummary() };
+  assertPaymentCurrentStripeMode(payment);
+  if (payment.paymentStatus !== "awaiting_payment") {
+    if (payment.stripeCheckoutSessionUrl) return { url: payment.stripeCheckoutSessionUrl, mode: stripeModeSummary() };
+    throw httpError(409, "This job payment is not awaiting checkout.");
   }
   const session = await createCheckoutSession(req, payment, job, user);
   await systemWrite([
@@ -839,6 +851,7 @@ async function completeWork(user, body) {
 async function releasePayment(user, job, reason, options = {}) {
   const payment = await get("jobPayments", job.paymentId);
   if (!payment) throw httpError(409, "The job payment record is missing.");
+  assertPaymentCurrentStripeMode(payment);
   if (payment.stripeTransferId || payment.paymentStatus === "released_to_contractor") {
     return { payment, alreadyReleased: true };
   }
@@ -933,6 +946,7 @@ async function confirmCompletion(user, body) {
 async function refundPayment(user, job, reason, finalJobStatus = "canceled") {
   const payment = await get("jobPayments", job.paymentId);
   if (!payment) throw httpError(409, "The job payment record is missing.");
+  assertPaymentCurrentStripeMode(payment);
   if (payment.stripeTransferId) throw httpError(409, "This payment has already been released and cannot be refunded automatically.");
   if (payment.paymentStatus === "refunded") return { payment, alreadyRefunded: true };
   const refund = await createFullRefund(payment, reason);
@@ -1403,14 +1417,25 @@ function stripeObjectMetadata(object) {
 
 async function paymentFromStripeObject(object) {
   const metadata = stripeObjectMetadata(object);
-  if (metadata.jcmPaymentId) return get("jobPayments", metadata.jcmPaymentId);
-  if (metadata.jcmJobId) return get("jobPayments", `payment_${metadata.jcmJobId}`);
-  if (object.client_reference_id) return get("jobPayments", object.client_reference_id);
+  if (metadata.jcmPaymentId) {
+    const payment = await get("jobPayments", metadata.jcmPaymentId);
+    return paymentInCurrentStripeMode(payment) ? payment : null;
+  }
+  if (metadata.jcmJobId) {
+    const payment = await get("jobPayments", `payment_${metadata.jcmJobId}`);
+    return paymentInCurrentStripeMode(payment) ? payment : null;
+  }
+  if (object.client_reference_id) {
+    const payment = await get("jobPayments", object.client_reference_id);
+    return paymentInCurrentStripeMode(payment) ? payment : null;
+  }
   const payments = await all("jobPayments");
   return payments.find(payment =>
+    paymentInCurrentStripeMode(payment) && (
     payment.stripePaymentIntentId === object.id ||
     payment.stripeCheckoutSessionId === object.id ||
     payment.stripeChargeId === object.id
+    )
   ) || null;
 }
 
@@ -1435,7 +1460,7 @@ async function markStripePaymentHeld(payment, object, event) {
     operation("update", `jobs/${job.id}`, { status: "payment_held", paymentStatus: "held_pending_completion", updatedAt: nowMarker() }),
     statusHistoryOperation(null, job.id, job.status, "payment_held", "Stripe confirmed buyer payment."),
     paymentEventOperation(payment.id, job.id, event.type, { stripeEventId: event.id, stripeObjectId: object.id }),
-    systemMessageOperation(job.id, "Buyer payment succeeded in Stripe Test Mode. Payment is held until completion and the job can move to scheduling.", "buyer_paid"),
+    systemMessageOperation(job.id, "Buyer payment succeeded through Stripe. Payment is held until completion and the job can move to scheduling.", "buyer_paid"),
     auditOperation(null, "payment.succeeded", "jobPayment", payment.id, { newValue: { stripePaymentIntentId: paymentIntentId || "", stripeChargeId: chargeId || "" } })
   ], "Record JCM Stripe payment success");
 }

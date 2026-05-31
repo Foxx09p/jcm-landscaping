@@ -72,6 +72,13 @@ function stripeModeSummary() {
   };
 }
 
+function assertPaymentStripeMode(payment) {
+  const mode = stripeMode();
+  if (payment && payment.stripeMode && payment.stripeMode !== mode) {
+    throw httpError(409, "This payment belongs to a different Stripe environment.");
+  }
+}
+
 function appBaseUrl(req) {
   const explicit = process.env.APP_BASE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
   if (explicit) return explicit.startsWith("http") ? explicit : `https://${explicit}`;
@@ -199,6 +206,7 @@ async function createOrRetrieveAccount(user) {
 }
 
 async function createCheckoutSession(req, payment, job, buyer) {
+  assertPaymentStripeMode(payment);
   const stripe = getStripe();
   const baseUrl = appBaseUrl(req);
   const transferGroup = payment.transferGroup || `JCM_JOB_${job.id}`;
@@ -237,6 +245,7 @@ async function createCheckoutSession(req, payment, job, buyer) {
 }
 
 async function createContractorTransfer(payment) {
+  assertPaymentStripeMode(payment);
   const stripe = getStripe();
   let chargeId = payment.stripeChargeId || "";
   if (!chargeId && payment.stripePaymentIntentId) {
@@ -263,6 +272,7 @@ async function createContractorTransfer(payment) {
 }
 
 async function createFullRefund(payment, reason) {
+  assertPaymentStripeMode(payment);
   if (!payment.stripePaymentIntentId) throw httpError(409, "This job does not have a refundable Stripe payment.");
   return getStripe().refunds.create({
     payment_intent: payment.stripePaymentIntentId,
@@ -278,6 +288,7 @@ async function createFullRefund(payment, reason) {
 module.exports = {
   STRIPE_API_VERSION,
   appBaseUrl,
+  assertPaymentStripeMode,
   configuredSecretKey,
   createCheckoutSession,
   createContractorTransfer,

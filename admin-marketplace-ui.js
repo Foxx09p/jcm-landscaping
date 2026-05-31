@@ -36,7 +36,6 @@
     var style = document.createElement("style");
     style.id = "adminMarketplaceStyles";
     style.textContent = [
-      ".sandbox-banner{border:1px solid #e0a92f;background:#fff7df;color:#684500;border-radius:12px;padding:12px 14px;margin:0 0 18px;font-weight:700}",
       ".admin-market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}",
       ".admin-row{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}",
       ".admin-row p{margin:6px 0}",
@@ -67,7 +66,7 @@
         ["quotes", "Quotes"],
         ["disputes", "Disputes"],
         ["support", "Support"],
-        ["payments", "Payments / Test Stripe"],
+        ["payments", "Payments"],
         ["audits", "Audit Logs"]
       ].map(function (item, index) {
         return '<button class="tab-button ' + (index === 0 ? "active" : "") + '" data-tab="' + item[0] + '" type="button" onclick="showTab(\'' + item[0] + '\')">' + item[1] + '</button>';
@@ -76,7 +75,6 @@
     var main = document.querySelector(".admin-main");
     if (main) {
       main.innerHTML = [
-        '<div class="sandbox-banner">Stripe Sandbox / Test Mode: no real money is charged or paid. Contractor payout setup, buyer checkout, transfers, and refunds are test operations only.</div>',
         '<section class="tab active" id="tab-overview"><div class="section-header"><div><h1>Overview</h1><p>Operational marketplace snapshot.</p></div></div><div class="grid" id="adminOverviewStats"></div></section>',
         tab("applications", "Contractor Applications", "Pending applications only. Approved and rejected applications leave this list immediately."),
         tab("requests", "Jobs / Requests", "Review lifecycle, payment state, and admin-only force actions with reasons."),
@@ -84,7 +82,7 @@
         tab("quotes", "Quotes", "Review real contractor quote records."),
         tab("disputes", "Disputes", "Resolve disputed jobs with a required reason. Partial resolutions are intentionally unavailable until fully implemented."),
         tab("support", "Support", "Urgent tickets are prioritized."),
-        tab("payments", "Payments / Test Stripe", "Review non-sensitive Stripe Test Mode metadata and payout release state."),
+        tab("payments", "Payments", "Review non-sensitive Stripe metadata and payout release state."),
         tab("audits", "Audit Logs", "Review trusted marketplace actions and private-detail reveals.")
       ].join("");
     }
@@ -148,7 +146,7 @@
     }
     byId("usersList").innerHTML = data.users.length ? data.users.map(function (user) {
       var staff = ["owner", "admin", "moderator"].includes(String(user.role || "").toLowerCase());
-      return '<article class="admin-row"><h3>' + esc(user.displayName || user.email || "User") + '</h3><p>' + esc(user.email || "") + '</p><p><strong>Role:</strong> ' + esc(user.role || "buyer") + '</p><p><strong>Contractor status:</strong> ' + esc(user.contractorStatus || "none") + '</p><p><strong>Stripe Test Mode ready:</strong> ' + esc(user.stripeOnboardingComplete && user.stripePayoutsEnabled ? "Yes" : "No") + '</p>' + (staff ? '<p class="hint">Manage staff access in config/roles.json.</p>' : '<form class="admin-form" onsubmit="updateMarketplaceUser(event,\'' + esc(user.uid) + '\',' + (!user.suspended) + ')"><label>Required reason<input id="user-reason-' + esc(user.uid) + '" maxlength="1200" required></label><button class="btn btn-secondary" type="submit">' + (user.suspended ? "Unsuspend User" : "Suspend User") + '</button></form>') + '</article>';
+      return '<article class="admin-row"><h3>' + esc(user.displayName || user.email || "User") + '</h3><p>' + esc(user.email || "") + '</p><p><strong>Role:</strong> ' + esc(user.role || "buyer") + '</p><p><strong>Contractor status:</strong> ' + esc(user.contractorStatus || "none") + '</p><p><strong>Payments ready:</strong> ' + esc(user.stripeOnboardingComplete && user.stripePayoutsEnabled ? "Yes" : "No") + '</p>' + (staff ? '<p class="hint">Manage staff access in config/roles.json.</p>' : '<form class="admin-form" onsubmit="updateMarketplaceUser(event,\'' + esc(user.uid) + '\',' + (!user.suspended) + ')"><label>Required reason<input id="user-reason-' + esc(user.uid) + '" maxlength="1200" required></label><button class="btn btn-secondary" type="submit">' + (user.suspended ? "Unsuspend User" : "Suspend User") + '</button></form>') + '</article>';
     }).join("") : '<div class="card"><p>No users found.</p></div>';
   }
 
@@ -178,7 +176,7 @@
       return;
     }
     byId("paymentsList").innerHTML = data.payments.length ? data.payments.map(function (item) {
-      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(item.jobId) + '</h3><p>Stripe ' + esc(item.stripeMode || "test") + ' mode</p></div>' + statusBadge(item.paymentStatus) + '</div><p><strong>Final price:</strong> ' + money(item.finalAmountCents) + '</p><p><strong>JCM 30% fee:</strong> ' + money(item.platformFeeCents) + '</p><p><strong>Contractor 70% payout:</strong> ' + money(item.contractorAmountCents) + '</p><p><strong>Release:</strong> ' + esc(item.releaseStatus) + '</p><p><strong>Refund:</strong> ' + esc(item.refundStatus) + '</p><p><strong>Payment Intent:</strong> ' + esc(item.stripePaymentIntentId || "Not created") + '</p><p><strong>Transfer:</strong> ' + esc(item.stripeTransferId || "Not released") + '</p></article>';
+      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(item.jobId) + '</h3><p>Stripe processing metadata</p></div>' + statusBadge(item.paymentStatus) + '</div><p><strong>Final price:</strong> ' + money(item.finalAmountCents) + '</p><p><strong>JCM 30% fee:</strong> ' + money(item.platformFeeCents) + '</p><p><strong>Contractor 70% payout:</strong> ' + money(item.contractorAmountCents) + '</p><p><strong>Release:</strong> ' + esc(item.releaseStatus) + '</p><p><strong>Refund:</strong> ' + esc(item.refundStatus) + '</p><p><strong>Payment Intent:</strong> ' + esc(item.stripePaymentIntentId || "Not created") + '</p><p><strong>Transfer:</strong> ' + esc(item.stripeTransferId || "Not released") + '</p></article>';
     }).join("") : '<div class="card"><p>No payment records yet.</p></div>';
   }
 

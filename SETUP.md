@@ -28,13 +28,13 @@ Set these before deploying:
 - `MEDIA_URL_SECRET`: Separate random secret used to sign photo URLs. Recommended.
 - `STRIPE_MODE`: Keep this set to `test` for the current implementation.
 - `STRIPE_LIVE_ENABLED`: Keep this set to `false`. Live mode refuses to initialize unless this is explicitly changed to `true`.
-- `STRIPE_TEST_SECRET_KEY`: Stripe test-mode restricted key where possible, or a test secret key if required. Server-side only.
+- `STRIPE_TEST_SECRET_KEY`: Stripe test secret key for end-to-end testing. A restricted test key can be used only if it grants every required Checkout, PaymentIntent, Connect account, transfer, refund, balance, and payout permission.
 - `STRIPE_TEST_PUBLISHABLE_KEY`: Stripe test-mode publishable key.
 - `STRIPE_TEST_WEBHOOK_SECRET`: Test-mode webhook signing secret for `/api/stripe/webhook`.
 - `STRIPE_LIVE_SECRET_KEY`: Leave empty until live launch approval.
 - `STRIPE_LIVE_PUBLISHABLE_KEY`: Leave empty until live launch approval.
 - `STRIPE_LIVE_WEBHOOK_SECRET`: Leave empty until live launch approval.
-- `PLATFORM_PAYMENTS_REQUIRED`: Keep `true` to require approved contractors to complete Stripe Test Mode onboarding before paid-job quoting.
+- `PLATFORM_PAYMENTS_REQUIRED`: Keep `true` to require approved contractors to complete Payment Setup before paid-job quoting.
 - `AUTO_RELEASE_ENABLED`: Keep `false`. Automatic release is disabled by default.
 - `AUTO_RELEASE_AFTER_DAYS`: Placeholder release window if automatic release is reviewed and enabled later.
 - `REQUIRE_EMAIL_VERIFICATION`: Keep `false` until a real email verification provider and resend workflow are configured. Do not enable this flag alone.
@@ -45,6 +45,8 @@ Phone sign-in is intentionally unavailable until an SMS provider is configured. 
 ## Stripe Dashboard
 
 Configure Stripe Connect in test mode for contractor payouts. Contractor recipient accounts and hosted onboarding use Stripe Accounts v2. Buyer payments use hosted Checkout Sessions on the platform account. Contractor payout release uses separate charges and transfers after buyer completion confirmation or admin dispute resolution. Create a test-mode webhook endpoint using the deployment domain followed by `/api/stripe/webhook`.
+
+For end-to-end testing, keep `STRIPE_MODE=test` and use only `sk_test_...`, `pk_test_...`, and `whsec_...` values from the same Stripe test environment. Buyer checkout can use Stripe test cards such as `4242 4242 4242 4242` with any future expiration date, CVC, and postal code. Contractor onboarding can use Stripe test bank details such as routing `110000000` with account `000123456789` for a successful payout scenario, or account `000111111116` for a failed payout scenario.
 
 Subscribe at minimum to:
 
@@ -66,7 +68,7 @@ Do not put GitHub tokens, session secrets, Stripe secret keys, webhook secrets, 
 
 ## Stripe Test Mode and Later Live Enablement
 
-The checked-in default is intentionally test-only. Payment pages and the admin dashboard display `Sandbox / Test Mode`, and no real money should move while `STRIPE_MODE=test`.
+The checked-in default is intentionally test-only. User-facing payment pages do not display sandbox banners, but no real money should move while `STRIPE_MODE=test`; the server refuses live credentials in test mode and refuses live mode unless `STRIPE_LIVE_ENABLED=true`.
 
 Only enable live mode after legal, operational, security, refund, dispute, webhook, Connect, and database reviews are complete:
 

@@ -1,5 +1,5 @@
 const { asyncHandler, methodNotAllowed, sendJson, httpError } = require("../_lib/http");
-const { getSignedInUser, isAdminRole, isApprovedContractor, isSuspended } = require("../_lib/github-data");
+const { db, getSignedInUser, isAdminRole, isApprovedContractor, isSuspended } = require("../_lib/github-data");
 const {
   appBaseUrl,
   createOrRetrieveAccount,
@@ -21,6 +21,18 @@ function startOfWeekSeconds(date) {
 
 function startOfMonthSeconds(date) {
   return Math.floor(new Date(date.getFullYear(), date.getMonth(), 1).getTime() / 1000);
+}
+
+function timestampMs(value) {
+  if (!value) return 0;
+  const raw = value.__jcmTimestamp || value;
+  const number = new Date(raw).getTime();
+  return Number.isFinite(number) ? number : 0;
+}
+
+function timestampSeconds(value) {
+  const ms = timestampMs(value);
+  return ms ? Math.floor(ms / 1000) : 0;
 }
 
 function actionFromRequest(req) {
@@ -73,28 +85,59 @@ async function refreshAccount(user) {
 async function paymentSummary(user) {
   const { account } = await createOrRetrieveAccount(user);
   const stripe = getStripe();
-  const [freshAccount, balance, payouts] = await Promise.all([
+  const mode = stripeModeSummary();
+  const [freshAccount, balance, payouts, releaseSnapshot] = await Promise.all([
     getConnectedAccount(stripe, account.id),
     stripe.balance.retrieve({}, { stripeAccount: account.id }),
-    stripe.payouts.list({ limit: 25 }, { stripeAccount: account.id })
+    stripe.payouts.list({ limit: 25 }, { stripeAccount: account.id }),
+    db().collection("payoutRecords").where("contractorId", "==", user.uid).get()
   ]);
   const status = await updateUserStripeStatus(user.uid, freshAccount);
   const now = new Date();
   const today = startOfDaySeconds(now);
   const week = startOfWeekSeconds(now);
   const month = startOfMonthSeconds(now);
-  const currency = ((balance.pending && balance.pending[0] && balance.pending[0].currency) ||
+  const releaseRecords = releaseSnapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() }))
+    .filter(item => !item.stripeMode || item.stripeMode === mode.stripeMode)
+    .sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt));
+  const currency = ((releaseRecords[0] && releaseRecords[0].currency) ||
+    (balance.pending && balance.pending[0] && balance.pending[0].currency) ||
     (payouts.data[0] && payouts.data[0].currency) ||
     "usd");
   const paidPayouts = payouts.data.filter(item => item.status === "paid");
   const sumSince = since => paidPayouts
     .filter(item => item.created >= since)
     .reduce((sum, item) => sum + (item.amount || 0), 0);
+  const releasedSince = since => releaseRecords
+    .filter(item => timestampSeconds(item.createdAt) >= since)
+    .reduce((sum, item) => sum + (item.amountCents || 0), 0);
   const pendingPayout = (balance.pending || [])
     .filter(item => !currency || item.currency === currency)
     .reduce((sum, item) => sum + (item.amount || 0), 0);
+  const releaseHistory = releaseRecords.slice(0, 25).map(item => ({
+    id: item.id,
+    type: "transfer",
+    description: "JCM payout release",
+    amount: item.amountCents,
+    currency: item.currency,
+    status: item.status,
+    created: timestampSeconds(item.createdAt),
+    transferId: item.stripeTransferId || ""
+  }));
+  const stripePayoutHistory = payouts.data
+    .filter(item => ["paid", "in_transit", "pending"].includes(item.status))
+    .map(item => ({
+      id: item.id,
+      type: "payout",
+      description: "Stripe payout",
+      amount: item.amount,
+      currency: item.currency,
+      status: item.status,
+      created: item.created
+    }));
   return {
-    ...stripeModeSummary(),
+    ...mode,
     profile: status,
     stripeAccountId: account.id,
     stripeChargesEnabled: status.stripeChargesEnabled,
@@ -105,22 +148,15 @@ async function paymentSummary(user) {
     lastStripeStatusSync: new Date().toISOString(),
     totals: {
       currency,
-      paidToday: sumSince(today),
-      paidWeek: sumSince(week),
-      paidMonth: sumSince(month),
+      paidToday: releasedSince(today) || sumSince(today),
+      paidWeek: releasedSince(week) || sumSince(week),
+      paidMonth: releasedSince(month) || sumSince(month),
       pendingPayout
     },
-    history: payouts.data
-      .filter(item => ["paid", "in_transit", "pending"].includes(item.status))
-      .map(item => ({
-        id: item.id,
-        type: "payout",
-        description: "Stripe payout",
-        amount: item.amount,
-        currency: item.currency,
-        status: item.status,
-        created: item.created
-      }))
+    history: releaseHistory
+      .concat(stripePayoutHistory)
+      .sort((a, b) => (b.created || 0) - (a.created || 0))
+      .slice(0, 25)
   };
 }
 

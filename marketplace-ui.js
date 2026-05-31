@@ -49,7 +49,6 @@
     var style = document.createElement("style");
     style.id = "marketplaceStyles";
     style.textContent = [
-      ".sandbox-banner{border:1px solid #e0a92f;background:#fff7df;color:#684500;border-radius:12px;padding:12px 14px;margin:0 0 18px;font-weight:700}",
       ".market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}",
       ".market-section{border-top:1px solid var(--border);margin-top:18px;padding-top:18px}",
       ".market-section h3{margin:0 0 10px}",
@@ -82,10 +81,6 @@
 
   function installDom() {
     installStyles();
-    if (!byId("siteSandboxBanner")) {
-      var main = byId("mainContent");
-      if (main) main.insertAdjacentHTML("afterbegin", '<div class="sandbox-banner" id="siteSandboxBanner">Stripe Sandbox / Test Mode: no real money is charged or paid. JCM keeps a 30% platform fee and contractors receive 70% only after completion is confirmed or an admin resolves the job.</div>');
-    }
     var title = document.querySelector("#page-post-job h1");
     if (title) title.textContent = "Request outdoor service.";
     var jobForm = byId("jobRequestForm");
@@ -154,12 +149,11 @@
       document.body.insertAdjacentHTML("beforeend", '<div class="modal-backdrop" id="marketplaceJobModal" role="dialog" aria-modal="true" aria-labelledby="marketplaceJobTitle"><div class="modal-card market-modal-card"><div class="market-actions" style="justify-content:flex-end;margin-top:0"><button class="btn btn-secondary" type="button" onclick="closeMarketplaceJob()">Close</button></div><div id="marketplaceJobContent"><p>Loading request...</p></div></div></div>');
     }
     var paymentPage = byId("page-payment");
-    if (paymentPage && !byId("paymentSandboxNotice")) {
+    if (paymentPage) {
       var header = paymentPage.querySelector(".page-header");
       if (header) {
         header.querySelector("h1").textContent = "Payment Setup";
-        header.querySelector(".lead").textContent = "Complete Stripe Connect onboarding in Sandbox / Test Mode. No real payouts are enabled.";
-        header.insertAdjacentHTML("afterend", '<div class="sandbox-banner" id="paymentSandboxNotice">Stripe Sandbox / Test Mode only. Contractor payout setup is for testing. No real money moves.</div>');
+        header.querySelector(".lead").textContent = "Complete Stripe Connect onboarding before quoting paid jobs and review payout readiness.";
       }
     }
     var accountTitle = document.querySelector("#page-account h1");
@@ -336,7 +330,7 @@
     if (!state.authUser) return openSignInModal();
     if (!isApprovedContractorAccount()) return toast("Only approved contractors can submit quotes.", "error");
     if (!contractorReady()) {
-      toast("Complete Stripe Test Mode payment setup before quoting.", "error");
+      toast("Complete Payment Setup before quoting.", "error");
       return showPage("payment");
     }
     state.pendingClaimId = jobId;
@@ -447,8 +441,8 @@
       ["Application submitted", Boolean(profile.contractorStatus)],
       ["Application approved", profile.contractorStatus === "approved"],
       ["Service location set", Boolean(profile.city || profile.zipCode || (profile.latitude != null && profile.longitude != null))],
-      ["Stripe Test Mode onboarding complete", Boolean(profile.stripeOnboardingComplete)],
-      ["Payouts enabled in Stripe Test Mode", Boolean(profile.stripePayoutsEnabled)],
+      ["Payment onboarding complete", Boolean(profile.stripeOnboardingComplete)],
+      ["Payouts enabled", Boolean(profile.stripePayoutsEnabled)],
       ["Ready to quote and accept jobs", isApprovedContractorAccount() && contractorReady()]
     ];
     return '<div class="market-checklist">' + items.map(function (item) { return '<span>' + (item[1] ? "Complete: " : "Needed: ") + esc(item[0]) + '</span>'; }).join("") + '</div>';
@@ -458,7 +452,7 @@
     var card = byId("contractorStatusCard");
     if (!card || !state.currentUser || role() !== "contractor") return;
     card.hidden = false;
-    card.innerHTML = '<h2>Contractor Onboarding Checklist</h2><p class="lead">Stripe is in Sandbox / Test Mode. No real payouts are enabled.</p>' + renderChecklist() + '<div class="market-actions"><button class="btn btn-primary" type="button" onclick="showPage(\'job-board\')">Available Jobs</button><button class="btn btn-secondary" type="button" onclick="showPage(\'payment\')">Payment Setup</button></div>';
+    card.innerHTML = '<h2>Contractor Onboarding Checklist</h2><p class="lead">Complete Payment Setup before quoting paid jobs.</p>' + renderChecklist() + '<div class="market-actions"><button class="btn btn-primary" type="button" onclick="showPage(\'job-board\')">Available Jobs</button><button class="btn btn-secondary" type="button" onclick="showPage(\'payment\')">Payment Setup</button></div>';
   }
 
   function requestCard(job, contractorView) {
@@ -484,7 +478,7 @@
     var section = byId("claimedJobsSection");
     if (section) section.hidden = !(role() === "contractor" || ["owner", "admin"].includes(role()));
     var status = byId("contractorStatusMessage");
-    if (status && role() === "contractor") status.innerHTML = "Contractor account approved. " + (contractorReady() ? "You are ready to submit quotes." : "Complete Payment Setup in Stripe Test Mode before quoting.") + renderChecklist();
+    if (status && role() === "contractor") status.innerHTML = "Contractor account approved. " + (contractorReady() ? "You are ready to submit quotes." : "Complete Payment Setup before quoting.") + renderChecklist();
   }
   window.renderAccountPage = renderMarketplaceAccount;
 
@@ -495,7 +489,7 @@
       var amount = quote.priceCents ? money(quote.priceCents) : "Price note only";
       var accept = detail.job.postedBy === state.authUser.uid && ["open", "quotes_received"].includes(detail.job.status) && quote.status === "submitted"
         ? '<button class="btn btn-primary" type="button" onclick="acceptMarketplaceQuote(\'' + esc(quote.id) + '\')">Accept Contractor</button>' : "";
-      return '<div class="market-row"><strong>' + esc(quote.contractorBusinessName || quote.contractorDisplayName) + '</strong><p>' + esc(amount) + (quote.priceNote ? " - " + esc(quote.priceNote) : "") + '</p><p><strong>Availability:</strong> ' + esc(quote.availabilityNote) + '</p><p>' + esc(quote.message) + '</p><p class="market-muted">Profile: ' + esc(profile.city || "service area provided") + '. Rating: ' + esc(profile.reviewCount ? profile.averageRating + " / 5 from " + profile.reviewCount + " review(s)" : "No completed reviews yet") + '. Stripe Test Mode ready: ' + esc(profile.stripeTestReady ? "Yes" : "No") + '.</p><div class="market-actions">' + accept + '</div></div>';
+      return '<div class="market-row"><strong>' + esc(quote.contractorBusinessName || quote.contractorDisplayName) + '</strong><p>' + esc(amount) + (quote.priceNote ? " - " + esc(quote.priceNote) : "") + '</p><p><strong>Availability:</strong> ' + esc(quote.availabilityNote) + '</p><p>' + esc(quote.message) + '</p><p class="market-muted">Profile: ' + esc(profile.city || "service area provided") + '. Rating: ' + esc(profile.reviewCount ? profile.averageRating + " / 5 from " + profile.reviewCount + " review(s)" : "No completed reviews yet") + '. Payments ready: ' + esc(profile.stripeTestReady ? "Yes" : "No") + '.</p><div class="market-actions">' + accept + '</div></div>';
     }).join("");
   }
 
@@ -509,7 +503,7 @@
   function payment(detail) {
     if (!detail.payment) return "";
     var item = detail.payment;
-    return '<div class="market-section"><h3>Secure Job Payment <span class="status-badge status-pending">Test Mode</span></h3><div class="market-grid"><div><strong>Buyer pays</strong><p>' + money(item.finalAmountCents) + '</p></div><div><strong>JCM platform fee (30%)</strong><p>' + money(item.platformFeeCents) + '</p></div><div><strong>Contractor payout (70%)</strong><p>' + money(item.contractorAmountCents) + '</p></div><div><strong>Payment status</strong><p>' + esc(item.paymentStatus) + '</p></div></div><p class="market-muted">Stripe is running in Sandbox / Test Mode. No real money is charged or paid. Payment is held until completion is confirmed or an admin resolves the job.</p></div>';
+    return '<div class="market-section"><h3>Secure Job Payment</h3><div class="market-grid"><div><strong>Buyer pays</strong><p>' + money(item.finalAmountCents) + '</p></div><div><strong>JCM platform fee (30%)</strong><p>' + money(item.platformFeeCents) + '</p></div><div><strong>Contractor payout (70%)</strong><p>' + money(item.contractorAmountCents) + '</p></div><div><strong>Payment status</strong><p>' + esc(item.paymentStatus) + '</p></div></div><p class="market-muted">Payment is processed through Stripe and held until completion is confirmed or an admin resolves the job.</p></div>';
   }
 
   function finalOffers(detail) {
@@ -530,7 +524,7 @@
       html += '<form class="market-form" onsubmit="saveMarketplaceJobEdit(event)"><label>Title<input id="editMarketTitle" value="' + esc(job.title) + '" required></label><label>Service Type<input id="editMarketService" value="' + esc(job.serviceType) + '" required></label><label>City<input id="editMarketCity" value="' + esc(job.city) + '" required></label><label>ZIP<input id="editMarketZip" value="' + esc(job.zipCode) + '" required></label><label>Property Size<input id="editMarketSize" value="' + esc(job.propertySize) + '" required></label><label>Budget Range<input id="editMarketBudget" value="' + esc(job.budget) + '" required></label><label>Frequency<input id="editMarketFrequency" value="' + esc(job.frequency) + '" required></label><label>Preferred Date<input id="editMarketPreferred" value="' + esc(job.preferredDate || "") + '"></label><label>Details<textarea id="editMarketDetails" required>' + esc(job.details) + '</textarea></label><button class="btn btn-secondary" type="submit">Save Request Changes</button></form>';
       html += cancellationForm(job.id);
     }
-    if (buyer && job.status === "awaiting_payment") html += '<button class="btn btn-primary" type="button" onclick="payMarketplaceJob()">Pay Secure Job Payment in Test Mode</button>';
+    if (buyer && job.status === "awaiting_payment") html += '<button class="btn btn-primary" type="button" onclick="payMarketplaceJob()">Pay Secure Job Payment</button>';
     if (contractor && ["awaiting_final_offer", "awaiting_buyer_offer_acceptance"].includes(job.status)) {
       html += '<form class="market-form" onsubmit="submitMarketplaceFinalOffer(event)"><h4>Submit Formal Final Offer</h4><label>Final Price in Dollars<input id="offerAmount" inputmode="decimal" required></label><label>Scope Summary<textarea id="offerScope" maxlength="4000" required></textarea></label><label>Proposed Date / Time / Arrival Window<input id="offerSchedule" maxlength="800" required></label><label>Notes<textarea id="offerNotes" maxlength="1200"></textarea></label><button class="btn btn-primary" type="submit">Submit Final Offer</button></form>';
     }
@@ -567,7 +561,7 @@
   function renderJob(detail) {
     var job = detail.job;
     var schedule = job.confirmedSchedule ? '<p><strong>Confirmed scheduled time:</strong> ' + esc(job.confirmedSchedule.date) + ', ' + esc(job.confirmedSchedule.timeWindow) + '</p>' : job.proposedSchedule ? '<p><strong>Proposed schedule:</strong> ' + esc(job.proposedSchedule.date) + ', ' + esc(job.proposedSchedule.timeWindow) + '</p>' : "";
-    byId("marketplaceJobContent").innerHTML = '<h2 id="marketplaceJobTitle">' + esc(job.title || "Service request") + '</h2><div class="market-actions">' + statusBadge(job.status) + '<span class="status-badge status-pending">Stripe Test Mode</span></div><p><strong>Service:</strong> ' + esc(job.serviceType) + '</p><p><strong>Approximate area:</strong> ' + esc([job.city, job.zipCode].filter(Boolean).join(" ")) + '</p><p><strong>Property size:</strong> ' + esc(job.propertySize || "") + '</p><p><strong>Budget range:</strong> ' + esc(job.budget || "") + '</p><p><strong>Preferred date:</strong> ' + esc(job.preferredDate || "Flexible") + ' <span class="market-muted">(not a confirmed appointment)</span></p>' + schedule + '<p>' + esc(job.details || "") + '</p><div class="market-section"><h3>Contractor Quotes / Interests</h3>' + quoteList(detail) + '</div>' + (detail.canRevealPrivate ? '<div class="market-section"><h3>Private Job Details</h3><p class="market-muted">Available only to the buyer, accepted contractor after acceptance, and authorized admins. Each reveal is logged.</p><button class="btn btn-secondary" type="button" onclick="revealMarketplacePrivate()">Reveal Private Details</button><div id="marketPrivateDetails"></div></div>' : "") + finalOffers(detail) + payment(detail) + chat(detail) + actionPanel(detail);
+    byId("marketplaceJobContent").innerHTML = '<h2 id="marketplaceJobTitle">' + esc(job.title || "Service request") + '</h2><div class="market-actions">' + statusBadge(job.status) + '</div><p><strong>Service:</strong> ' + esc(job.serviceType) + '</p><p><strong>Approximate area:</strong> ' + esc([job.city, job.zipCode].filter(Boolean).join(" ")) + '</p><p><strong>Property size:</strong> ' + esc(job.propertySize || "") + '</p><p><strong>Budget range:</strong> ' + esc(job.budget || "") + '</p><p><strong>Preferred date:</strong> ' + esc(job.preferredDate || "Flexible") + ' <span class="market-muted">(not a confirmed appointment)</span></p>' + schedule + '<p>' + esc(job.details || "") + '</p><div class="market-section"><h3>Contractor Quotes / Interests</h3>' + quoteList(detail) + '</div>' + (detail.canRevealPrivate ? '<div class="market-section"><h3>Private Job Details</h3><p class="market-muted">Available only to the buyer, accepted contractor after acceptance, and authorized admins. Each reveal is logged.</p><button class="btn btn-secondary" type="button" onclick="revealMarketplacePrivate()">Reveal Private Details</button><div id="marketPrivateDetails"></div></div>' : "") + finalOffers(detail) + payment(detail) + chat(detail) + actionPanel(detail);
   }
 
   window.openMarketplaceJob = async function (jobId) {
@@ -608,7 +602,7 @@
     }));
   }
   window.completeMarketplaceWork = async function (event) { event.preventDefault(); try { var photos = await uploadCompletionPhotos(byId("completionPhotos").files); await api("completeWork", { jobId: activeJobId, completionPhotoURLs: photos, note: field("completionNote") }); await refreshActiveJob(); toast("Job marked complete. Buyer confirmation is required.", "success"); } catch (error) { notify(error); } };
-  window.confirmMarketplaceCompletion = async function () { try { await api("confirmCompletion", { jobId: activeJobId }); await refreshActiveJob(); toast("Completion confirmed and Stripe Test Mode release recorded.", "success"); } catch (error) { notify(error); } };
+  window.confirmMarketplaceCompletion = async function () { try { await api("confirmCompletion", { jobId: activeJobId }); await refreshActiveJob(); toast("Completion confirmed and payout release recorded.", "success"); } catch (error) { notify(error); } };
   window.disputeMarketplaceJob = async function (event) { event.preventDefault(); try { await api("disputeJob", { jobId: activeJobId, reason: field("disputeReason"), note: field("disputeNote") }); await refreshActiveJob(); toast("Dispute opened. Payout release is blocked.", "success"); } catch (error) { notify(error); } };
   window.cancelMarketplaceJob = async function (event) { event.preventDefault(); try { await api("cancelJob", { jobId: activeJobId, reason: field("cancelReason"), note: field("cancelNote") }); await refreshActiveJob(); toast("Request canceled.", "success"); } catch (error) { notify(error); } };
   window.reopenMarketplaceJob = async function (event) { event.preventDefault(); try { await api("reopenJob", { jobId: activeJobId, note: field("reopenNote") }); await refreshActiveJob(); toast("Request reopened.", "success"); } catch (error) { notify(error); } };

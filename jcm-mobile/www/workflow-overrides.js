@@ -133,7 +133,7 @@
         '  <div class="page-header">',
         '    <span class="eyebrow">Contractor Payment</span>',
         '    <h1>Payment</h1>',
-        '    <p class="lead">Set up Stripe Connect in Sandbox / Test Mode before quoting paid jobs and review test payout readiness.</p>',
+        '    <p class="lead">Set up Stripe Connect before quoting paid jobs and review payout readiness.</p>',
         '  </div>',
         '  <div id="paymentSignedOut" class="card locked-state" hidden>',
         '    <h2>Sign in to manage payments.</h2>',
@@ -636,7 +636,7 @@
     if (isContractorLike()) {
       statusCard.hidden = false;
       panel.hidden = true;
-      statusCard.innerHTML = '<h2>You are approved.</h2><p class="lead">You can view Available Jobs and Payment Setup. Stripe Test Mode setup must be complete before quoting paid jobs.</p><div class="hero-actions"><button class="btn btn-primary" type="button" onclick="showPage(\'job-board\')">Available Jobs</button><button class="btn btn-secondary" type="button" onclick="showPage(\'payment\')">Payment Setup</button></div>';
+      statusCard.innerHTML = '<h2>You are approved.</h2><p class="lead">You can view Available Jobs and Payment Setup. Payment setup must be complete before quoting paid jobs.</p><div class="hero-actions"><button class="btn btn-primary" type="button" onclick="showPage(\'job-board\')">Available Jobs</button><button class="btn btn-secondary" type="button" onclick="showPage(\'payment\')">Payment Setup</button></div>';
     } else if (status === "pending") {
       statusCard.hidden = false;
       panel.hidden = true;
@@ -964,7 +964,7 @@
     badge.className = "status-badge " + (onboardingComplete && canPayout ? "status-open" : "status-pending");
     safe("stripeStatusSummary").textContent = onboardingComplete && canPayout
       ? "Stripe setup is complete. You can receive payouts."
-      : "Complete Stripe Test Mode payment setup before quoting paid jobs.";
+      : "Complete Payment Setup before quoting paid jobs.";
     safe("payoutsStatus").textContent = canPayout ? "Yes" : "No";
     safe("onboardingStatus").textContent = onboardingComplete ? "Complete" : "Incomplete";
     safe("stripeLastSync").textContent = state.currentUser.lastStripeStatusSync && state.currentUser.lastStripeStatusSync.toDate
@@ -1107,7 +1107,7 @@
       safe("contractorStatusMessage").textContent = "Your account access is limited.";
     } else if (isContractorLike()) {
       safe("contractorStatusMessage").textContent = contractorNeedsPaymentSetup()
-        ? "You are approved. Complete Stripe Test Mode payment setup before quoting paid jobs."
+        ? "You are approved. Complete Payment Setup before quoting paid jobs."
         : "You are approved. You can view nearby requests and submit quotes.";
       action.innerHTML = '<button class="btn btn-primary" type="button" onclick="showPage(\'job-board\')">Available Jobs</button><button class="btn btn-secondary" type="button" onclick="showPage(\'payment\')">Payment Setup</button>';
     } else if (status === "pending") {
@@ -1159,8 +1159,8 @@
       ["How do I become a contractor?", "Create an account with email or phone and submit the contractor application. JCM reviews your location, skills, equipment, experience, and availability before approving access."],
       ["Why is my address hidden?", "The Available Jobs page protects buyers. Full address and contact details unlock only for the contractor the buyer accepts, after acceptance and only when the workflow allows access."],
       ["Can I cancel a service request?", "Contact JCM through the support form with your request title and account contact information. An admin can reject or close the request from the dashboard."],
-      ["What happens after I accept a contractor?", "A private job chat opens. The buyer and accepted contractor agree on final scope, price, and timing, then the buyer pays in Stripe Test Mode before scheduling."],
-      ["Can contractors choose any job?", "Approved contractors with Stripe Test Mode setup and a service location can submit quotes for nearby open requests."],
+      ["What happens after I accept a contractor?", "A private job chat opens. The buyer and accepted contractor agree on final scope, price, and timing, then the buyer pays through Stripe before scheduling."],
+      ["Can contractors choose any job?", "Approved contractors with completed Payment Setup and a service location can submit quotes for nearby open requests."],
       ["How do I contact JCM?", "Use the support form on this site or email help@jcm-landscaping.com for account, contractor, job, or payment questions."],
       ["Can JCM edit a service request?", "Admins can clean up unclear titles or details before or after a request becomes visible so the Jobs page stays useful."]
     ];

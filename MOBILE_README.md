@@ -22,4 +22,4 @@ The mobile app uses the deployed JCM server-side account API with email/password
 
 After changing `jcm-mobile/www`, run `npx cap sync android` from `jcm-mobile` before building a new APK.
 
-The editable mobile web source is present in `jcm-mobile/www`. Keep `index.html`, `workflow-overrides.js`, `marketplace-ui.js`, `privacy.html`, and `terms.html` synchronized with the website workflow. Stripe remains Sandbox / Test Mode only in the mobile wrapper; no live keys belong in the APK or bundled web assets.
+The editable mobile web source is present in `jcm-mobile/www`. Keep `index.html`, `workflow-overrides.js`, `marketplace-ui.js`, `privacy.html`, and `terms.html` synchronized with the website workflow. Stripe remains configured for non-production testing in the mobile wrapper; no live keys belong in the APK or bundled web assets.

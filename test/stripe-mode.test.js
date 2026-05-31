@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { configuredSecretKey, stripeMode } = require("../api/_lib/stripe-connect");
+const { assertPaymentStripeMode, configuredSecretKey, stripeMode } = require("../api/_lib/stripe-connect");
 
 function withEnv(values, callback) {
   const previous = {};
@@ -50,5 +50,12 @@ test("Stripe test mode accepts a test restricted key", () => {
     STRIPE_SECRET_KEY: null
   }, () => {
     assert.equal(configuredSecretKey(), "rk_test_example");
+  });
+});
+
+test("Stripe test mode rejects live-mode payment records", () => {
+  withEnv({ STRIPE_MODE: "test", STRIPE_LIVE_ENABLED: "false" }, () => {
+    assert.throws(() => assertPaymentStripeMode({ stripeMode: "live" }), /different Stripe environment/i);
+    assert.doesNotThrow(() => assertPaymentStripeMode({ stripeMode: "test" }));
   });
 });
