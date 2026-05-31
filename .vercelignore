@@ -1,0 +1,9 @@
+.git
+node_modules
+*.log
+
+jcm-mobile/node_modules
+jcm-mobile/.gradle
+jcm-mobile/.gradle-user-home
+jcm-mobile/android/.gradle
+jcm-mobile/android/app/build

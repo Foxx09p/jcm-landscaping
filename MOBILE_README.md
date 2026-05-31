@@ -16,12 +16,10 @@ To build a signed release APK for Google Play:
 3. Sign with your keystore using Android Studio or jarsigner
 4. Upload to Google Play Console at `play.google.com/console`
 
-## Google Sign-In on Android
+## Authentication on Android
 
-For Google Sign-In to work in the native app, you need to:
+The mobile app uses the deployed JCM server-side account API with email/password sign-in. Passwords are stored as salted hashes in the private GitHub data repository. Phone verification is intentionally unavailable until an SMS provider is configured.
 
-1. Go to Google Cloud Console > APIs & Services > Credentials
-2. Create an OAuth 2.0 Android client ID
-3. Use your app's SHA-1 fingerprint: run `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
-4. Add the SHA-1 to the Android client in Google Cloud Console
-5. Update the `serverClientId` in `jcm-mobile/capacitor.config.json` with the Android client ID
+After changing `jcm-mobile/www`, run `npx cap sync android` from `jcm-mobile` before building a new APK.
+
+The editable mobile web source is present in `jcm-mobile/www`. Keep `index.html`, `workflow-overrides.js`, `marketplace-ui.js`, `privacy.html`, and `terms.html` synchronized with the website workflow. Stripe remains Sandbox / Test Mode only in the mobile wrapper; no live keys belong in the APK or bundled web assets.

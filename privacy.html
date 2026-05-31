@@ -75,48 +75,61 @@
     <a class="back" href="/">&larr; Back to JCM Landscaping</a>
     <article>
       <h1>Privacy Policy</h1>
-      <p class="muted">Last updated: May 27, 2026</p>
+      <p class="muted">Last updated: May 31, 2026</p>
 
-      <h2>Introduction</h2>
-      <p>JCM Landscaping Network helps property owners post outdoor work and helps approved independent contractors find jobs they may want to claim. This Privacy Policy explains what information we collect, why we collect it, how it is used, and what choices you have.</p>
-      <p>We want the platform to feel useful without being invasive. Some information is necessary for the service to work, such as your email address, job details, photos, and address. Other information helps us review contractor applications, respond to support questions, protect the platform, and improve the experience over time.</p>
+      <h2>Overview</h2>
+      <p>JCM Landscaping Network helps buyers submit outdoor service requests and helps approved contractors review nearby requests and submit quotes or interest. This Privacy Policy explains what information we collect, how we use it, who can see it, and what choices users have.</p>
+      <p>This policy applies to the website, mobile app, admin dashboard, GitHub-backed application data, Stripe payment setup features, and related support communications.</p>
 
-      <h2>Information We Collect</h2>
-      <p>When you sign in with Google, Firebase Authentication provides basic Google account information to the platform. This may include your name, email address, profile photo, and unique Firebase user ID. We use this information to create your account, identify your posts, show your profile, and manage access to contractor or admin features.</p>
-      <p>When you post a job, we collect the information you submit in the job form. That may include your job title, service type, city, ZIP code, full property address, phone number, property size, preferred date, budget range, frequency, written description, and photos of the work area. Your full address and phone number are not shown to the open job board before a contractor claims your job.</p>
-      <p>If you apply to become a contractor, we collect application details such as your name, email address, phone number, city, ZIP code, service radius, skills, equipment, experience, availability, and your explanation of why you want to work with JCM. If you contact support, we collect the name, email, topic, priority, and message you submit. Firebase and related services may also collect basic technical and usage information needed for hosting, authentication, database operations, storage, security, and analytics.</p>
+      <h2>Account Information</h2>
+      <p>JCM uses its server-side account API for account creation and sign-in. Users may register or sign in with email and password. Passwords are stored as salted hashes. Phone verification is unavailable until JCM configures an SMS provider. The account API may process your JCM user ID, email address, display name, and authentication status.</p>
+      <p>We use account information to identify users, keep users signed in, connect service requests and contractor applications to the correct account, manage roles, support admin controls, and protect the platform.</p>
 
-      <h2>How We Use Your Information</h2>
-      <p>We use your information to run the platform. That includes creating accounts, showing posted jobs, letting approved contractors claim work, sending job information to the right people, reviewing contractor applications, managing support tickets, and keeping the site safe.</p>
-      <p>We may also use information to communicate with you about your account, a job you posted, a contractor application, a support request, or a platform issue. We use job and usage information to improve the service, understand what features are working, detect abuse, enforce our terms, and prevent spam or unauthorized access.</p>
+      <h2>Service Request Information</h2>
+      <p>When a buyer submits a service request, we collect the information provided in the service request form. This may include title, service type, city, ZIP code, full address, phone number, property size, preferred date, budget range, frequency, description, photos, latitude, longitude, and related notes.</p>
+      <p>Public request details may be shown to approved contractors so they can decide whether to submit a quote. Private buyer details include full address, phone number, email address, exact coordinates, and private access instructions. These details remain hidden from signed-out users, other buyers, unapproved contractors, and non-accepted contractors. After a buyer accepts one contractor and the post-acceptance workflow allows access, that accepted contractor may see the private details needed to perform the job.</p>
 
-      <h2>What Contractors Can See</h2>
-      <p>Before a job is claimed, approved contractors can see the public job details needed to decide whether the work fits their schedule. This includes the service type, job title, city, ZIP code, property size, budget range, frequency, preferred date, written details, and photos.</p>
-      <p>Before claiming, contractors do not see the full property address or customer phone number. After a contractor claims a job, the platform may show that contractor the full address, customer phone number, customer email, and other details needed to complete the work.</p>
+      <h2>Contractor Information</h2>
+      <p>When a user applies to become a contractor, we collect application details such as name, email address, phone number, city, ZIP code, service radius, latitude, longitude, skills, equipment, experience, availability, and written application responses. Admins use this information to review, approve, reject, suspend, or manage contractor access.</p>
+      <p>Approved contractors may provide or allow access to location data so the platform can show nearby available requests. If latitude and longitude are not available, the platform may use city or ZIP code data for matching. If location data is missing, the Available Jobs page may ask the contractor to add or allow a service location.</p>
 
-      <h2>What We Share</h2>
-      <p>We do not sell your personal information. We share information only as needed to operate the platform, connect job posters with approved contractors, respond to support requests, comply with legal obligations, protect the site, or complete an action you requested.</p>
-      <p>JCM Landscaping Network uses Firebase, which is part of Google, for authentication, Firestore database storage, and Firebase Storage for uploaded job photos. Google provides the infrastructure that stores and processes this information for the platform. Google's privacy practices apply to that infrastructure, and users should review Google's policies if they want more detail about how Firebase services operate.</p>
+      <h2>GitHub-Backed Data Storage</h2>
+      <p>JCM stores application data in a private GitHub repository as its current prototype data source for users, roles, contractor applications, service requests, quotes, messages, final offers, schedules, cancellations, disputes, reviews, contractor location, non-sensitive Stripe metadata, payment records, payout records, support tickets, audit logs, and uploaded photos.</p>
+      <p>Server-side API routes limit access based on account identity, ownership, role, contractor approval, accepted-contractor status, and lifecycle rules. Sensitive marketplace actions use trusted API routes. Git version history may retain prior versions of changed records and uploaded files. GitHub storage is not a transactional production database and JCM plans to move these records to a managed database before broader production use.</p>
+
+      <h2>Stripe Payment Information</h2>
+      <p>Stripe is currently configured for Sandbox / Test Mode only, so no real money is charged or paid. Contractor payment setup, payout capability, onboarding status, buyer test checkout, test transfers, test refunds, and payout history may use Stripe Connect. Stripe may collect sensitive payment, identity, tax, and bank information directly. JCM does not directly store raw card numbers, bank account numbers, or sensitive payment credentials in its private GitHub repository, local storage, frontend code, or admin dashboard.</p>
+      <p>JCM may store and display non-sensitive Stripe metadata such as Stripe mode, connected account ID, charges enabled, payouts enabled, onboarding complete, details submitted, requirements currently due, disabled reason, last sync time, payment intent ID, checkout session ID, charge ID, transfer ID, payment status, release status, refund status, and payout summaries when available from Stripe.</p>
+
+      <h2>Admin Access</h2>
+      <p>Admins and owners may view users, roles, contractor applications, service requests, quotes, disputes, support tickets, audit logs, and non-sensitive Stripe summaries. Authorized admins may reveal private buyer details for moderation, support, or dispute reasons, and those reveals are logged. Admins should not see raw card numbers, bank account numbers, or sensitive Stripe credentials.</p>
+
+      <h2>How We Use Information</h2>
+      <p>We use information to create accounts, authenticate users, receive service requests, show nearby available requests to approved contractors, support quote submission and buyer acceptance, reveal buyer details only after acceptance under the allowed workflow, provide job chat, manage final offers and schedules, review contractor applications, enforce suspensions, support Stripe Test Mode onboarding and payments, respond to support requests, resolve disputes, prevent abuse, and comply with legal obligations.</p>
+      <p>We may also use operational data to troubleshoot, maintain security, improve workflows, investigate complaints, resolve disputes, enforce our Terms of Service, and protect buyers, contractors, admins, owners, and JCM.</p>
+
+      <h2>Sharing</h2>
+      <p>We do not sell personal information. We share information when needed to operate the platform, process user actions, connect buyers with approved contractors, use GitHub and Stripe services, respond to legal obligations, enforce terms, protect safety, or complete a request you made.</p>
+      <p>Contractors may see limited public service request details before buyer acceptance. After acceptance and only when the workflow allows access, the accepted contractor may see buyer contact and address details needed for the job. Non-accepted contractors do not receive those private buyer details.</p>
+
+      <h2>Cookies and Local Storage</h2>
+      <p>The site may use cookies and browser storage to keep users signed in, remember preferences, display cookie consent, and support security. Accepting cookies also indicates agreement to the Terms of Service and this Privacy Policy, as stated in the cookie banner.</p>
 
       <h2>Data Retention</h2>
-      <p>We keep account, job, contractor application, and support information for as long as it is needed to operate the platform, maintain records, respond to disputes, prevent abuse, comply with legal obligations, and improve the service. Some records may remain after a job is completed so JCM can understand platform activity and address later questions.</p>
-      <p>You can request deletion of your account information by emailing help@jcm-landscaping.com. We will review deletion requests in a reasonable timeframe. Some information may need to be retained for legitimate business, security, legal, tax, fraud prevention, or dispute resolution reasons.</p>
+      <p>We keep account, role, service request, contractor application, quote, message, final offer, schedule, cancellation, dispute, review, payment status, support, and audit records for as long as needed to operate the platform, maintain records, resolve disputes, prevent abuse, comply with legal obligations, support payment records, and protect users and JCM.</p>
+      <p>You may request deletion or correction of your information by contacting JCM. We may need to retain some information for legal, security, tax, fraud prevention, payment, dispute, or legitimate business reasons.</p>
+
+      <h2>Your Choices</h2>
+      <p>You may choose not to provide optional location data, but contractors may need a service location to see nearby jobs. You may update account or contractor profile details where the platform supports it, or contact JCM for help. You may request access, correction, or deletion of personal information associated with your account, subject to verification and retention requirements.</p>
 
       <h2>Security</h2>
-      <p>JCM Landscaping Network uses Firebase infrastructure, HTTPS, Firebase Authentication, Firestore security rules, and Firebase Storage controls to help protect information. These tools are designed to limit access based on authentication and role, such as customer, contractor, moderator, or admin.</p>
-      <p>No online service can promise perfect security. You should protect your Google account, use a secure device, and contact us if you believe your account or data has been accessed without permission.</p>
+      <p>JCM uses salted password hashes, signed sessions, HTTPS, server-side repository access, role-based authorization, server-side Stripe endpoints, and admin controls to help protect platform data. No online service can guarantee perfect security. Users should use strong passwords, protect their phones and email accounts, and contact JCM if they believe an account or data has been accessed without permission.</p>
 
-      <h2>Children's Privacy</h2>
-      <p>JCM Landscaping Network is not intended for users under 18. We do not knowingly collect personal information from children or allow minors to create accounts, post jobs, or apply as contractors.</p>
-      <p>If you believe a minor has submitted information through the platform, contact us at help@jcm-landscaping.com so we can review and remove the information where appropriate.</p>
+      <h2>Children</h2>
+      <p>JCM Landscaping Network is not intended for users under 18. We do not knowingly allow minors to create accounts, submit service requests, apply as contractors, or use contractor features.</p>
 
-      <h2>Your Rights</h2>
-      <p>You may request access to, correction of, or deletion of personal information connected to your account by emailing us. We may need to verify your identity before acting on a request, especially if the request involves account access, job history, contractor status, or deletion.</p>
-      <p>You can also update some information by signing in with Google and using the site. If something cannot be changed directly through the interface, contact help@jcm-landscaping.com and describe what you want updated.</p>
-
-      <h2>Changes to This Policy</h2>
-      <p>We may update this Privacy Policy as the platform changes, as Firebase features change, or as legal and operational requirements evolve. When we update the policy, we may change the date at the top of this page or provide notice through the site.</p>
-      <p>Your continued use of JCM Landscaping Network after a policy update means you accept the updated policy. If you do not agree with the policy, you should stop using the platform.</p>
+      <h2>Changes</h2>
+      <p>We may update this Privacy Policy as the platform, storage configuration, Stripe integration, legal requirements, or operating practices change. We may update the date above or provide notice through the site when appropriate.</p>
 
       <h2>Contact</h2>
       <p>If you have questions about privacy, data access, deletion, or how your information is handled, contact JCM at <a href="mailto:help@jcm-landscaping.com">help@jcm-landscaping.com</a>.</p>

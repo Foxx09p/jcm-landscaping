@@ -4,30 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JCM Landscaping Network</title>
-  <meta name="description" content="Post outdoor work, verify your email, and let approved JCM contractors claim jobs in your area.">
+  <meta name="description" content="Request outdoor work, review quotes from approved JCM contractors, and manage your job through JCM Landscaping Network.">
   <meta name="theme-color" content="#1e6b3a">
   <link rel="icon" href="JCM_Leaf.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script>
-    /* Firebase config - JCM Landscaping production project */
-    const firebaseConfig = {
-      apiKey: "AIzaSyB5NGwKqXSb5d0kHdz-GWxL_ECIG7uPHAI",
-      authDomain: "jcm-landscaping-8df87.firebaseapp.com",
-      projectId: "jcm-landscaping-8df87",
-      storageBucket: "jcm-landscaping-8df87.firebasestorage.app",
-      messagingSenderId: "419377251087",
-      appId: "1:419377251087:web:a9cbf6a82603cedafd747a",
-      measurementId: "G-S77N6VNR4D"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
+  <script src="github-data-client.js"></script>
   <style>
     :root {
       --white: #ffffff;
@@ -101,7 +85,7 @@
     }
     .nav-inner {
       width: min(1180px, calc(100% - 32px));
-      min-height: 96px;
+      min-height: 76px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -115,7 +99,8 @@
     }
     .brand-link img {
       width: auto;
-      height: 72px;
+      height: 66px;
+      max-height: calc(100% - 10px);
       border-radius: 4px;
     }
     .nav-links {
@@ -161,9 +146,9 @@
       margin-top: -4px;
     }
     .dropdown:hover .chevron,
-    .dropdown:focus-within .chevron,
+    .dropdown.keyboard-open .chevron,
     .account-menu:hover .chevron,
-    .account-menu:focus-within .chevron {
+    .account-menu.keyboard-open .chevron {
       transform: rotate(225deg);
       margin-top: 4px;
     }
@@ -183,10 +168,9 @@
       z-index: 70;
     }
     .dropdown:hover .dropdown-menu,
-    .dropdown:focus-within .dropdown-menu,
+    .dropdown.keyboard-open .dropdown-menu,
     .account-menu:hover .account-dropdown,
-    .account-menu:focus-within .account-dropdown,
-    .account-menu.open .account-dropdown {
+    .account-menu.keyboard-open .account-dropdown {
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0);
@@ -461,8 +445,7 @@
       transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
     }
     .feature-card:hover,
-    .job-card:hover,
-    .service-card:hover {
+    .job-card:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-md);
       border-color: var(--border-dark);
@@ -824,6 +807,30 @@
     }
     .compact-card.open .details-block { display: block; }
 
+    .payment-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+      gap: 22px;
+      align-items: start;
+    }
+    .payment-meta {
+      margin-top: 12px;
+    }
+    .payment-totals {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .payment-totals div {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .payment-totals span { color: var(--ink-muted); }
+    .payment-totals strong { color: var(--green-dark); }
+
     .faq-list {
       display: grid;
       gap: 10px;
@@ -855,24 +862,6 @@
     }
     .faq-answer p { padding: 0 20px 18px; }
     .faq-item.open .faq-answer { max-height: 220px; }
-
-    .service-card {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .service-card .btn { margin-top: auto; }
-    .service-icon {
-      width: 42px;
-      height: 42px;
-      color: var(--green);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-sm);
-      background: var(--green-light);
-      font-size: 27px;
-    }
 
     .modal-backdrop,
     .lightbox {
@@ -924,6 +913,47 @@
       border-color: var(--border-dark);
       box-shadow: var(--shadow-md);
       transform: translateY(-1px);
+    }
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 18px 0;
+    }
+    .auth-tab {
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink-muted);
+      font-weight: 800;
+    }
+    .auth-tab.active {
+      background: var(--green);
+      color: var(--white);
+      border-color: var(--green);
+    }
+    .auth-panel {
+      display: grid;
+      gap: 10px;
+      text-align: left;
+    }
+    .auth-panel input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font: inherit;
+    }
+    .inline-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .recaptcha-container {
+      min-height: 1px;
     }
     .modal-actions {
       display: flex;
@@ -1103,6 +1133,7 @@
       .timeline,
       .job-board-grid,
       .profile-layout,
+      .payment-grid,
       .footer-grid,
       .contractor-callout {
         grid-template-columns: 1fr;
@@ -1136,12 +1167,11 @@
   <nav class="app-nav" aria-label="Primary navigation">
     <div class="nav-inner">
       <a class="brand-link" href="#home" aria-label="JCM Landscaping home" onclick="navigatePage('home'); return false;">
-        <img src="JCM_Landscaping.png" alt="JCM Landscaping" height="72" style="display:block;">
+        <img src="JCM_Landscaping.png" alt="JCM Landscaping" height="66" style="display:block;">
       </a>
       <div class="nav-links" id="desktopNavLinks">
         <button class="nav-link" onclick="navigatePage('home')">Home</button>
-        <button class="nav-link contractor-only" id="navJobBoard" onclick="navigatePage('job-board')">Job Board</button>
-        <button class="nav-link" onclick="navigatePage('services')">Services</button>
+        <button class="nav-link contractor-only" id="navJobBoard" onclick="navigatePage('job-board')">Jobs</button>
         <button class="nav-link" onclick="navigatePage('how-it-works')">How It Works</button>
         <div class="dropdown">
           <button class="dropdown-trigger" type="button">More <span class="chevron" aria-hidden="true"></span></button>
@@ -1174,10 +1204,10 @@
         <button class="close-mobile" type="button" aria-label="Close menu" onclick="toggleMobileMenu(false)"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
       </header>
       <button type="button" onclick="mobileNavigate('home')">Home</button>
-      <button type="button" onclick="mobilePostJob()">Post a Job</button>
-      <button type="button" class="mobile-contractor-only" onclick="mobileNavigate('job-board')">Job Board</button>
+      <button type="button" onclick="mobilePostJob()">Submit Service Request</button>
+      <button type="button" class="mobile-contractor-only" onclick="mobileNavigate('job-board')">Jobs</button>
+      <button type="button" class="mobile-contractor-only" onclick="mobileNavigate('payment')">Payment</button>
       <button type="button" class="mobile-applicant-only" onclick="mobileApply()">Apply as Contractor</button>
-      <button type="button" onclick="mobileNavigate('services')">Services</button>
       <button type="button" onclick="mobileNavigate('how-it-works')">How It Works</button>
       <button type="button" onclick="mobileNavigate('support')">Support/Contact</button>
       <button type="button" onclick="mobileAccountAction()" id="mobileAccountButton">Account</button>
@@ -1187,10 +1217,10 @@
   <section class="hero active" id="homeHero" aria-label="JCM Landscaping Network hero">
     <div class="hero-content">
       <span class="eyebrow" style="color:rgba(255,255,255,0.82);">JCM Landscaping Network</span>
-      <h1>The smarter way to get your lawn done.</h1>
-      <p>Post your job, verify your email, and let approved JCM contractors come to you.</p>
+      <h1>The smarter way to request outdoor service.</h1>
+        <p>Submit your service request, review quotes from approved JCM contractors, then confirm the final scope, payment, and schedule.</p>
       <div class="hero-actions">
-        <button class="btn btn-primary" type="button" onclick="goPostJob()">Post a Job</button>
+        <button class="btn btn-primary" type="button" onclick="goPostJob()">Submit Service Request</button>
         <button class="btn btn-secondary" type="button" onclick="navigatePage('how-it-works')">How It Works</button>
       </div>
     </div>
@@ -1201,18 +1231,18 @@
       <div class="grid">
         <article class="card feature-card">
           <span class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">yard</span></span>
-          <h3>Post Your Job</h3>
-          <p>Tell JCM what you need done, where the property is, and what the area looks like. Photos help contractors understand the work before anyone claims it.</p>
+          <h3>Submit Service Request</h3>
+          <p>Tell JCM what you need done, where the property is, and what the area looks like. Photos help contractors prepare accurate quotes.</p>
         </article>
         <article class="card feature-card">
           <span class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">verified</span></span>
-          <h3>Get Verified</h3>
-          <p>Your email and job details keep the network cleaner. Jobs from verified accounts can go live for approved contractors to view and claim.</p>
+          <h3>Submit Accurate Details</h3>
+          <p>Clear job details keep the network useful. Eligible requests can go live for approved nearby contractors to review.</p>
         </article>
         <article class="card feature-card">
           <span class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">assignment_turned_in</span></span>
-          <h3>Contractor Claims It</h3>
-          <p>Approved JCM contractors browse open work, claim jobs that fit their schedule, and receive the private address after committing.</p>
+          <h3>Review Contractor Quotes</h3>
+          <p>Approved JCM contractors browse open work and submit quotes or interest. Buyers choose one contractor before private details unlock.</p>
         </article>
       </div>
 
@@ -1222,10 +1252,10 @@
           <h2>How the network works</h2>
         </div>
         <div class="timeline">
-          <article class="timeline-step"><span class="timeline-number">1</span><h3>Post your job request</h3><p>Add photos, access notes, budget, timing, and the outdoor work you need completed.</p></article>
-          <article class="timeline-step"><span class="timeline-number">2</span><h3>Verify your email</h3><p>Verification helps protect contractors from spam and keeps your job ready to go live.</p></article>
-          <article class="timeline-step"><span class="timeline-number">3</span><h3>A contractor claims it</h3><p>An approved JCM contractor sees the job board and chooses work that fits their route.</p></article>
-          <article class="timeline-step"><span class="timeline-number">4</span><h3>They show up</h3><p>The contractor receives the address and contact details after claiming. Job done.</p></article>
+          <article class="timeline-step"><span class="timeline-number">1</span><h3>Submit your service request</h3><p>Add photos, access notes, budget, timing, and the outdoor work you need completed.</p></article>
+          <article class="timeline-step"><span class="timeline-number">2</span><h3>Your request becomes eligible</h3><p>JCM checks the request status before approved nearby contractors can review it.</p></article>
+          <article class="timeline-step"><span class="timeline-number">3</span><h3>Review contractor quotes</h3><p>Approved nearby contractors submit quote or interest details and profile previews.</p></article>
+          <article class="timeline-step"><span class="timeline-number">4</span><h3>Agree, pay, and schedule</h3><p>Accept one contractor, confirm the final offer in chat, make the test-mode payment, and confirm the schedule.</p></article>
         </div>
       </section>
 
@@ -1234,7 +1264,7 @@
           <div>
             <span class="eyebrow">For Contractors</span>
             <h2>Want to pick up jobs in your area?</h2>
-            <p class="lead">Apply to become an approved JCM contractor. Once accepted, you'll see available jobs near you and claim the ones that fit your schedule.</p>
+            <p class="lead">Apply to become an approved JCM contractor. Once accepted and ready in Stripe Test Mode, you can quote nearby requests that fit your schedule.</p>
           </div>
           <button class="btn btn-primary" type="button" onclick="goContractorApply()">Apply as a Contractor</button>
         </div>
@@ -1243,9 +1273,9 @@
 
     <section class="page narrow" id="page-post-job">
       <div class="page-header">
-        <span class="eyebrow">Post a Job</span>
-        <h1>Tell contractors what needs to be done.</h1>
-        <p class="lead">Your exact address stays hidden until an approved contractor claims the job.</p>
+        <span class="eyebrow">Submit Service Request</span>
+        <h1>Tell contractors what service you need.</h1>
+        <p class="lead">Your exact address stays hidden until you accept one contractor and the post-acceptance workflow allows access.</p>
       </div>
       <div class="notice" id="emailVerifyNotice" hidden>
         Check your inbox. You need to verify your email before your job goes live.
@@ -1254,8 +1284,8 @@
       <div class="form-panel">
         <form id="jobRequestForm" class="form-grid" novalidate>
           <div class="form-field full">
-            <label for="jobTitle">Job Title</label>
-            <input id="jobTitle" name="title" type="text" placeholder="e.g. Front yard mow and edge, Broken Arrow OK" required>
+            <label for="jobTitle">Service Request Title</label>
+            <input id="jobTitle" name="title" type="text" placeholder="Brief title for the service request" required>
             <span class="error-message"></span>
           </div>
           <div class="form-field">
@@ -1288,13 +1318,13 @@
           <div class="form-field full">
             <label for="jobPhone">Customer Phone</label>
             <input id="jobPhone" name="posterPhone" type="tel" required>
-            <span class="hint">This is hidden from the public board and shown only to the contractor who claims your job.</span>
+            <span class="hint">This stays hidden from the Available Jobs page and is shared only with your accepted contractor after acceptance.</span>
             <span class="error-message"></span>
           </div>
           <div class="form-field full">
             <label for="fullAddress">Full Property Address</label>
             <input id="fullAddress" name="fullAddress" type="text" required>
-            <span class="hint">Your exact address is hidden from the job board. Contractors only see your city and ZIP until they claim your job.</span>
+            <span class="hint">Your exact address stays private. Contractors see your city and ZIP while quoting; only your accepted contractor can unlock it after acceptance.</span>
             <span class="error-message"></span>
           </div>
           <div class="form-field">
@@ -1331,12 +1361,12 @@
             <span class="error-message"></span>
           </div>
           <div class="form-field full">
-            <label for="jobDetails">Job Details</label>
+            <label for="jobDetails">Service Request Details</label>
             <textarea id="jobDetails" name="details" placeholder="Describe the work in as much detail as possible. Include access notes (gate codes, dogs, parking), problem areas, materials needed, and anything the contractor should know." required></textarea>
             <span class="error-message"></span>
           </div>
           <div class="form-field full" id="photoField">
-            <label>Photos of the Area (required - at least 1, up to 8)</label>
+            <label>Photos of the Area (strongly recommended, up to 8)</label>
             <div id="photoDropZone" style="border:2px dashed var(--border-dark);border-radius:8px;padding:32px;text-align:center;cursor:pointer;background:var(--surface);transition:background 150ms;">
               <div class="material-symbols-rounded upload-icon" aria-hidden="true" style="margin-bottom:8px;">photo_camera</div>
               <p style="color:var(--ink-muted);margin:0;">Click to select photos, or drag and drop here</p>
@@ -1346,7 +1376,7 @@
             <div id="photoPreviewRow" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
             <span class="error-message"></span>
           </div>
-          <button class="btn btn-primary full" id="submitJobBtn" type="submit">Post My Job</button>
+          <button class="btn btn-primary full" id="submitJobBtn" type="submit">Submit Request</button>
         </form>
         <div class="result-panel" id="jobRequestResult" hidden></div>
       </div>
@@ -1354,9 +1384,9 @@
 
     <section class="page" id="page-job-board">
       <div class="page-header">
-        <span class="eyebrow">Contractor Board</span>
-        <h1>Open jobs near you.</h1>
-        <p class="lead">Browse verified jobs and claim the ones you are ready to complete.</p>
+        <span class="eyebrow">Contractor Jobs</span>
+        <h1>Jobs near you.</h1>
+        <p class="lead">Browse nearby requests and submit quotes or interest after your Stripe Test Mode payment setup is complete.</p>
       </div>
       <div id="boardLocked" class="card locked-state" hidden>
         <div class="icon-badge" aria-hidden="true"><span class="material-symbols-rounded">lock</span></div>
@@ -1384,7 +1414,7 @@
       <div class="page-header">
         <span class="eyebrow">Contractors</span>
         <h1>Apply to join the JCM contractor network.</h1>
-        <p class="lead">Approved contractors can browse open jobs and claim work that fits their schedule.</p>
+        <p class="lead">Approved contractors can browse open requests and submit quotes for work that fits their schedule.</p>
       </div>
       <div id="contractorStatusCard" class="card" hidden></div>
       <div class="form-panel" id="contractorFormPanel">
@@ -1427,7 +1457,7 @@
             <span class="error-message"></span>
           </div>
           <div class="checkbox-wrap" id="skillsGroup">
-            <legend>Skills / Services Offered</legend>
+            <legend>Skills Offered</legend>
             <div class="checkbox-grid" id="skillsOptions"></div>
             <span class="error-message"></span>
           </div>
@@ -1470,8 +1500,8 @@
       </div>
       <div id="accountSignedOut" class="card locked-state">
         <h2>Sign in to view your profile.</h2>
-        <p class="lead">Your profile shows your posted jobs, contractor status, and claimed work.</p>
-        <div class="hero-actions"><button class="btn btn-primary" type="button" onclick="openSignInModal()">Continue with Google</button></div>
+        <p class="lead">Your profile shows your submitted service requests, contractor status, quotes, and accepted work.</p>
+        <div class="hero-actions"><button class="btn btn-primary" type="button" onclick="openSignInModal()">Sign In or Create Account</button></div>
       </div>
       <div id="accountContent" hidden>
         <div class="profile-layout">
@@ -1488,11 +1518,11 @@
           </section>
         </div>
         <section class="home-section">
-          <h2>My Posted Jobs</h2>
+          <h2>My Service Requests</h2>
           <div class="compact-list" id="myPostedJobs"></div>
         </section>
         <section class="home-section" id="claimedJobsSection" hidden>
-          <h2>Jobs I've Claimed</h2>
+          <h2>Accepted Jobs</h2>
           <div class="compact-list" id="myClaimedJobs"></div>
         </section>
       </div>
@@ -1504,10 +1534,10 @@
         <h1>How JCM Works</h1>
       </div>
       <div class="compact-list">
-        <article class="card timeline-step"><span class="timeline-number">1</span><h3>Post your job request with photos and details</h3><p>Clear photos, accurate location, budget, and access notes help contractors decide whether the work fits.</p></article>
-        <article class="card timeline-step"><span class="timeline-number">2</span><h3>Verify your email to make your job live</h3><p>Verified accounts keep the job board useful and reduce low-quality posts.</p></article>
-        <article class="card timeline-step"><span class="timeline-number">3</span><h3>An approved JCM contractor claims it</h3><p>Contractors see your city, ZIP, photos, budget, and details before they commit.</p></article>
-        <article class="card timeline-step"><span class="timeline-number">4</span><h3>They show up. Job done.</h3><p>Once claimed, the contractor receives the full address and customer contact details.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">1</span><h3>Submit your service request with photos and details</h3><p>Clear photos, accurate location, budget, and access notes help contractors decide whether the work fits.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">2</span><h3>Your request becomes eligible for quotes</h3><p>The request status shows whether approved nearby contractors can review it yet.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">3</span><h3>Review quotes</h3><p>Approved nearby contractors see public details and submit quotes or interest.</p></article>
+        <article class="card timeline-step"><span class="timeline-number">4</span><h3>Accept, agree, pay, and schedule</h3><p>Private details unlock only for the accepted contractor after acceptance. Final scope, price, and schedule are confirmed in the platform.</p></article>
       </div>
       <section class="home-section">
         <h2>FAQ</h2>
@@ -1563,15 +1593,6 @@
         </form>
       </div>
     </section>
-
-    <section class="page" id="page-services">
-      <div class="page-header">
-        <span class="eyebrow">Services</span>
-        <h1>Post the outdoor work you need.</h1>
-        <p class="lead">Choose a category, describe the property, and add photos so approved contractors can understand the job.</p>
-      </div>
-      <div class="grid four" id="servicesGrid"></div>
-    </section>
   </main>
 
   <footer>
@@ -1588,8 +1609,8 @@
           <h4>Quick Links</h4>
           <div class="footer-links">
             <a href="#home" onclick="navigatePage('home'); return false;">Home</a>
-            <a href="#post-job" onclick="goPostJob(); return false;">Post a Job</a>
-            <a href="#job-board" onclick="navigatePage('job-board'); return false;">Job Board</a>
+            <a href="#post-job" onclick="goPostJob(); return false;">Submit Service Request</a>
+          <a href="#job-board" onclick="navigatePage('job-board'); return false;">Available Jobs</a>
             <a href="#contractor-apply" onclick="goContractorApply(); return false;">Apply as Contractor</a>
             <a href="#how-it-works" onclick="navigatePage('how-it-works'); return false;">How It Works</a>
             <a href="#support" onclick="navigatePage('support'); return false;">Support</a>
@@ -1627,10 +1648,10 @@
     <div class="modal-card">
       <img class="modal-logo" src="JCM_Landscaping.png" alt="JCM Landscaping">
       <h2 id="signInTitle">Sign in to continue</h2>
-      <p>Use your Google account to post jobs, apply as a contractor, or manage your JCM profile.</p>
-      <button class="google-btn" id="googleSignInBtn" type="button" onclick="signInWithGoogle()">
+      <p>Create an account or sign in with email or phone to submit service requests, apply as a contractor, or manage your JCM profile.</p>
+      <button class="google-btn" id="googleSignInBtn" type="button" onclick="openSignInModal()">
         <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.4.2 24 .2 14.7.2 6.7 5.5 2.8 13.2l7.9 6.1C12.6 13.5 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-2.8-.4-4.1H24v8.1h13.6c-.3 2.1-1.7 5.2-4.9 7.3l7.7 6c4.6-4.2 7.1-10.4 7.1-17.3z"/><path fill="#FBBC05" d="M10.7 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C1.1 16.5.2 20.1.2 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 47.8c6.4 0 11.8-2.1 15.7-5.8l-7.7-6c-2.1 1.4-4.8 2.4-8 2.4-6.1 0-11.4-4.1-13.3-9.7l-7.9 6.1C6.7 42.5 14.7 47.8 24 47.8z"/></svg>
-        Continue with Google
+        Sign In or Create Account
       </button>
       <button class="nav-link" type="button" style="margin:14px auto 0;" onclick="closeSignInModal()">Cancel</button>
     </div>
@@ -1638,10 +1659,10 @@
 
   <div class="modal-backdrop" id="claimModal" role="dialog" aria-modal="true" aria-labelledby="claimTitle">
     <div class="modal-card">
-      <h2 id="claimTitle">Claim this job?</h2>
-      <p>Once claimed, you'll receive the customer's full address and contact information. You are committing to completing this work.</p>
+      <h2 id="claimTitle">Submit a quote?</h2>
+      <p>The buyer reviews your quote or interest. Private address and contact information remain hidden until the buyer accepts you.</p>
       <div class="modal-actions">
-        <button class="btn btn-primary full" id="confirmClaimBtn" type="button" onclick="confirmClaimJob()">Yes, Claim It</button>
+        <button class="btn btn-primary full" id="confirmClaimBtn" type="button" onclick="confirmClaimJob()">Submit Quote</button>
         <button class="btn btn-secondary full" type="button" onclick="closeClaimModal()">Cancel</button>
       </div>
     </div>
@@ -1659,12 +1680,12 @@
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
 
   <script>
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const auth = githubData.auth();
+    const db = githubData.database();
     db.settings({ experimentalAutoDetectLongPolling: true });
-    const storage = firebase.storage();
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+    const storage = githubData.storage();
+    const provider = null;
+    const serverTimestamp = githubData.database.FieldValue.serverTimestamp;
 
     const state = {
       authUser: null,
@@ -1695,7 +1716,7 @@
       currentUserDoc = state.currentUser;
     }
 
-    const knownPageIds = ["home", "post-job", "job-board", "contractor-apply", "account", "how-it-works", "support", "services"];
+    const knownPageIds = ["home", "post-job", "job-board", "payment", "contractor-apply", "account", "how-it-works", "support"];
 
     const serviceTypes = [
       "Residential Lawn Mowing",
@@ -1727,24 +1748,14 @@
       "Hauling & Cleanup"
     ];
     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    const serviceCards = [
-      ["Lawn Mowing & Edging", "Residential Lawn Mowing", "Regular mowing, edging, trimming, and clean finish work for residential lawns."],
-      ["Weed Control & Fertilization", "Weed Control & Fertilization", "Post treatment needs with property details so contractors understand the lawn condition."],
-      ["Leaf Removal & Cleanup", "Leaf Removal & Cleanup", "Seasonal leaf pickup, debris cleanup, bagging, and haul-off requests."],
-      ["Landscape Design & Beds", "Landscape Planting & Beds", "Planting, bed cleanup, edging, and refresh work for front or backyard spaces."],
-      ["Mulching", "Mulching", "Mulch refreshes, bed preparation, edging, and material placement for clean curb appeal."],
-      ["Aeration & Overseeding", "Aeration & Overseeding", "Soil aeration and overseeding work for stronger seasonal lawn growth."],
-      ["Snow & Ice Removal", "Snow & Ice Removal", "Driveway, walkway, and small commercial snow or ice removal requests."],
-      ["Holiday Lighting", "Holiday Lighting Installation", "Lighting installation and removal jobs for seasonal outdoor displays."]
-    ];
     const faqs = [
-      ["How does a job go live?", "A signed-in user submits a job with photos. If their email is verified, the job can become open on the contractor board. If not, it stays pending verification until the email is verified."],
-      ["What can contractors see before claiming?", "Contractors see the service type, city, ZIP code, property size, budget, frequency, preferred date, notes, and photos. The exact address is hidden until the job is claimed."],
-      ["How do I become a contractor?", "Sign in with Google and submit the contractor application. JCM reviews your location, skills, equipment, experience, and availability before approving access."],
-      ["Why is my address hidden?", "The job board is designed to protect customers. Full address and contact details are only shown to the contractor after they claim the work."],
-      ["Can I cancel a job?", "Contact JCM through the support form with your job title and email address. An admin can reject or close the job from the dashboard."],
-      ["What happens after a contractor claims my job?", "The job is removed from the open board, and the contractor receives the private address and customer contact details needed to complete the work."],
-      ["Can contractors choose any job?", "Approved contractors can browse open work and claim jobs they are ready to complete. Claiming a job is a commitment to follow through."],
+      ["How does a request go live?", "A signed-in buyer submits a service request. Photos are strongly recommended because they help contractors quote accurately. If verification is required, the request stays pending verification until that step is complete."],
+      ["What can contractors see before buyer acceptance?", "Approved contractors see public service details, city, ZIP code or approximate area, property size, budget, frequency, preferred date, notes, and photos. The full address and private contact details stay hidden."],
+      ["How do I become a contractor?", "Create an account with email and submit the contractor application. JCM reviews your location, skills, equipment, experience, and availability before approving access."],
+      ["Why is my address hidden?", "JCM protects private buyer details. The full address and contact details are shared only with the accepted contractor after buyer acceptance and only when the workflow allows it."],
+      ["Can I cancel a request?", "Signed-in buyers can open My Requests and cancel eligible requests. Paid, started, or disputed work follows the supported cancellation and dispute workflow."],
+      ["What happens after I accept a contractor?", "JCM opens an in-platform chat so the buyer and accepted contractor can confirm final scope, price, and timing. Work is scheduled only after the final offer is accepted and the sandbox payment step succeeds."],
+      ["Can contractors choose any request?", "Approved nearby contractors can browse available work and submit a quote or interest. The buyer chooses one contractor."],
       ["How do I contact JCM?", "Use the support form on this site or email help@jcm-landscaping.com for account, contractor, or job questions."],
       ["Can JCM edit a post?", "Admins can clean up unclear titles or details before or after a job becomes visible so the board stays easy to use."]
     ];
@@ -1796,13 +1807,13 @@
       toast(message, type);
     }
 
-    function firebaseMessage(error) {
+    function dataMessage(error) {
       const text = String((error && (error.message || error.code)) || "");
       if (text.toLowerCase().includes("unauthorized-domain")) {
-        return "Google sign-in is not authorized for this domain yet. Add jcm-landscaping.com in Firebase Authentication authorized domains.";
+        return "This domain is not authorized for JCM authentication yet. Add your real website domain in JCM authentication authorized domains.";
       }
       if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
-        return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
+        return "JCM could not reach JCM data services from this browser. Check your connection, refresh, or try again in a moment.";
       }
       return text || "Something went wrong. Please try again.";
     }
@@ -1902,7 +1913,7 @@
     function goPostJob() {
       requireAuth(function() {
         if (isSuspended()) {
-          toast("Your account is suspended and cannot post jobs.", "error");
+          toast("Your account is suspended and cannot submit service requests.", "error");
           return;
         }
         showPage("post-job");
@@ -1949,7 +1960,7 @@
       document.body.classList.remove("modal-open");
       if (clearPending !== false) state.pendingAction = null;
     }
-    async function signInWithGoogle() {
+    async function legacyProviderSignIn() {
       const button = $("googleSignInBtn");
       setButtonLoading(button, true);
       try {
@@ -1958,7 +1969,7 @@
           handleSignedInUser(result.user);
         }
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1969,7 +1980,7 @@
         toast("Signed out.", "info");
         showPage("home");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       }
     }
     function accountTriggerClick(event) {
@@ -2003,15 +2014,15 @@
       openSignInModal();
     }
 
-    async function ensureUserDoc(firebaseUser) {
-      const ref = db.collection("users").doc(firebaseUser.uid);
+    async function ensureUserDoc(signedInUser) {
+      const ref = db.collection("users").doc(signedInUser.uid);
       const snap = await ref.get();
       if (!snap.exists) {
         const payload = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || "",
-          displayName: firebaseUser.displayName || "",
-          photoURL: firebaseUser.photoURL || "",
+          uid: signedInUser.uid,
+          email: signedInUser.email || "",
+          displayName: signedInUser.displayName || "",
+          photoURL: signedInUser.photoURL || "",
           role: "user",
           contractorStatus: null,
           createdAt: serverTimestamp(),
@@ -2021,19 +2032,19 @@
         return payload;
       }
       await ref.set({
-        displayName: snap.data().displayName || firebaseUser.displayName || "",
-        photoURL: snap.data().photoURL || firebaseUser.photoURL || "",
+        displayName: snap.data().displayName || signedInUser.displayName || "",
+        photoURL: snap.data().photoURL || signedInUser.photoURL || "",
         lastSeen: serverTimestamp()
       }, { merge: true });
-      return { uid: firebaseUser.uid, ...snap.data() };
+      return { uid: signedInUser.uid, ...snap.data() };
     }
 
-    function authProfileUser(firebaseUser) {
+    function authProfileUser(signedInUser) {
       return {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email || "",
-        displayName: firebaseUser.displayName || (firebaseUser.email || "JCM User").split("@")[0],
-        photoURL: firebaseUser.photoURL || "",
+        uid: signedInUser.uid,
+        email: signedInUser.email || "",
+        displayName: signedInUser.displayName || (signedInUser.email || "JCM User").split("@")[0],
+        photoURL: signedInUser.photoURL || "",
         role: "user",
         contractorStatus: null,
         profileSyncPending: true
@@ -2050,9 +2061,9 @@
       }
     }
 
-    function handleSignedInUser(firebaseUser) {
-      state.authUser = firebaseUser;
-      state.currentUser = { ...authProfileUser(firebaseUser), ...(state.currentUser && state.currentUser.uid === firebaseUser.uid ? state.currentUser : {}) };
+    function handleSignedInUser(signedInUser) {
+      state.authUser = signedInUser;
+      state.currentUser = { ...authProfileUser(signedInUser), ...(state.currentUser && state.currentUser.uid === signedInUser.uid ? state.currentUser : {}) };
       syncCurrentUserAliases();
       closeSignInModal(false);
       renderAuthUI();
@@ -2061,16 +2072,16 @@
       finishPendingAuthAction();
     }
 
-    async function syncSignedInProfile(firebaseUser, attempt) {
+    async function syncSignedInProfile(signedInUser, attempt) {
       try {
-        const userDoc = await ensureUserDoc(firebaseUser);
-        const fresh = await db.collection("users").doc(firebaseUser.uid).get();
-        if (!state.authUser || state.authUser.uid !== firebaseUser.uid) return;
+        const userDoc = await ensureUserDoc(signedInUser);
+        const fresh = await db.collection("users").doc(signedInUser.uid).get();
+        if (!state.authUser || state.authUser.uid !== signedInUser.uid) return;
         state.currentUser = {
-          ...authProfileUser(firebaseUser),
-          email: firebaseUser.email || userDoc.email || "",
-          displayName: firebaseUser.displayName || userDoc.displayName || "",
-          photoURL: firebaseUser.photoURL || userDoc.photoURL || "",
+          ...authProfileUser(signedInUser),
+          email: signedInUser.email || userDoc.email || "",
+          displayName: signedInUser.displayName || userDoc.displayName || "",
+          photoURL: signedInUser.photoURL || userDoc.photoURL || "",
           role: "user",
           contractorStatus: null,
           ...fresh.data(),
@@ -2087,18 +2098,18 @@
       } catch (error) {
         if (!state.profileSyncNoticeShown) {
           state.profileSyncNoticeShown = true;
-          toast("You're signed in, but JCM is still connecting to Firebase for your profile. Some account features may take a moment.", "info");
+          toast("You're signed in, but JCM is still connecting to JCM data services for your profile. Some account features may take a moment.", "info");
         }
-        if ((attempt || 0) < 3 && state.authUser && state.authUser.uid === firebaseUser.uid) {
-          setTimeout(function() { syncSignedInProfile(firebaseUser, (attempt || 0) + 1); }, 4000);
+        if ((attempt || 0) < 3 && state.authUser && state.authUser.uid === signedInUser.uid) {
+          setTimeout(function() { syncSignedInProfile(signedInUser, (attempt || 0) + 1); }, 4000);
         }
       }
     }
 
-    auth.onAuthStateChanged(function(firebaseUser) {
+    auth.onAuthStateChanged(function(signedInUser) {
       detachListeners();
       state.authReady = true;
-      if (!firebaseUser) {
+      if (!signedInUser) {
         state.authUser = null;
         state.currentUser = null;
         syncCurrentUserAliases();
@@ -2109,8 +2120,8 @@
         renderAccountPage();
         return;
       }
-      handleSignedInUser(firebaseUser);
-      syncSignedInProfile(firebaseUser, 0);
+      handleSignedInUser(signedInUser);
+      syncSignedInProfile(signedInUser, 0);
     });
 
     function detachListeners() {
@@ -2139,7 +2150,7 @@
           state.openJobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; });
           renderJobBoard();
         }, function(error) {
-          toast(firebaseMessage(error), "error");
+          toast(dataMessage(error), "error");
         });
       state.boardUnsubscribe = unsub;
       state.unsubscribes.push(unsub);
@@ -2158,7 +2169,7 @@
           prefillUserForms();
           if (previousRole !== state.currentUser.role) attachJobBoardListener();
         }, function(error) {
-          toast(firebaseMessage(error), "error");
+          toast(dataMessage(error), "error");
         });
       state.unsubscribes.push(profileUnsub);
       const postedUnsub = db.collection("jobs")
@@ -2168,7 +2179,7 @@
             .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
           renderAccountPage();
         }, function(error) {
-          toast(firebaseMessage(error), "error");
+          toast(dataMessage(error), "error");
         });
       state.unsubscribes.push(postedUnsub);
       const claimedUnsub = db.collection("jobs")
@@ -2178,7 +2189,7 @@
             .sort(function(a, b) { return timestampMs(b.claimedAt || b.updatedAt) - timestampMs(a.claimedAt || a.updatedAt); });
           renderAccountPage();
         }, function(error) {
-          toast(firebaseMessage(error), "error");
+          toast(dataMessage(error), "error");
         });
       state.unsubscribes.push(claimedUnsub);
     }
@@ -2217,7 +2228,7 @@
         `<button type="button" onclick="showPage('account')">My Profile</button>`
       ];
       links.push(`<button type="button" onclick="showPage('account')">My Jobs</button>`);
-      if (isContractorLike()) links.push(`<button type="button" onclick="showPage('job-board')">Job Board</button>`);
+      if (isContractorLike()) links.push(`<button type="button" onclick="showPage('job-board')">Jobs</button>`);
       if (isAdminLike()) links.push(`<a href="/admin">Admin Dashboard</a>`);
       links.push(`<div class="dropdown-divider"></div>`);
       links.push(`<button type="button" onclick="signOut()">Sign Out</button>`);
@@ -2254,7 +2265,7 @@
       if (isContractorLike()) {
         statusCard.hidden = false;
         panel.hidden = true;
-        statusCard.innerHTML = `<h2>You're approved.</h2><p class="lead">You're an approved contractor. You can view the job board and claim available work.</p><div class="hero-actions"><button class="btn btn-primary" type="button" onclick="showPage('job-board')">View Job Board</button></div>`;
+        statusCard.innerHTML = `<h2>You're approved.</h2><p class="lead">You're an approved contractor. You can view Available Jobs and submit quotes for matching requests.</p><div class="hero-actions"><button class="btn btn-primary" type="button" onclick="showPage('job-board')">View Available Jobs</button></div>`;
       } else if (status === "pending") {
         statusCard.hidden = false;
         panel.hidden = true;
@@ -2283,25 +2294,11 @@
       $("faqList").innerHTML = faqs.map(function(item, index) {
         return `<article class="faq-item"><button class="faq-question" type="button" onclick="toggleFaq(${index})"><span>${escapeHtml(item[0])}</span><span class="chevron" aria-hidden="true"></span></button><div class="faq-answer"><p>${escapeHtml(item[1])}</p></div></article>`;
       }).join("");
-      $("servicesGrid").innerHTML = serviceCards.map(function(card) {
-        return `<article class="card service-card">
-          <span class="material-symbols-rounded service-icon" aria-hidden="true">eco</span>
-          <h3>${escapeHtml(card[0])}</h3>
-          <p>${escapeHtml(card[2])}</p>
-          <button class="btn btn-secondary" type="button" onclick="postThisService('${escapeHtml(card[1])}')">Post This Job</button>
-        </article>`;
-      }).join("");
     }
 
     function toggleFaq(index) {
       const items = document.querySelectorAll(".faq-item");
       if (items[index]) items[index].classList.toggle("open");
-    }
-
-    function postThisService(service) {
-      state.preselectService = service;
-      goPostJob();
-      setTimeout(function() { $("serviceType").value = service; }, 160);
     }
 
     function validateField(field) {
@@ -2398,7 +2395,7 @@
     function renderPhotoPreviews() {
       $("photoPreviewRow").innerHTML = state.selectedPhotos.map(function(file, index) {
         const url = URL.createObjectURL(file);
-        return `<div class="preview-item" style="position:relative;width:80px;height:80px;"><img src="${url}" alt="Selected job photo" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border);"><button class="remove-photo" type="button" aria-label="Remove photo" onclick="removeSelectedPhoto(${index})"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px;">close</span></button></div>`;
+        return `<div class="preview-item" style="position:relative;width:80px;height:80px;"><img src="${url}" alt="Selected service request photo" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border);"><button class="remove-photo" type="button" aria-label="Remove photo" onclick="removeSelectedPhoto(${index})"><span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px;">close</span></button></div>`;
       }).join("");
     }
     function removeSelectedPhoto(index) {
@@ -2429,7 +2426,7 @@
       result.classList.remove("error");
       if (!state.authUser) return openSignInModal();
       if (isSuspended()) {
-        toast("Your account is suspended and cannot post jobs.", "error");
+        toast("Your account is suspended and cannot submit service requests.", "error");
         return;
       }
       const formValid = validateForm($("jobRequestForm"));
@@ -2441,7 +2438,7 @@
       const button = $("submitJobBtn");
       button.disabled = true;
       button.classList.add("posting-loading");
-      button.textContent = "Posting...";
+      button.textContent = "Submitting...";
       try {
         await state.authUser.reload();
         state.authUser = auth.currentUser;
@@ -2478,18 +2475,18 @@
         result.hidden = false;
         result.classList.remove("error");
         result.innerHTML = verified
-          ? "Your job is live! Approved contractors in your area can now see it."
-          : `Job saved! Check your inbox at ${escapeHtml(state.authUser.email)} and click the verification link to make it visible to contractors. <button class="btn btn-secondary" type="button" onclick="resendVerificationFromResult(this)">Resend verification email</button>`;
-        toast(verified ? "Your job is live! Approved contractors can now see it." : `Your job has been saved. Verify ${state.authUser.email} to make it visible.`, "success");
+          ? "Your service request is live! Approved contractors in your area can now see it."
+          : `Service request saved! Check your inbox at ${escapeHtml(state.authUser.email)} and click the verification link to make it visible to contractors. <button class="btn btn-secondary" type="button" onclick="resendVerificationFromResult(this)">Resend verification email</button>`;
+        toast(verified ? "Your job is live! Approved contractors can now see it." : `Your service request has been saved. Verify ${state.authUser.email} to make it visible.`, "success");
       } catch (error) {
         result.hidden = false;
         result.classList.add("error");
         result.textContent = "Something went wrong. Please try again. If the problem continues, contact support.";
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         button.disabled = false;
         button.classList.remove("posting-loading");
-        button.textContent = "Post My Job";
+        button.textContent = "Submit Request";
       }
     }
 
@@ -2499,7 +2496,7 @@
         await state.authUser.sendEmailVerification();
         toast(`Verification email sent to ${state.authUser.email}.`, "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       }
     }
 
@@ -2512,7 +2509,7 @@
         toast(`Verification email sent to ${state.authUser.email}.`, "success");
       } catch (error) {
         button.disabled = false;
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       }
     }
 
@@ -2556,7 +2553,7 @@
         renderContractorApplicationState();
         toast(`Application submitted! We'll contact you at ${state.currentUser.email}.`, "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -2592,7 +2589,7 @@
         prefillUserForms();
         toast("Support message sent.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -2631,10 +2628,10 @@
       const photos = (job.photoURLs || []).slice(0, 3).map(function(url, index) {
         return `<button class="lightbox-trigger" type="button" onclick='openLightbox(${JSON.stringify(job.photoURLs || [])}, ${index})'><img class="photo-thumb" src="${escapeHtml(url)}" alt="Job photo ${index + 1}"></button>`;
       }).join("");
-      const privateInfo = claimedByYou ? `<div class="notice"><strong>Claimed by You</strong><br>${escapeHtml(job.fullAddress || "")}<br>${escapeHtml(job.posterPhone || "Customer phone not provided")}<br>${escapeHtml(job.posterEmail || "")}</div>` : "";
+      const privateInfo = claimedByYou ? `<div class="notice"><strong>Accepted Job</strong><br>Open the accepted request details to reveal private information when the workflow allows it. Each reveal is logged.</div>` : "";
       const action = claimedByYou
-        ? `<span class="status-badge status-claimed" style="position:static">Claimed by You</span>`
-        : `<button class="btn btn-primary full" type="button" onclick="openClaimModal('${job.id}')">Claim This Job</button>`;
+        ? `<span class="status-badge status-claimed" style="position:static">Accepted Job</span>`
+        : `<button class="btn btn-primary full" type="button" onclick="openClaimModal('${job.id}')">Submit Quote / Interest</button>`;
       return `<article class="card job-card">
         ${statusBadge(status)}
         <h3>${escapeHtml(job.serviceType || job.title || "Outdoor Work")}</h3>
@@ -2670,11 +2667,11 @@
     function openClaimModal(jobId) {
       if (!state.authUser) return openSignInModal();
       if (!isContractorLike()) {
-        toast("Only approved contractors can claim jobs.", "error");
+        toast("Only approved contractors can submit quotes.", "error");
         return;
       }
       if (isSuspended()) {
-        toast("Your account is suspended and cannot claim jobs.", "error");
+        toast("Your account is suspended and cannot submit quotes.", "error");
         return;
       }
       state.pendingClaimId = jobId;
@@ -2686,36 +2683,9 @@
       $("claimModal").classList.remove("active");
       document.body.classList.remove("modal-open");
     }
-    async function confirmClaimJob() {
-      const jobId = state.pendingClaimId;
-      if (!jobId) return;
-      const button = $("confirmClaimBtn");
-      setButtonLoading(button, true);
-      try {
-        const ref = db.collection("jobs").doc(jobId);
-        await db.runTransaction(async function(transaction) {
-          const snap = await transaction.get(ref);
-          if (!snap.exists) throw new Error("This job no longer exists.");
-          const job = snap.data();
-          if (job.status !== "open") throw new Error("This job is no longer open.");
-          transaction.update(ref, {
-            status: "claimed",
-            claimedBy: state.authUser.uid,
-            claimedByName: state.currentUser.displayName || state.authUser.displayName || "",
-            claimedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        });
-        const updated = await ref.get();
-        state.justClaimedJobs[jobId] = { id: jobId, ...updated.data() };
-        closeClaimModal();
-        renderJobBoard();
-        toast("Job claimed. Address and contact details are now visible.", "success");
-      } catch (error) {
-        toast(firebaseMessage(error), "error");
-      } finally {
-        setButtonLoading(button, false);
-      }
+    function confirmClaimJob(event) {
+      if (typeof window.submitMarketplaceQuote === "function") return window.submitMarketplaceQuote(event || new Event("submit"));
+      toast("The quote form is still loading. Refresh and try again.", "error");
     }
 
     function renderAccountPage() {
@@ -2733,8 +2703,8 @@
       const action = $("profileActions");
       action.innerHTML = "";
       if (isContractorLike()) {
-        $("contractorStatusMessage").textContent = "You're an approved contractor. View the job board to claim available work.";
-        action.innerHTML = `<button class="btn btn-primary" type="button" onclick="showPage('job-board')">View Job Board</button>`;
+        $("contractorStatusMessage").textContent = "You're an approved contractor. View Available Jobs to submit quotes for matching requests.";
+        action.innerHTML = `<button class="btn btn-primary" type="button" onclick="showPage('job-board')">View Jobs</button>`;
       } else if (status === "pending") {
         $("contractorStatusMessage").textContent = "Your contractor application is under review.";
       } else {
@@ -2754,7 +2724,7 @@
         return;
       }
       container.innerHTML = jobs.map(function(job) {
-        const extra = showPrivate ? `<p><strong>Address:</strong> ${escapeHtml(job.fullAddress || "")}</p><p><strong>Customer:</strong> ${escapeHtml(job.posterName || "")} ${escapeHtml(job.posterEmail || "")} ${escapeHtml(job.posterPhone || "")}</p>` : `<p>${escapeHtml(job.details || "")}</p>`;
+        const extra = showPrivate ? `<p>Open this accepted request to reveal private details when the workflow allows it. Each reveal is logged.</p>` : `<p>${escapeHtml(job.details || "")}</p>`;
         return `<article class="compact-card" id="compact-${job.id}">
           <div class="compact-card-header">
             <div><h3>${escapeHtml(job.title || "Untitled job")}</h3><p>${escapeHtml(formatDate(job.createdAt))}</p></div>
@@ -2822,5 +2792,7 @@
     initCookieBanner();
     setTimeout(routeFromHash, 120);
   </script>
+  <script src="workflow-overrides.js"></script>
+  <script src="marketplace-ui.js"></script>
 </body>
 </html>

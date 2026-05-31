@@ -10,23 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  <script>
-    /* Firebase config - JCM Landscaping production project */
-    const firebaseConfig = {
-      apiKey: "AIzaSyB5NGwKqXSb5d0kHdz-GWxL_ECIG7uPHAI",
-      authDomain: "jcm-landscaping-8df87.firebaseapp.com",
-      projectId: "jcm-landscaping-8df87",
-      storageBucket: "jcm-landscaping-8df87.firebasestorage.app",
-      messagingSenderId: "419377251087",
-      appId: "1:419377251087:web:a9cbf6a82603cedafd747a",
-      measurementId: "G-S77N6VNR4D"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
+  <script src="github-data-client.js"></script>
   <style>
     :root {
       --white: #ffffff;
@@ -135,6 +119,38 @@
       border-color: var(--border-dark);
       box-shadow: var(--shadow-md);
       transform: translateY(-1px);
+    }
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 18px 0;
+    }
+    .auth-tab {
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink-muted);
+      font-weight: 800;
+    }
+    .auth-tab.active {
+      background: var(--green);
+      color: var(--white);
+      border-color: var(--green);
+    }
+    .auth-panel {
+      display: grid;
+      gap: 10px;
+      text-align: left;
+    }
+    .auth-panel input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font: inherit;
     }
 
     .admin-shell {
@@ -626,11 +642,27 @@
     <div class="auth-card">
       <img src="JCM_Landscaping.png" alt="JCM Landscaping">
       <h1>Admin Dashboard</h1>
-      <p>Sign in with a Google account that has the admin or moderator role.</p>
-      <button class="google-btn" id="adminGoogleBtn" type="button" onclick="signInWithGoogle()">
-        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.4.2 24 .2 14.7.2 6.7 5.5 2.8 13.2l7.9 6.1C12.6 13.5 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-2.8-.4-4.1H24v8.1h13.6c-.3 2.1-1.7 5.2-4.9 7.3l7.7 6c4.6-4.2 7.1-10.4 7.1-17.3z"/><path fill="#FBBC05" d="M10.7 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C1.1 16.5.2 20.1.2 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 47.8c6.4 0 11.8-2.1 15.7-5.8l-7.7-6c-2.1 1.4-4.8 2.4-8 2.4-6.1 0-11.4-4.1-13.3-9.7l-7.9 6.1C6.7 42.5 14.7 47.8 24 47.8z"/></svg>
-        Continue with Google
-      </button>
+      <p>Sign in with an email or phone account that has the admin, owner, or moderator role.</p>
+      <div class="auth-tabs" role="tablist" aria-label="Admin sign in method">
+        <button class="auth-tab active" id="adminAuthEmailTab" type="button" onclick="showAdminAuthMode('email')">Email</button>
+        <button class="auth-tab" id="adminAuthPhoneTab" type="button" onclick="showAdminAuthMode('phone')">Phone</button>
+      </div>
+      <div class="auth-panel" id="adminEmailAuthPanel">
+        <label for="adminAuthEmail">Email</label>
+        <input id="adminAuthEmail" type="email" autocomplete="email" placeholder="Admin email address">
+        <label for="adminAuthPassword">Password</label>
+        <input id="adminAuthPassword" type="password" autocomplete="current-password">
+        <button class="btn btn-primary full" id="adminEmailSignInBtn" type="button" onclick="adminSignInWithEmail()">Sign In</button>
+      </div>
+      <div class="auth-panel" id="adminPhoneAuthPanel" hidden>
+        <label for="adminAuthPhone">Phone Number</label>
+        <input id="adminAuthPhone" type="tel" autocomplete="tel" placeholder="Phone number with country code">
+        <button class="btn btn-primary full" id="adminPhoneSendBtn" type="button" onclick="adminSendPhoneCode()">Send Code</button>
+        <label for="adminAuthCode">Verification Code</label>
+        <input id="adminAuthCode" type="text" inputmode="numeric" autocomplete="one-time-code">
+        <button class="btn btn-secondary full" id="adminPhoneVerifyBtn" type="button" onclick="adminVerifyPhoneCode()">Verify and Continue</button>
+      </div>
+      <div id="admin-recaptcha-container"></div>
     </div>
   </section>
 
@@ -660,10 +692,9 @@
     </header>
     <aside class="sidebar" aria-label="Dashboard sections">
       <button class="tab-button active" data-tab="overview" type="button" onclick="showTab('overview')">Overview</button>
-      <button class="tab-button" data-tab="jobs" type="button" onclick="showTab('jobs')">Job Queue</button>
+      <button class="tab-button" data-tab="jobs" type="button" onclick="showTab('jobs')">Jobs / Requests</button>
       <button class="tab-button" data-tab="applications" type="button" onclick="showTab('applications')">Contractor Applications</button>
       <button class="tab-button admin-only" data-tab="users" type="button" onclick="showTab('users')">All Users</button>
-      <button class="tab-button" data-tab="claimed" type="button" onclick="showTab('claimed')">Schedule / Claimed Jobs</button>
       <button class="tab-button" data-tab="support" type="button" onclick="showTab('support')">Support Tickets</button>
       <button class="tab-button admin-only" data-tab="analytics" type="button" onclick="showTab('analytics')">Analytics</button>
     </aside>
@@ -678,7 +709,7 @@
       </section>
 
       <section class="tab" id="tab-jobs">
-        <div class="section-header"><div><h1>Job Queue</h1><p>Review, edit, reject, or complete submitted jobs.</p></div></div>
+        <div class="section-header"><div><h1>Jobs / Requests</h1><p>Review service requests and lifecycle status.</p></div></div>
         <div class="toolbar" id="jobFilters"></div>
         <div class="list" id="jobsList"></div>
       </section>
@@ -696,11 +727,6 @@
           <input id="userSearch" type="search" placeholder="Search users" oninput="renderUsers()">
         </div>
         <div id="usersTableWrap"></div>
-      </section>
-
-      <section class="tab" id="tab-claimed">
-        <div class="section-header"><div><h1>Schedule / Claimed Jobs</h1><p>Track who is doing what and where.</p></div></div>
-        <div class="list" id="claimedJobsList"></div>
       </section>
 
       <section class="tab" id="tab-support">
@@ -751,11 +777,11 @@
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
 
   <script>
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const auth = githubData.auth();
+    const db = githubData.database();
     db.settings({ experimentalAutoDetectLongPolling: true });
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+    const provider = null;
+    const serverTimestamp = githubData.database.FieldValue.serverTimestamp;
 
     const state = {
       authUser: null,
@@ -835,13 +861,13 @@
     function showToast(message, type) {
       toast(message, type);
     }
-    function firebaseMessage(error) {
+    function dataMessage(error) {
       const text = String((error && (error.message || error.code)) || "");
       if (text.toLowerCase().includes("unauthorized-domain")) {
-        return "Google sign-in is not authorized for this domain yet. Add jcm-landscaping.com in Firebase Authentication authorized domains.";
+        return "This domain is not authorized for JCM authentication yet. Add your real website domain in JCM authentication authorized domains.";
       }
       if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
-        return "JCM could not reach Firebase from this browser. Check your connection, refresh, or try again in a moment.";
+        return "JCM could not reach JCM data services from this browser. Check your connection, refresh, or try again in a moment.";
       }
       return text || "Something went wrong. Please try again.";
     }
@@ -862,19 +888,19 @@
       $("adminApp").hidden = screen !== "app";
     }
 
-    async function signInWithGoogle() {
-      const button = $("adminGoogleBtn");
+    async function legacyProviderSignIn() {
+      const button = $("adminLegacyProviderBtn");
       setButtonLoading(button, true);
       try {
         await auth.signInWithPopup(provider);
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
     }
     function adminSignIn() {
-      return signInWithGoogle();
+      return legacyProviderSignIn();
     }
     async function signOut() {
       try {
@@ -885,49 +911,49 @@
         state.adminUser = null;
         syncAdminAliases();
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       }
     }
     function adminSignOut() {
       return signOut();
     }
-    async function ensureUserDoc(firebaseUser) {
-      const ref = db.collection("users").doc(firebaseUser.uid);
+    async function ensureUserDoc(signedInUser) {
+      const ref = db.collection("users").doc(signedInUser.uid);
       const snap = await ref.get();
       if (!snap.exists) {
         await ref.set({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || "",
-          displayName: firebaseUser.displayName || "",
-          photoURL: firebaseUser.photoURL || "",
+          uid: signedInUser.uid,
+          email: signedInUser.email || "",
+          displayName: signedInUser.displayName || "",
+          photoURL: signedInUser.photoURL || "",
           role: "user",
           contractorStatus: null,
           createdAt: serverTimestamp(),
           lastSeen: serverTimestamp()
         });
-        return { uid: firebaseUser.uid, role: "user" };
+        return { uid: signedInUser.uid, role: "user" };
       }
       await ref.set({ lastSeen: serverTimestamp() }, { merge: true });
-      return { uid: firebaseUser.uid, ...snap.data() };
+      return { uid: signedInUser.uid, ...snap.data() };
     }
 
-    auth.onAuthStateChanged(async function(firebaseUser) {
+    auth.onAuthStateChanged(async function(signedInUser) {
       detachListeners();
-      state.authUser = firebaseUser;
+      state.authUser = signedInUser;
       state.adminUser = null;
       syncAdminAliases();
-      if (!firebaseUser) {
+      if (!signedInUser) {
         showOnly("auth");
         return;
       }
       try {
-        const userDoc = await ensureUserDoc(firebaseUser);
-        const fresh = await db.collection("users").doc(firebaseUser.uid).get();
+        const userDoc = await ensureUserDoc(signedInUser);
+        const fresh = await db.collection("users").doc(signedInUser.uid).get();
         state.adminUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || "",
-          displayName: firebaseUser.displayName || "",
-          photoURL: firebaseUser.photoURL || "",
+          uid: signedInUser.uid,
+          email: signedInUser.email || "",
+          displayName: signedInUser.displayName || "",
+          photoURL: signedInUser.photoURL || "",
           role: "user",
           ...userDoc,
           ...fresh.data()
@@ -942,10 +968,15 @@
         document.querySelectorAll(".admin-only").forEach(function(el) { el.classList.toggle("hidden", !isAdmin()); });
         showOnly("app");
         if (!isAdmin() && (state.activeTab === "users" || state.activeTab === "analytics")) state.activeTab = "overview";
-        showTab(state.activeTab);
-        attachListeners();
+        if (typeof window.loadMarketplaceAdmin !== "function") {
+          toast("The trusted admin workflow did not load. Refresh the page before making changes.", "error");
+          showOnly("denied");
+          return;
+        }
+        window.showTab(state.activeTab);
+        window.attachListeners();
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
         showOnly("denied");
       }
     });
@@ -961,24 +992,24 @@
         state.jobs = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
           .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
         renderAll();
-      }, function(error) { toast(firebaseMessage(error), "error"); });
+      }, function(error) { toast(dataMessage(error), "error"); });
       const appsUnsub = db.collection("contractorApplications").onSnapshot(function(snapshot) {
         state.applications = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
           .sort(function(a, b) { return timestampMs(b.submittedAt) - timestampMs(a.submittedAt); });
         renderAll();
-      }, function(error) { toast(firebaseMessage(error), "error"); });
+      }, function(error) { toast(dataMessage(error), "error"); });
       const supportUnsub = db.collection("supportTickets").onSnapshot(function(snapshot) {
         state.tickets = snapshot.docs.map(function(doc) { return { id: doc.id, ...doc.data() }; })
           .sort(function(a, b) { return timestampMs(b.createdAt) - timestampMs(a.createdAt); });
         renderAll();
-      }, function(error) { toast(firebaseMessage(error), "error"); });
+      }, function(error) { toast(dataMessage(error), "error"); });
       state.unsubscribes.push(jobsUnsub, appsUnsub, supportUnsub);
       if (isAdmin()) {
         const usersUnsub = db.collection("users").onSnapshot(function(snapshot) {
           state.users = snapshot.docs.map(function(doc) { return { uid: doc.id, ...doc.data() }; })
             .sort(function(a, b) { return String(a.displayName || a.email || "").localeCompare(String(b.displayName || b.email || "")); });
           renderAll();
-        }, function(error) { toast(firebaseMessage(error), "error"); });
+        }, function(error) { toast(dataMessage(error), "error"); });
         state.unsubscribes.push(usersUnsub);
       }
     }
@@ -998,7 +1029,6 @@
       renderFilters();
       renderJobs();
       renderApplications();
-      renderClaimedJobs();
       renderSupport();
       if (isAdmin()) {
         renderUsers();
@@ -1118,7 +1148,7 @@
         });
         toast("Job updated.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1129,7 +1159,7 @@
         await db.collection("jobs").doc(id).update({ status: "rejected", updatedAt: serverTimestamp() });
         toast("Job rejected.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1140,7 +1170,7 @@
         await db.collection("jobs").doc(id).update({ status: "completed", updatedAt: serverTimestamp() });
         toast("Job marked complete.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1189,7 +1219,7 @@
           .commit();
         toast("Contractor approved.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1209,7 +1239,7 @@
           .commit();
         toast("Application rejected.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1270,30 +1300,10 @@
         closeManageUser();
         toast("User updated.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
-    }
-
-    function renderClaimedJobs() {
-      const jobs = state.jobs.filter(function(job) { return job.status === "claimed"; })
-        .sort(function(a, b) { return timestampMs(b.claimedAt) - timestampMs(a.claimedAt); });
-      if (!jobs.length) {
-        $("claimedJobsList").innerHTML = `<div class="card"><p>No claimed jobs right now.</p></div>`;
-        return;
-      }
-      $("claimedJobsList").innerHTML = jobs.map(function(job) {
-        return `<article class="card">
-          <div class="item-header"><div><h3>${escapeHtml(job.title || "Untitled job")}</h3><p>Contractor: ${escapeHtml(job.claimedByName || job.claimedBy || "")}</p></div>${statusBadge(job.status)}</div>
-          <div class="item-meta">
-            <span><strong>Address:</strong> ${escapeHtml(isAdmin() ? job.fullAddress || "" : "Hidden from moderators")}</span>
-            <span><strong>Preferred Date:</strong> ${escapeHtml(formatDate(job.preferredDate))}</span>
-            <span><strong>Customer:</strong> ${escapeHtml(isAdmin() ? `${job.posterName || ""} ${job.posterEmail || ""} ${job.posterPhone || ""}` : "Hidden from moderators")}</span>
-          </div>
-          <div class="actions"><button class="btn btn-secondary" type="button" onclick="completeJob('${job.id}', this)">Mark Complete</button></div>
-        </article>`;
-      }).join("");
     }
 
     function renderSupport() {
@@ -1321,7 +1331,7 @@
         await db.collection("supportTickets").doc(id).update({ status: "closed" });
         toast("Ticket closed.", "success");
       } catch (error) {
-        toast(firebaseMessage(error), "error");
+        toast(dataMessage(error), "error");
       } finally {
         setButtonLoading(button, false);
       }
@@ -1387,5 +1397,6 @@
       if (event.key === "Escape" && $("manageUserModal").classList.contains("active")) closeManageUser();
     });
   </script>
+  <script src="admin-marketplace-ui.js"></script>
 </body>
 </html>

@@ -1,0 +1,13 @@
+{
+  "name": "jcm-landscaping",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "check": "node --check github-data-client.js && node --check workflow-overrides.js && node --check marketplace-ui.js && node --check admin-overrides.js && node --check admin-marketplace-ui.js && node --check jcm-mobile/www/workflow-overrides.js && node --check jcm-mobile/www/marketplace-ui.js && node --check api/_lib/github-data.js && node --check api/_lib/stripe-connect.js && node --check api/_lib/marketplace-rules.js && node --check api/_lib/marketplace.js && node --check api/_lib/http.js && node --check api/auth/register.js && node --check api/auth/login.js && node --check api/auth/session.js && node --check api/data/store.js && node --check api/data/upload.js && node --check api/data/media.js && node --check api/stripe/onboarding-link.js && node --check api/stripe/dashboard-link.js && node --check api/stripe/refresh-account.js && node --check api/stripe/payment-summary.js && node --check api/stripe/webhook.js && node --check api/jobs/claim.js && node --check api/jobs/workflow.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "stripe": "^22.2.0"
+  }
+}
