@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { promisify } = require("util");
+const { verifyGoogleCredential } = require("./google-auth");
 const { httpError } = require("./http");
 const { stripPrivateJobFields } = require("./marketplace-rules");
 
@@ -32,6 +33,8 @@ const PROTECTED_USER_FIELDS = [
   "lastStripeStatusSync",
   "paymentSummary",
   "lastStripePayoutEvent",
+  "googleSub",
+  "authProviders",
   "completedJobCount",
   "averageRating",
   "reviewCount"
@@ -633,11 +636,87 @@ async function loginAccount({ email, password }) {
   const accounts = existing ? JSON.parse(existing.content.toString("utf8")) : emptyAccounts();
   const account = accounts.byEmail[normalizedEmail];
   if (!account) throw httpError(401, "Invalid email or password.");
+  if (!account.passwordSalt || !account.passwordHash) {
+    throw httpError(401, "Use Google sign-in for this account.");
+  }
   const attempted = Buffer.from(await hashPassword(String(password || ""), account.passwordSalt), "hex");
   const expected = Buffer.from(account.passwordHash, "hex");
   if (attempted.length !== expected.length || !crypto.timingSafeEqual(attempted, expected)) {
     throw httpError(401, "Invalid email or password.");
   }
+  return { token: signSession(account), user: publicAuthUser(account) };
+}
+
+async function googleSignInAccount({ credential }) {
+  const googleProfile = await verifyGoogleCredential(credential);
+  let account = null;
+  let created = false;
+  await updateJson(ACCOUNTS_PATH, emptyAccounts(), "Sign in JCM Google account", accounts => {
+    account = null;
+    created = false;
+    accounts.byGoogleSub = accounts.byGoogleSub || {};
+    const indexedEmail = accounts.byGoogleSub[googleProfile.sub];
+    account = indexedEmail && accounts.byEmail[indexedEmail]
+      ? accounts.byEmail[indexedEmail]
+      : accounts.byEmail[googleProfile.email];
+    if (account && account.email !== googleProfile.email && accounts.byEmail[googleProfile.email]) {
+      throw httpError(409, "A different JCM account already uses this Google email address.");
+    }
+    if (account && account.googleSub && account.googleSub !== googleProfile.sub) {
+      throw httpError(409, "This email address is already linked to a different Google account.");
+    }
+    if (!account) {
+      created = true;
+      account = {
+        uid: crypto.randomUUID(),
+        email: googleProfile.email,
+        displayName: googleProfile.displayName || googleProfile.email.split("@")[0],
+        photoURL: googleProfile.photoURL,
+        emailVerified: true,
+        googleSub: googleProfile.sub,
+        authProviders: ["google"],
+        createdAt: new Date().toISOString()
+      };
+      accounts.byEmail[googleProfile.email] = account;
+    } else {
+      if (account.email !== googleProfile.email) {
+        delete accounts.byEmail[account.email];
+        account.email = googleProfile.email;
+        accounts.byEmail[googleProfile.email] = account;
+      }
+      account.emailVerified = true;
+      account.googleSub = googleProfile.sub;
+      account.authProviders = [...new Set([...(account.authProviders || []), "google"])];
+      account.displayName = account.displayName || googleProfile.displayName || googleProfile.email.split("@")[0];
+      account.photoURL = account.photoURL || googleProfile.photoURL;
+      account.lastGoogleSignInAt = new Date().toISOString();
+    }
+    accounts.byGoogleSub[googleProfile.sub] = account.email;
+    return accounts;
+  });
+  const role = configuredRole(await readRolesConfig(), account.email) || "buyer";
+  const userProfile = {
+    uid: account.uid,
+    email: account.email,
+    emailVerified: true,
+    displayName: account.displayName || googleProfile.displayName || "",
+    photoURL: account.photoURL || googleProfile.photoURL || "",
+    googleSub: googleProfile.sub,
+    authProviders: account.authProviders || ["google"],
+    lastSeen: serverTimestamp()
+  };
+  if (created) {
+    userProfile.phoneNumber = "";
+    userProfile.role = role;
+    userProfile.contractorStatus = null;
+    userProfile.createdAt = serverTimestamp();
+  }
+  await systemWrite([{
+    type: "set",
+    path: `users/${account.uid}`,
+    data: userProfile,
+    merge: true
+  }], created ? "Create JCM Google user profile" : "Update JCM Google user profile");
   return { token: signSession(account), user: publicAuthUser(account) };
 }
 
@@ -825,6 +904,7 @@ module.exports = {
   isOwner,
   isStaffRole,
   isSuspended,
+  googleSignInAccount,
   loginAccount,
   mediaSignature,
   mediaUrl,

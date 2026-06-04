@@ -5,6 +5,8 @@
   var recaptchaVerifier = null;
   var phoneConfirmation = null;
   var overrideEventsWired = false;
+  var googleScriptPromise = null;
+  var googleSignInBusy = false;
 
   function safe(id) { return document.getElementById(id); }
   function roleOf(user) {
@@ -56,7 +58,12 @@
       modalCard.innerHTML = [
         '<img class="modal-logo" src="JCM_Landscaping.png" alt="JCM Landscaping">',
         '<h2 id="signInTitle">Sign in or create an account</h2>',
-        '<p>Create an account with email and password to submit service requests, apply as a contractor, or manage your JCM profile.</p>',
+        '<p>Use Google or email to submit service requests, apply as a contractor, or manage your JCM profile.</p>',
+        '<div class="google-auth-wrap">',
+        '  <div id="googleSignInButton" class="google-signin-button"></div>',
+        '  <p class="hint" id="googleSignInHint" hidden></p>',
+        '</div>',
+        '<div class="auth-divider"><span>or use email</span></div>',
         '<div class="auth-tabs" role="tablist" aria-label="Sign in method">',
         '  <button class="auth-tab active" id="authModeEmail" type="button" onclick="showAuthMode(\'email\')">Email</button>',
         '  <button class="auth-tab" id="authModePhone" type="button" title="Phone sign-in requires an SMS provider" disabled>Phone unavailable</button>',
@@ -213,6 +220,7 @@
     installWorkflowDom();
     safe("signInModal").classList.add("active");
     document.body.classList.add("modal-open");
+    setTimeout(function () { initGoogleSignIn(); }, 0);
   };
 
   window.closeSignInModal = function (clearPending) {
@@ -230,6 +238,92 @@
     handleSignedInUser(auth.currentUser || user);
     syncSignedInProfile(auth.currentUser || user, 0);
   }
+
+  function authApiUrl(path) {
+    var base = window.JCM_API_BASE_URL || (/^https?:$/.test(window.location.protocol) ? "" : "https://jcm-landscaping.com");
+    return base + path;
+  }
+
+  function setGoogleHint(message) {
+    var hint = safe("googleSignInHint");
+    if (!hint) return;
+    hint.textContent = message || "";
+    hint.hidden = !message;
+  }
+
+  function loadGoogleScript() {
+    if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+    if (googleScriptPromise) return googleScriptPromise;
+    googleScriptPromise = new Promise(function (resolve, reject) {
+      var script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = resolve;
+      script.onerror = function () { reject(new Error("Google sign-in could not load.")); };
+      document.head.appendChild(script);
+    });
+    return googleScriptPromise;
+  }
+
+  window.initGoogleSignIn = async function () {
+    var target = safe("googleSignInButton");
+    if (!target) return;
+    try {
+      setGoogleHint("Preparing Google sign-in...");
+      var response = await fetch(authApiUrl("/api/auth/google"), { method: "GET" });
+      var config = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(config.error || "Google sign-in is not available.");
+      if (!config.configured || !config.clientId) {
+        target.innerHTML = "";
+        setGoogleHint("Google sign-in is not configured yet. Email sign-in is still available.");
+        return;
+      }
+      await loadGoogleScript();
+      target.innerHTML = "";
+      window.google.accounts.id.initialize({
+        client_id: config.clientId,
+        callback: window.handleGoogleCredentialResponse,
+        context: "signin",
+        ux_mode: "popup",
+        itp_support: true
+      });
+      window.google.accounts.id.renderButton(target, {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        shape: "rectangular",
+        text: "continue_with",
+        logo_alignment: "left",
+        width: Math.min(400, Math.max(240, Math.floor(target.getBoundingClientRect().width || 360)))
+      });
+      setGoogleHint("");
+    } catch (error) {
+      target.innerHTML = "";
+      setGoogleHint(error.message || "Google sign-in is not available right now.");
+    }
+  };
+
+  window.handleGoogleCredentialResponse = async function (response) {
+    if (googleSignInBusy) return;
+    googleSignInBusy = true;
+    try {
+      if (!response || !response.credential) throw new Error("Google did not return a sign-in response.");
+      setGoogleHint("Signing in with Google...");
+      var result = await auth.signInWithGoogleCredential(response.credential);
+      await completeAuthProfile(result.user, result.user.displayName);
+      var pending = state.pendingAction;
+      closeSignInModal(false);
+      state.pendingAction = null;
+      toast("Signed in with Google.", "success");
+      if (typeof pending === "function") pending();
+    } catch (error) {
+      toast(dataMessage(error), "error");
+      setGoogleHint("");
+    } finally {
+      googleSignInBusy = false;
+    }
+  };
 
   window.registerWithEmail = async function () {
     var button = safe("emailRegisterBtn");
@@ -269,7 +363,7 @@
 
   window.legacyProviderSignIn = async function () {
     openSignInModal();
-    toast("Use email or phone sign-in for JCM accounts.", "info");
+    toast("Use the Google button or email sign-in for JCM accounts.", "info");
   };
 
   function ensureRecaptcha() {
@@ -324,6 +418,9 @@
     }
     if (text.toLowerCase().includes("auth/operation-not-allowed")) {
       return "This sign-in provider is not enabled yet.";
+    }
+    if (text.toLowerCase().includes("google_auth_not_configured") || text.toLowerCase().includes("google sign-in is not configured")) {
+      return "Google sign-in needs the Google client ID configured first. Email sign-in is still available.";
     }
     if (text.toLowerCase().includes("offline") || text.toLowerCase().includes("unavailable")) {
       return "JCM could not reach JCM data services from this browser. Check your connection, refresh, or try again in a moment.";

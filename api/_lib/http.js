@@ -39,6 +39,7 @@ function asyncHandler(handler) {
           ? "stripe_test_credentials_invalid"
           : error.code;
       const publicServerErrors = {
+        google_auth_not_configured: "Google sign-in is not configured yet. Email sign-in is still available.",
         stripe_test_credentials_missing: "Test payment setup is not configured yet. Please contact JCM support.",
         stripe_test_credentials_invalid: "Test payment setup is temporarily unavailable. Please contact JCM support.",
         stripe_permissions_insufficient: "Test payment setup needs additional Stripe permissions. Please contact JCM support."

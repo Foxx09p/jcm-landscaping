@@ -295,6 +295,14 @@
     this.notify();
     return { user: this.currentUser };
   };
+  GithubAuth.prototype.signInWithGoogleCredential = async function (credential) {
+    var data = await apiRequest("/api/auth/google", { method: "POST", body: { credential: credential } });
+    sessionToken = data.token;
+    browserStorage.setItem(SESSION_KEY, sessionToken);
+    this.currentUser = new AuthUser(data.user);
+    this.notify();
+    return { user: this.currentUser };
+  };
   GithubAuth.prototype.signOut = function () {
     sessionToken = "";
     browserStorage.removeItem(SESSION_KEY);
