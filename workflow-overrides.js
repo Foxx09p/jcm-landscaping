@@ -145,6 +145,11 @@
         '    <p class="lead">Payments appear here after you accept a contractor&apos;s final offer.</p>',
         '    <div class="compact-list" id="buyerPaymentList"></div>',
         '  </div>',
+        '  <div id="staffPaymentContent" class="card" hidden>',
+        '    <h2>Admin Payment Review</h2>',
+        '    <p class="lead">Use the Admin dashboard Payments tab to review Stripe payment metadata, disputes, refunds, and payout release records.</p>',
+        '    <div class="hero-actions"><a class="btn btn-primary" href="/admin">Open Admin Dashboard</a></div>',
+        '  </div>',
         '  <div id="paymentContent" hidden>',
         '    <div class="payment-grid">',
         '      <section class="card">',
@@ -157,7 +162,7 @@
         '        <div class="notice" id="paymentIssue" hidden></div>',
         '        <div id="requirementsList" class="compact-list"></div>',
         '        <div class="hero-actions">',
-        '          <button class="btn btn-primary" id="stripeSetupBtn" type="button" onclick="startStripeOnboarding(this)">Enable Test Payments</button>',
+        '          <button class="btn btn-primary" id="stripeSetupBtn" type="button" onclick="startStripeOnboarding(this)">Set Up Payouts</button>',
         '          <button class="btn btn-secondary" id="stripeDashboardBtn" type="button" onclick="openStripeDashboard(this)">Open Stripe Dashboard</button>',
         '          <button class="btn btn-secondary" id="stripeRefreshBtn" type="button" onclick="refreshStripeStatus(this)">Refresh Status</button>',
         '        </div>',
@@ -190,6 +195,10 @@
       var label = mobilePost.querySelector("span:last-child");
       if (label) label.textContent = "Request";
     }
+    document.querySelectorAll('button[onclick^="mobileNavigate("]').forEach(function (button) {
+      var match = String(button.getAttribute("onclick") || "").match(/mobileNavigate\('([^']+)'\)/);
+      if (match) button.setAttribute("onclick", "jcmMobileNavigate('" + match[1] + "')");
+    });
   }
 
   window.showAuthMode = function (mode) {
@@ -425,11 +434,6 @@
       showPage("job-board");
       return;
     }
-    if (pageId === "payment" && !state.authUser) {
-      state.pendingAction = function () { showPage("payment"); };
-      openSignInModal();
-      return;
-    }
     showPage(pageId, focusFaq);
   };
 
@@ -471,6 +475,12 @@
     closeAccountDropdown();
     showPage(pageId);
   };
+
+  window.jcmMobileNavigate = function (pageId) {
+    if (typeof toggleMobileMenu === "function") toggleMobileMenu(false);
+    navigatePage(pageId);
+  };
+  window.mobileNavigate = window.jcmMobileNavigate;
 
   window.accountTriggerClick = function (event) {
     if (!state.authUser) {
@@ -877,7 +887,7 @@
   window.jcmAuthFetch = authFetch;
 
   window.loadPaymentSummary = async function () {
-    if (!state.authUser || !isContractorLike()) {
+    if (!state.authUser || !isApprovedContractor()) {
       renderPaymentPage();
       return;
     }
@@ -932,7 +942,7 @@
   };
 
   window.openStripeDashboard = async function (button) {
-    setLoading(button, true);
+    setButtonLoading(button, true);
     try {
       var data = await authFetch("/api/stripe/connect?action=dashboard-link", { method: "POST", body: JSON.stringify({}) });
       if (data.simulated) {
@@ -943,7 +953,7 @@
       window.location.assign(data.url);
     } catch (error) {
       toast(error.message || "Stripe Dashboard could not open.", "error");
-      setLoading(button, false);
+      setButtonLoading(button, false);
     }
   };
 
@@ -951,10 +961,13 @@
     if (!safe("page-payment")) return;
     var signedIn = Boolean(state.authUser && state.currentUser);
     safe("paymentSignedOut").hidden = signedIn;
-    var contractor = signedIn && isContractorLike();
-    safe("buyerPaymentContent").hidden = !signedIn || contractor;
+    var contractor = signedIn && isApprovedContractor();
+    var staff = signedIn && isAdminLike() && !contractor;
+    safe("buyerPaymentContent").hidden = !signedIn || contractor || staff;
+    if (safe("staffPaymentContent")) safe("staffPaymentContent").hidden = !staff;
     safe("paymentContent").hidden = !signedIn || !contractor;
     if (!signedIn) return;
+    if (staff) return;
     if (!contractor) {
       var buyerJobs = (state.myPostedJobs || []).filter(function (job) {
         return job.paymentStatus && job.paymentStatus !== "not_required";
@@ -962,8 +975,9 @@
       safe("buyerPaymentList").innerHTML = buyerJobs.length
         ? buyerJobs.map(function (job) {
           var status = String(job.paymentStatus || "not_required").replace(/_/g, " ");
+          var amount = job.finalAmountCents ? formatMoney(job.finalAmountCents, "usd") : "Final amount pending";
           var label = job.status === "awaiting_payment" ? "Open Request to Pay" : "Open Request";
-          return '<article class="compact-card"><div class="compact-card-header"><div><h3>' + escapeHtml(job.title || "Service request") + '</h3><p>Status: ' + escapeHtml(status) + '</p></div></div><div class="hero-actions"><button class="btn btn-secondary" type="button" onclick="openMarketplaceJob(\'' + escapeHtml(job.id) + '\')">' + label + '</button></div></article>';
+          return '<article class="compact-card"><div class="compact-card-header"><div><h3>' + escapeHtml(job.title || "Service request") + '</h3><p>' + escapeHtml(amount) + ' - ' + escapeHtml(status) + '</p></div></div><div class="hero-actions"><button class="btn btn-secondary" type="button" onclick="openMarketplaceJob(\'' + escapeHtml(job.id) + '\')">' + label + '</button></div></article>';
         }).join("")
         : '<div class="compact-card"><p>No service-request payments yet.</p></div>';
       return;
@@ -973,18 +987,24 @@
     var canPayout = Boolean(state.currentUser.stripePayoutsEnabled || summary.stripePayoutsEnabled);
     var onboardingComplete = Boolean(state.currentUser.stripeOnboardingComplete || summary.stripeOnboardingComplete);
     var hasStripeAccount = Boolean(state.currentUser.stripeAccountId || summary.stripeAccountId);
+    var ready = onboardingComplete && canPayout;
     var badge = safe("stripeStatusBadge");
-    badge.textContent = onboardingComplete && canPayout ? "ready" : "incomplete";
-    badge.className = "status-badge " + (onboardingComplete && canPayout ? "status-open" : "status-pending");
-    safe("stripeStatusSummary").textContent = onboardingComplete && canPayout
-      ? (simulated ? "Test payment setup is complete. Simulated payouts are enabled." : "Stripe setup is complete. You can receive payouts.")
-      : "Complete Payment Setup before quoting paid jobs.";
+    badge.textContent = state.paymentLoading ? "checking" : (ready ? "ready" : "action needed");
+    badge.className = "status-badge " + (ready ? "status-open" : "status-pending");
+    safe("stripeStatusSummary").textContent = state.paymentLoading
+      ? "Checking Stripe payout setup..."
+      : ready
+        ? (simulated ? "Test payment setup is complete. Simulated payouts are enabled." : "Stripe setup is complete. You can receive payouts.")
+        : "Complete Stripe payout setup before quoting paid jobs.";
     safe("payoutsStatus").textContent = canPayout ? "Yes" : "No";
     safe("onboardingStatus").textContent = onboardingComplete ? "Complete" : "Incomplete";
     safe("stripeLastSync").textContent = state.currentUser.lastStripeStatusSync && state.currentUser.lastStripeStatusSync.toDate
       ? formatDate(state.currentUser.lastStripeStatusSync)
       : (summary.lastStripeStatusSync ? formatDate(summary.lastStripeStatusSync) : "Not synced");
     safe("stripeDashboardBtn").hidden = simulated || !hasStripeAccount;
+    safe("stripeSetupBtn").textContent = hasStripeAccount ? (ready ? "Update Stripe Setup" : "Finish Stripe Setup") : "Set Up Payouts";
+    safe("stripeSetupBtn").disabled = Boolean(state.paymentLoading);
+    safe("stripeRefreshBtn").disabled = Boolean(state.paymentLoading);
     var issue = summary.error || state.currentUser.stripeDisabledReason || "";
     safe("paymentIssue").hidden = !issue;
     safe("paymentIssue").textContent = issue;

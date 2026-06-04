@@ -1,5 +1,5 @@
 const { asyncHandler, methodNotAllowed, sendJson, httpError } = require("../_lib/http");
-const { db, getSignedInUser, isAdminRole, isApprovedContractor, isSuspended } = require("../_lib/github-data");
+const { db, getSignedInUser, isApprovedContractor, isSuspended } = require("../_lib/github-data");
 const {
   appBaseUrl,
   createOrRetrieveAccount,
@@ -44,7 +44,7 @@ function actionFromRequest(req) {
 async function requirePaymentUser(req, summaryOnly) {
   const user = await getSignedInUser(req);
   if (isSuspended(user.profile)) throw httpError(403, "Your account access is limited.");
-  if (!isApprovedContractor(user.profile) && !isAdminRole(user.profile)) {
+  if (!isApprovedContractor(user.profile)) {
     throw httpError(403, summaryOnly
       ? "Payment summary is available only to approved contractors."
       : "Payment setup is available only to approved contractors.");

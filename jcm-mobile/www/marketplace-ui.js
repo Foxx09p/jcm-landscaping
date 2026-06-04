@@ -3,6 +3,7 @@
 
   var refreshTimer = null;
   var activeJobId = "";
+  var paymentActionBusy = false;
 
   function byId(id) { return document.getElementById(id); }
   function esc(value) { return typeof escapeHtml === "function" ? escapeHtml(value == null ? "" : String(value)) : String(value == null ? "" : value); }
@@ -42,6 +43,9 @@
   }
   function notify(error, fallback) {
     toast((error && error.message) || fallback || "Something went wrong.", "error");
+  }
+  function statusText(value) {
+    return String(value || "").replace(/_/g, " ") || "not started";
   }
 
   function installStyles() {
@@ -490,7 +494,7 @@
       var amount = quote.priceCents ? money(quote.priceCents) : "Price note only";
       var accept = detail.job.postedBy === state.authUser.uid && ["open", "quotes_received"].includes(detail.job.status) && quote.status === "submitted"
         ? '<button class="btn btn-primary" type="button" onclick="acceptMarketplaceQuote(\'' + esc(quote.id) + '\')">Accept Contractor</button>' : "";
-      return '<div class="market-row"><strong>' + esc(quote.contractorBusinessName || quote.contractorDisplayName) + '</strong><p>' + esc(amount) + (quote.priceNote ? " - " + esc(quote.priceNote) : "") + '</p><p><strong>Availability:</strong> ' + esc(quote.availabilityNote) + '</p><p>' + esc(quote.message) + '</p><p class="market-muted">Profile: ' + esc(profile.city || "service area provided") + '. Rating: ' + esc(profile.reviewCount ? profile.averageRating + " / 5 from " + profile.reviewCount + " review(s)" : "No completed reviews yet") + '. Payments ready: ' + esc(profile.stripeTestReady ? "Yes" : "No") + '.</p><div class="market-actions">' + accept + '</div></div>';
+      return '<div class="market-row"><strong>' + esc(quote.contractorBusinessName || quote.contractorDisplayName) + '</strong><p>' + esc(amount) + (quote.priceNote ? " - " + esc(quote.priceNote) : "") + '</p><p><strong>Availability:</strong> ' + esc(quote.availabilityNote) + '</p><p>' + esc(quote.message) + '</p><p class="market-muted">Profile: ' + esc(profile.city || "service area provided") + '. Rating: ' + esc(profile.reviewCount ? profile.averageRating + " / 5 from " + profile.reviewCount + " review(s)" : "No completed reviews yet") + '. Payments ready: ' + esc((profile.paymentsReady || profile.stripeTestReady) ? "Yes" : "No") + '.</p><div class="market-actions">' + accept + '</div></div>';
     }).join("");
   }
 
@@ -504,7 +508,7 @@
   function payment(detail) {
     if (!detail.payment) return "";
     var item = detail.payment;
-    return '<div class="market-section"><h3>Secure Job Payment</h3><div class="market-grid"><div><strong>Buyer pays</strong><p>' + money(item.finalAmountCents) + '</p></div><div><strong>Payment status</strong><p>' + esc(item.paymentStatus) + '</p></div></div></div>';
+    return '<div class="market-section"><h3>Secure Job Payment</h3><div class="market-grid"><div><strong>Buyer pays</strong><p>' + money(item.finalAmountCents) + '</p></div><div><strong>Contractor payout</strong><p>' + money(item.contractorAmountCents) + '</p></div><div><strong>Payment status</strong><p>' + esc(statusText(item.paymentStatus)) + '</p></div><div><strong>Release status</strong><p>' + esc(statusText(item.releaseStatus)) + '</p></div></div></div>';
   }
 
   function finalOffers(detail) {
@@ -525,7 +529,7 @@
       html += '<form class="market-form" onsubmit="saveMarketplaceJobEdit(event)"><label>Title<input id="editMarketTitle" value="' + esc(job.title) + '" required></label><label>Service Type<input id="editMarketService" value="' + esc(job.serviceType) + '" required></label><label>City<input id="editMarketCity" value="' + esc(job.city) + '" required></label><label>ZIP<input id="editMarketZip" value="' + esc(job.zipCode) + '" required></label><label>Property Size<input id="editMarketSize" value="' + esc(job.propertySize) + '" required></label><label>Budget Range<input id="editMarketBudget" value="' + esc(job.budget) + '" required></label><label>Frequency<input id="editMarketFrequency" value="' + esc(job.frequency) + '" required></label><label>Preferred Date<input id="editMarketPreferred" value="' + esc(job.preferredDate || "") + '"></label><label>Details<textarea id="editMarketDetails" required>' + esc(job.details) + '</textarea></label><button class="btn btn-secondary" type="submit">Save Request Changes</button></form>';
       html += cancellationForm(job.id);
     }
-    if (buyer && job.status === "awaiting_payment") html += '<button class="btn btn-primary" type="button" onclick="payMarketplaceJob()">Pay Secure Job Payment</button>';
+    if (buyer && job.status === "awaiting_payment") html += '<button class="btn btn-primary" type="button" onclick="payMarketplaceJob(this)">Pay Secure Job Payment</button>';
     if (contractor && ["awaiting_final_offer", "awaiting_buyer_offer_acceptance"].includes(job.status)) {
       html += '<form class="market-form" onsubmit="submitMarketplaceFinalOffer(event)"><h4>Submit Formal Final Offer</h4><label>Final Price in Dollars<input id="offerAmount" inputmode="decimal" required></label><label>Scope Summary<textarea id="offerScope" maxlength="4000" required></textarea></label><label>Proposed Date / Time / Arrival Window<input id="offerSchedule" maxlength="800" required></label><label>Notes<textarea id="offerNotes" maxlength="1200"></textarea></label><button class="btn btn-primary" type="submit">Submit Final Offer</button></form>';
     }
@@ -535,7 +539,7 @@
     if (buyer && job.status === "scheduling" && job.proposedSchedule) html += '<div class="market-row"><strong>Proposed schedule</strong><p>' + esc(job.proposedSchedule.date) + ', ' + esc(job.proposedSchedule.timeWindow) + '</p><button class="btn btn-primary" type="button" onclick="confirmMarketplaceSchedule()">Confirm Schedule</button></div>';
     if (contractor && job.status === "scheduled") html += '<button class="btn btn-primary" type="button" onclick="startMarketplaceWork()">Mark Work In Progress</button>';
     if (contractor && job.status === "in_progress") html += '<form class="market-form" onsubmit="completeMarketplaceWork(event)"><label>Completion Photos<input id="completionPhotos" type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple></label><label>Completion Note<textarea id="completionNote" maxlength="1200"></textarea></label><button class="btn btn-primary" type="submit">Mark Job Complete</button></form>';
-    if (buyer && job.status === "contractor_completed") html += '<div class="market-actions"><button class="btn btn-primary" type="button" onclick="confirmMarketplaceCompletion()">Confirm Completion and Release Payment</button></div>' + disputeForm(job.id);
+    if (buyer && job.status === "contractor_completed") html += '<div class="market-actions"><button class="btn btn-primary" type="button" onclick="confirmMarketplaceCompletion(this)">Confirm Completion and Release Payment</button></div>' + disputeForm(job.id);
     if (buyer && job.status === "completed" && !detail.reviews.length) html += reviewForm();
     if (buyer && job.status === "canceled") html += '<form class="market-form" onsubmit="reopenMarketplaceJob(event)"><label>Why reopen this request?<textarea id="reopenNote" required></textarea></label><button class="btn btn-secondary" type="submit">Reopen Request</button></form>';
     if ((buyer || contractor) && !["closed"].includes(job.status)) html += reportForm();
@@ -592,7 +596,33 @@
   window.sendMarketplaceMessage = async function (event) { event.preventDefault(); try { await api("sendMessage", { jobId: activeJobId, message: field("marketMessage") }); await refreshActiveJob(); } catch (error) { notify(error); } };
   window.submitMarketplaceFinalOffer = async function (event) { event.preventDefault(); try { await api("createFinalOffer", { jobId: activeJobId, finalAmountCents: dollarsToCents(field("offerAmount")), scopeSummary: field("offerScope"), proposedSchedule: field("offerSchedule"), notes: field("offerNotes") }); await refreshActiveJob(); toast("Final offer sent.", "success"); } catch (error) { notify(error); } };
   window.respondMarketplaceOffer = async function (offerId, decision) { try { await api("respondFinalOffer", { offerId: offerId, decision: decision }); await refreshActiveJob(); toast(decision === "accept" ? "Final offer accepted. Payment is required next." : "Offer rejected. Continue the conversation.", "success"); } catch (error) { notify(error); } };
-  window.payMarketplaceJob = async function () { try { var data = await api("startCheckout", { jobId: activeJobId }); if (data.simulated) { await refreshActiveJob(); return toast("Test payment recorded. No money moved.", "success"); } window.location.assign(data.url); } catch (error) { notify(error); } };
+  window.payMarketplaceJob = async function (button) {
+    if (paymentActionBusy) return;
+    paymentActionBusy = true;
+    setBusy(button, true);
+    var redirecting = false;
+    try {
+      var data = await api("startCheckout", { jobId: activeJobId });
+      if (data.simulated) {
+        await refreshActiveJob();
+        return toast("Test payment recorded. No money moved.", "success");
+      }
+      if (data.alreadyPaid) {
+        await refreshActiveJob();
+        return toast("Payment is already recorded for this job.", "success");
+      }
+      if (!data.url) throw new Error("Stripe did not return a checkout link.");
+      redirecting = true;
+      window.location.assign(data.url);
+    } catch (error) {
+      notify(error);
+    } finally {
+      if (!redirecting) {
+        paymentActionBusy = false;
+        setBusy(button, false);
+      }
+    }
+  };
   window.proposeMarketplaceSchedule = async function (event) { event.preventDefault(); try { await api("proposeSchedule", { jobId: activeJobId, date: field("scheduleDate"), timeWindow: field("scheduleWindow"), notes: field("scheduleNotes") }); await refreshActiveJob(); toast("Schedule proposed.", "success"); } catch (error) { notify(error); } };
   window.confirmMarketplaceSchedule = async function () { try { await api("confirmSchedule", { jobId: activeJobId }); await refreshActiveJob(); toast("Schedule confirmed.", "success"); } catch (error) { notify(error); } };
   window.startMarketplaceWork = async function () { try { await api("startWork", { jobId: activeJobId }); await refreshActiveJob(); toast("Job marked in progress.", "success"); } catch (error) { notify(error); } };
@@ -603,7 +633,21 @@
     }));
   }
   window.completeMarketplaceWork = async function (event) { event.preventDefault(); try { var photos = await uploadCompletionPhotos(byId("completionPhotos").files); await api("completeWork", { jobId: activeJobId, completionPhotoURLs: photos, note: field("completionNote") }); await refreshActiveJob(); toast("Job marked complete. Buyer confirmation is required.", "success"); } catch (error) { notify(error); } };
-  window.confirmMarketplaceCompletion = async function () { try { await api("confirmCompletion", { jobId: activeJobId }); await refreshActiveJob(); toast("Completion confirmed and payout release recorded.", "success"); } catch (error) { notify(error); } };
+  window.confirmMarketplaceCompletion = async function (button) {
+    if (paymentActionBusy) return;
+    paymentActionBusy = true;
+    setBusy(button, true);
+    try {
+      await api("confirmCompletion", { jobId: activeJobId });
+      await refreshActiveJob();
+      toast("Completion confirmed and payout release recorded.", "success");
+    } catch (error) {
+      notify(error);
+    } finally {
+      paymentActionBusy = false;
+      setBusy(button, false);
+    }
+  };
   window.disputeMarketplaceJob = async function (event) { event.preventDefault(); try { await api("disputeJob", { jobId: activeJobId, reason: field("disputeReason"), note: field("disputeNote") }); await refreshActiveJob(); toast("Dispute opened. Payout release is blocked.", "success"); } catch (error) { notify(error); } };
   window.cancelMarketplaceJob = async function (event) { event.preventDefault(); try { await api("cancelJob", { jobId: activeJobId, reason: field("cancelReason"), note: field("cancelNote") }); await refreshActiveJob(); toast("Request canceled.", "success"); } catch (error) { notify(error); } };
   window.reopenMarketplaceJob = async function (event) { event.preventDefault(); try { await api("reopenJob", { jobId: activeJobId, note: field("reopenNote") }); await refreshActiveJob(); toast("Request reopened.", "success"); } catch (error) { notify(error); } };

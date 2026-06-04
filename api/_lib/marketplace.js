@@ -52,6 +52,10 @@ function timestampMs(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
+function timestampSecondsNow() {
+  return Math.floor(Date.now() / 1000);
+}
+
 function text(value, label, options = {}) {
   const normalized = String(value || "").trim();
   if (options.required && !normalized) throw httpError(400, `${label} is required.`);
@@ -157,6 +161,12 @@ function paymentEventOperation(paymentId, jobId, eventType, details = {}) {
   });
 }
 
+function checkoutSessionStillUsable(payment) {
+  if (!payment || !payment.stripeCheckoutSessionUrl) return false;
+  const expiresAt = Number(payment.stripeCheckoutSessionExpiresAt || 0);
+  return !expiresAt || expiresAt > timestampSecondsNow() + 60;
+}
+
 function supportOperation(user, details) {
   const ticketId = id("ticket");
   return {
@@ -225,8 +235,21 @@ function requireApprovedContractor(user) {
 
 function requirePayoutReady(profile) {
   if (!PLATFORM_PAYMENTS_REQUIRED) return;
-  if (!profile.stripeAccountId || !profile.stripeOnboardingComplete || !profile.stripePayoutsEnabled) {
+  profile = profile || {};
+  const mode = stripeMode();
+  if (!profile.stripeAccountId || !profile.stripeOnboardingComplete || !profile.stripePayoutsEnabled ||
+    (profile.stripeMode && profile.stripeMode !== mode)) {
     throw httpError(402, "Complete Payment Setup before using paid job actions.", "stripe_setup_required");
+  }
+}
+
+function profileReadyForPayouts(profile) {
+  try {
+    const mode = stripeMode();
+    return Boolean(profile && profile.stripeAccountId && profile.stripeOnboardingComplete &&
+      profile.stripePayoutsEnabled && (!profile.stripeMode || profile.stripeMode === mode));
+  } catch {
+    return Boolean(profile && profile.stripeAccountId && profile.stripeOnboardingComplete && profile.stripePayoutsEnabled);
   }
 }
 
@@ -253,6 +276,7 @@ function participant(user, job) {
 }
 
 function publicContractorProfile(profile) {
+  const paymentsReady = profileReadyForPayouts(profile);
   return {
     uid: profile.uid || "",
     displayName: profile.displayName || "",
@@ -265,7 +289,8 @@ function publicContractorProfile(profile) {
     skills: profile.skills || [],
     yearsExperience: profile.yearsExperience || profile.experience || "",
     contractorStatus: profile.contractorStatus || "",
-    stripeTestReady: Boolean(profile.stripeOnboardingComplete && profile.stripePayoutsEnabled && profile.stripeMode !== "live"),
+    paymentsReady,
+    stripeTestReady: paymentsReady,
     completedJobCount: Number(profile.completedJobCount || 0),
     averageRating: Number(profile.averageRating || 0),
     reviewCount: Number(profile.reviewCount || 0)
@@ -751,10 +776,16 @@ async function startCheckout(user, req, body) {
   const payment = await get("jobPayments", job.paymentId);
   if (!payment) throw httpError(409, "The job payment record is missing.");
   assertPaymentCurrentStripeMode(payment);
-  if (payment.paymentStatus !== "awaiting_payment") {
-    if (payment.stripeCheckoutSessionUrl) return { url: payment.stripeCheckoutSessionUrl, mode: stripeModeSummary() };
+  if (["held_pending_completion", "release_requested", "released_to_contractor"].includes(payment.paymentStatus)) {
+    return { alreadyPaid: true, paymentStatus: payment.paymentStatus, mode: stripeModeSummary() };
+  }
+  if (!["awaiting_payment", "payment_failed"].includes(payment.paymentStatus)) {
     throw httpError(409, "This job payment is not awaiting checkout.");
   }
+  if (payment.paymentStatus === "awaiting_payment" && checkoutSessionStillUsable(payment)) {
+    return { url: payment.stripeCheckoutSessionUrl, mode: stripeModeSummary(), reused: true };
+  }
+  const checkoutAttempt = Number(payment.checkoutAttempt || 0) + 1;
   if (stripeTestSimulationEnabled()) {
     const checkoutSessionId = `sim_checkout_${payment.id}`;
     const paymentIntentId = `sim_intent_${payment.id}`;
@@ -764,6 +795,7 @@ async function startCheckout(user, req, body) {
         stripeCheckoutSessionId: checkoutSessionId,
         stripePaymentIntentId: paymentIntentId,
         stripeChargeId: chargeId,
+        checkoutAttempt,
         paymentStatus: "held_pending_completion",
         releaseStatus: "not_released",
         paidAt: nowMarker(),
@@ -777,12 +809,17 @@ async function startCheckout(user, req, body) {
     ], "Record JCM simulated test payment");
     return { simulated: true, mode: stripeModeSummary() };
   }
-  const session = await createCheckoutSession(req, payment, job, user);
+  const session = await createCheckoutSession(req, { ...payment, checkoutAttempt }, job, user);
   await systemWrite([
     operation("update", `jobPayments/${payment.id}`, {
+      checkoutAttempt,
+      paymentStatus: "awaiting_payment",
       stripeCheckoutSessionId: session.id,
       stripeCheckoutSessionUrl: session.url,
+      stripeCheckoutSessionExpiresAt: session.expires_at || null,
       stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : "",
+      stripeFailureCode: "",
+      stripeFailureMessage: "",
       updatedAt: nowMarker()
     }),
     paymentEventOperation(payment.id, job.id, "checkout.created", { stripeObjectId: session.id }),
@@ -901,7 +938,7 @@ async function releasePayment(user, job, reason, options = {}) {
       releasedAt: nowMarker(),
       updatedAt: nowMarker()
     }),
-    operation("set", `payoutRecords/${id("payout")}`, {
+    operation("set", `payoutRecords/payout_${payment.id}`, {
       jobId: job.id,
       paymentId: payment.id,
       contractorId: job.acceptedContractorId,
@@ -916,6 +953,7 @@ async function releasePayment(user, job, reason, options = {}) {
     operation("update", `jobs/${job.id}`, {
       status: "completed",
       paymentStatus: "released_to_contractor",
+      activeDisputeId: null,
       completedAt: nowMarker(),
       updatedAt: nowMarker()
     }),
@@ -981,7 +1019,7 @@ async function refundPayment(user, job, reason, finalJobStatus = "canceled") {
       refundedAt: nowMarker(),
       updatedAt: nowMarker()
     }),
-    operation("update", `jobs/${job.id}`, { status: finalJobStatus, paymentStatus: "refunded", updatedAt: nowMarker() }),
+    operation("update", `jobs/${job.id}`, { status: finalJobStatus, paymentStatus: "refunded", activeDisputeId: null, updatedAt: nowMarker() }),
     statusHistoryOperation(user, job.id, job.status, finalJobStatus, reason),
     paymentEventOperation(payment.id, job.id, "refund.issued", { stripeObjectId: refund.id, note: reason }),
     systemMessageOperation(job.id, "A full buyer refund was issued through Stripe.", "refund_issued"),
@@ -1304,6 +1342,7 @@ async function adminResolveDispute(user, body) {
     throw httpError(400, "Choose a supported dispute resolution.");
   }
   await systemWrite([
+    operation("update", `jobs/${job.id}`, { activeDisputeId: null, updatedAt: nowMarker() }),
     operation("update", `jobDisputes/${dispute.id}`, { status: "resolved", resolution: action, resolutionReason: reason, resolvedBy: user.uid, resolvedAt: nowMarker(), updatedAt: nowMarker() }),
     systemMessageOperation(job.id, `JCM resolved the dispute: ${action.replace(/_/g, " ")}.`, "dispute_resolved"),
     auditOperation(user, "dispute.resolved", "jobDispute", dispute.id, { reason, newValue: { resolution: action } })
@@ -1438,6 +1477,21 @@ function stripeObjectMetadata(object) {
   return object && object.metadata || {};
 }
 
+function stripeId(value) {
+  if (!value) return "";
+  return typeof value === "string" ? value : value.id || "";
+}
+
+function stripeRelatedIds(object) {
+  return [
+    stripeId(object.id),
+    stripeId(object.payment_intent),
+    stripeId(object.charge),
+    stripeId(object.latest_charge),
+    stripeId(object.checkout_session)
+  ].filter(Boolean);
+}
+
 async function paymentFromStripeObject(object) {
   const metadata = stripeObjectMetadata(object);
   if (metadata.jcmPaymentId) {
@@ -1452,14 +1506,23 @@ async function paymentFromStripeObject(object) {
     const payment = await get("jobPayments", object.client_reference_id);
     return paymentInCurrentStripeMode(payment) ? payment : null;
   }
+  const relatedIds = stripeRelatedIds(object);
   const payments = await all("jobPayments");
   return payments.find(payment =>
     paymentInCurrentStripeMode(payment) && (
-    payment.stripePaymentIntentId === object.id ||
-    payment.stripeCheckoutSessionId === object.id ||
-    payment.stripeChargeId === object.id
+    relatedIds.includes(payment.stripePaymentIntentId) ||
+    relatedIds.includes(payment.stripeCheckoutSessionId) ||
+    relatedIds.includes(payment.stripeChargeId)
     )
   ) || null;
+}
+
+function paymentFailureDetails(object) {
+  const error = object.last_payment_error || {};
+  return {
+    stripeFailureCode: error.code || object.failure_code || object.cancellation_reason || "",
+    stripeFailureMessage: error.message || object.failure_message || "Stripe could not complete the payment."
+  };
 }
 
 async function markStripePaymentHeld(payment, object, event) {
@@ -1471,12 +1534,17 @@ async function markStripePaymentHeld(payment, object, event) {
   const chargeId = object.object === "charge"
     ? object.id
     : object.latest_charge && (typeof object.latest_charge === "string" ? object.latest_charge : object.latest_charge.id) || payment.stripeChargeId;
+  const checkoutSessionId = object.object === "checkout.session" ? object.id : payment.stripeCheckoutSessionId;
   await systemWrite([
     operation("update", `jobPayments/${payment.id}`, {
       paymentStatus: "held_pending_completion",
       releaseStatus: "not_released",
+      stripeCheckoutSessionId: checkoutSessionId || "",
+      stripeCheckoutSessionUrl: "",
       stripePaymentIntentId: paymentIntentId || "",
       stripeChargeId: chargeId || "",
+      stripeFailureCode: "",
+      stripeFailureMessage: "",
       paidAt: nowMarker(),
       updatedAt: nowMarker()
     }),
@@ -1502,31 +1570,74 @@ async function processStripeEvent(event) {
   }
   const object = event.data && event.data.object || {};
   const payment = await paymentFromStripeObject(object);
-  if (event.type === "checkout.session.completed" && payment) {
+  if (["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type) && payment) {
     await systemWrite([
       operation("update", `jobPayments/${payment.id}`, {
         stripeCheckoutSessionId: object.id,
         stripePaymentIntentId: typeof object.payment_intent === "string" ? object.payment_intent : payment.stripePaymentIntentId || "",
+        stripeCheckoutSessionUrl: "",
         updatedAt: nowMarker()
       }),
       paymentEventOperation(payment.id, payment.jobId, event.type, { stripeEventId: event.id, stripeObjectId: object.id })
     ], "Record JCM Checkout completion");
     if (object.payment_status === "paid") await markStripePaymentHeld(payment, object, event);
+  } else if (event.type === "checkout.session.expired" && payment) {
+    await systemWrite([
+      operation("update", `jobPayments/${payment.id}`, {
+        paymentStatus: "awaiting_payment",
+        stripeCheckoutSessionUrl: "",
+        stripeCheckoutSessionExpiresAt: null,
+        updatedAt: nowMarker()
+      }),
+      paymentEventOperation(payment.id, payment.jobId, event.type, { stripeEventId: event.id, stripeObjectId: object.id })
+    ], "Record JCM Checkout expiration");
   } else if (["payment_intent.succeeded", "charge.succeeded"].includes(event.type) && payment) {
     await markStripePaymentHeld(payment, object, event);
-  } else if (event.type === "payment_intent.payment_failed" && payment) {
+  } else if (["checkout.session.async_payment_failed", "payment_intent.payment_failed", "payment_intent.canceled"].includes(event.type) && payment) {
+    const failure = paymentFailureDetails(object);
     await systemWrite([
-      operation("update", `jobPayments/${payment.id}`, { paymentStatus: "payment_failed", updatedAt: nowMarker() }),
+      operation("update", `jobPayments/${payment.id}`, {
+        paymentStatus: "payment_failed",
+        stripeCheckoutSessionUrl: "",
+        stripeFailureCode: failure.stripeFailureCode,
+        stripeFailureMessage: failure.stripeFailureMessage,
+        updatedAt: nowMarker()
+      }),
       operation("update", `jobs/${payment.jobId}`, { paymentStatus: "payment_failed", updatedAt: nowMarker() }),
       paymentEventOperation(payment.id, payment.jobId, event.type, { stripeEventId: event.id, stripeObjectId: object.id }),
-      auditOperation(null, "payment.failed", "jobPayment", payment.id)
+      auditOperation(null, "payment.failed", "jobPayment", payment.id, { newValue: failure })
     ], "Record JCM Stripe payment failure");
   } else if (event.type === "charge.refunded" && payment) {
     await systemWrite([
-      operation("update", `jobPayments/${payment.id}`, { paymentStatus: "refunded", refundStatus: "refunded", stripeChargeId: object.id, refundedAt: nowMarker(), updatedAt: nowMarker() }),
+      operation("update", `jobPayments/${payment.id}`, {
+        paymentStatus: "refunded",
+        refundStatus: "refunded",
+        stripeChargeId: object.id,
+        refundedAt: nowMarker(),
+        updatedAt: nowMarker()
+      }),
+      operation("update", `jobs/${payment.jobId}`, { paymentStatus: "refunded", updatedAt: nowMarker() }),
       paymentEventOperation(payment.id, payment.jobId, event.type, { stripeEventId: event.id, stripeObjectId: object.id }),
       auditOperation(null, "payment.refund_webhook", "jobPayment", payment.id)
     ], "Record JCM Stripe refund");
+  } else if (event.type === "refund.updated" && payment) {
+    const succeeded = object.status === "succeeded";
+    const updates = {
+      refundStatus: succeeded ? "refunded" : `refund_${object.status || "updated"}`,
+      stripeRefundId: object.id,
+      updatedAt: nowMarker()
+    };
+    if (succeeded) {
+      updates.paymentStatus = "refunded";
+      updates.refundedAt = nowMarker();
+    }
+    const ops = [
+      operation("update", `jobPayments/${payment.id}`, updates),
+      paymentEventOperation(payment.id, payment.jobId, event.type, { stripeEventId: event.id, stripeObjectId: object.id }),
+      auditOperation(null, succeeded ? "payment.refund_webhook" : "payment.refund_updated", "jobPayment", payment.id, { newValue: { refundStatus: updates.refundStatus } })
+    ];
+    if (succeeded) ops.push(operation("update", `jobs/${payment.jobId}`, { paymentStatus: "refunded", updatedAt: nowMarker() }));
+    await systemWrite(ops, "Record JCM Stripe refund update");
   } else if (event.type.startsWith("charge.dispute.") && payment) {
     const job = await getJob(payment.jobId);
     await systemWrite([

@@ -86,11 +86,14 @@ function assertPaymentStripeMode(payment) {
 
 function appBaseUrl(req) {
   const explicit = process.env.APP_BASE_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (explicit) return explicit.startsWith("http") ? explicit : `https://${explicit}`;
+  if (explicit) {
+    const url = explicit.startsWith("http") ? explicit : `https://${explicit}`;
+    return url.replace(/\/+$/, "");
+  }
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   const proto = req.headers["x-forwarded-proto"] || "https";
   if (!host) throw httpError(500, "APP_BASE_URL is not configured.");
-  return `${proto}://${host}`;
+  return `${proto}://${host}`.replace(/\/+$/, "");
 }
 
 function v2RequirementLabel(requirement) {
@@ -104,13 +107,21 @@ function v2DisabledReason(capability) {
   return details.map(item => item.code).filter(Boolean).join(", ");
 }
 
+function v2RequirementDue(requirement) {
+  const deadline = requirement.minimum_deadline || requirement.current_deadline || {};
+  const status = requirement.status || deadline.status || "";
+  return requirement.awaiting_action_from === "user" && ["currently_due", "past_due"].includes(status);
+}
+
+function activeCapability(capability) {
+  return ["active", "enabled"].includes(String(capability && capability.status || "").toLowerCase());
+}
+
 function safeAccountStatus(account) {
   if (account.object === "v2.core.account") {
     const entries = (account.requirements && account.requirements.entries) || [];
     const currentlyDue = entries
-      .filter(item => item.awaiting_action_from === "user" &&
-        item.minimum_deadline &&
-        ["currently_due", "past_due"].includes(item.minimum_deadline.status))
+      .filter(v2RequirementDue)
       .map(v2RequirementLabel);
     const stripeBalance = account.configuration &&
       account.configuration.recipient &&
@@ -120,14 +131,16 @@ function safeAccountStatus(account) {
     const payouts = stripeBalance.payouts || {};
     const disabledReason = v2DisabledReason(payouts) || v2DisabledReason(transfers);
     const detailsSubmitted = currentlyDue.length === 0;
+    const transfersActive = activeCapability(transfers);
+    const payoutsActive = activeCapability(payouts);
     return {
       stripeAccountId: account.id,
-      stripeChargesEnabled: transfers.status === "active",
-      stripePayoutsEnabled: payouts.status === "active",
+      stripeChargesEnabled: transfersActive,
+      stripePayoutsEnabled: transfersActive && payoutsActive,
       stripeDetailsSubmitted: detailsSubmitted,
       stripeRequirementsCurrentlyDue: currentlyDue,
       stripeDisabledReason: disabledReason,
-      stripeOnboardingComplete: Boolean(detailsSubmitted && payouts.status === "active"),
+      stripeOnboardingComplete: Boolean(detailsSubmitted && transfersActive && payoutsActive),
       lastStripeStatusSync: serverTimestamp()
     };
   }
@@ -227,11 +240,12 @@ async function createCheckoutSession(req, payment, job, buyer) {
   const stripe = getStripe();
   const baseUrl = appBaseUrl(req);
   const transferGroup = payment.transferGroup || `JCM_JOB_${job.id}`;
+  const checkoutAttempt = Number(payment.checkoutAttempt || 1);
   return stripe.checkout.sessions.create({
     mode: "payment",
     client_reference_id: payment.id,
     customer_email: buyer.profile.email || undefined,
-    success_url: `${baseUrl}/#account?payment=success&job=${encodeURIComponent(job.id)}`,
+    success_url: `${baseUrl}/#account?payment=success&job=${encodeURIComponent(job.id)}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/#account?payment=canceled&job=${encodeURIComponent(job.id)}`,
     line_items: [{
       quantity: 1,
@@ -250,15 +264,17 @@ async function createCheckoutSession(req, payment, job, buyer) {
         jcmPaymentId: payment.id,
         jcmBuyerId: payment.buyerId,
         jcmContractorId: payment.contractorId,
+        jcmCheckoutAttempt: String(checkoutAttempt),
         stripeMode: stripeMode()
       }
     },
     metadata: {
       jcmJobId: job.id,
       jcmPaymentId: payment.id,
+      jcmCheckoutAttempt: String(checkoutAttempt),
       stripeMode: stripeMode()
     }
-  }, { idempotencyKey: `jcm_checkout_${stripeMode()}_${payment.id}` });
+  }, { idempotencyKey: `jcm_checkout_${stripeMode()}_${payment.id}_${checkoutAttempt}` });
 }
 
 async function createContractorTransfer(payment) {

@@ -10,6 +10,13 @@ const {
   updateUserStripeStatus
 } = require("../_lib/stripe-connect");
 
+async function refreshConnectedAccountStatus(accountId) {
+  const uid = await findUidByStripeAccountId(accountId);
+  if (!uid) return;
+  const account = await getConnectedAccount(getStripe(), accountId);
+  await updateUserStripeStatus(uid, account);
+}
+
 module.exports = asyncHandler(async (req, res) => {
   if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
   const webhookSecret = stripeWebhookSecret();
@@ -32,16 +39,11 @@ module.exports = asyncHandler(async (req, res) => {
 
   if (event.type === "account.updated") {
     const account = event.data.object;
-    const uid = await findUidByStripeAccountId(account.id);
-    if (uid) await updateUserStripeStatus(uid, account);
+    await refreshConnectedAccountStatus(account.id);
   }
 
   if (event.account && event.type === "account.external_account.updated") {
-    const uid = await findUidByStripeAccountId(event.account);
-    if (uid) {
-      const account = await getConnectedAccount(getStripe(), event.account);
-      await updateUserStripeStatus(uid, account);
-    }
+    await refreshConnectedAccountStatus(event.account);
   }
 
   if (event.account && event.type.startsWith("payout.")) {
@@ -62,8 +64,7 @@ module.exports = asyncHandler(async (req, res) => {
         lastStripeStatusSync: serverTimestamp()
       }, { merge: true });
       if (event.type === "payout.failed") {
-        const account = await getConnectedAccount(getStripe(), event.account);
-        await updateUserStripeStatus(uid, account);
+        await refreshConnectedAccountStatus(event.account);
       }
     }
   }

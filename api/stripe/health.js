@@ -35,7 +35,7 @@ module.exports = asyncHandler(async (req, res) => {
               : "stripe_api_error";
     }
   }
-  const ok = mode === "test" && (simulatedTestPayments || (webhookConfigured && stripeApiReachable));
+  const ok = simulatedTestPayments || (webhookConfigured && stripeApiReachable);
   return sendJson(res, ok ? 200 : 503, {
     ok,
     stripeMode: mode,
