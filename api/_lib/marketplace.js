@@ -27,7 +27,9 @@ const {
   createFullRefund,
   stripeMode,
   stripeModeSummary,
-  stripeTestSimulationEnabled
+  stripeTestSimulationEnabled,
+  createUpfrontPaymentIntent,
+  getStripe
 } = require("./stripe-connect");
 
 const MAX_TEXT = 4000;
@@ -36,6 +38,44 @@ const MAX_PHOTOS = 8;
 const PLATFORM_PAYMENTS_REQUIRED = String(process.env.PLATFORM_PAYMENTS_REQUIRED || "true").toLowerCase() !== "false";
 const AUTO_RELEASE_ENABLED = String(process.env.AUTO_RELEASE_ENABLED || "false").toLowerCase() === "true";
 const AUTO_RELEASE_AFTER_DAYS = Math.max(1, Number(process.env.AUTO_RELEASE_AFTER_DAYS || 7));
+const PREPAID_PACKAGES = [
+  {
+    id: "lawn-basic",
+    name: "Lawn mowing and trim",
+    description: "Small residential yard, mow, trim, edge, and blow off hard surfaces.",
+    amountCents: 8900
+  },
+  {
+    id: "lawn-large",
+    name: "Large lawn service",
+    description: "Larger residential yard or heavier mowing visit.",
+    amountCents: 14900
+  },
+  {
+    id: "cleanup-basic",
+    name: "Yard cleanup or leaf removal",
+    description: "One-time cleanup, leaves, branches, and general outdoor debris.",
+    amountCents: 22500
+  },
+  {
+    id: "mulch-beds",
+    name: "Mulch or bed refresh",
+    description: "Starter bed cleanup, edging, and mulch refresh.",
+    amountCents: 34900
+  },
+  {
+    id: "snow-ice",
+    name: "Snow and ice service",
+    description: "Driveway or walkway snow removal and ice treatment.",
+    amountCents: 9900
+  },
+  {
+    id: "site-visit",
+    name: "Site visit and first hour",
+    description: "On-site visit or first labor hour for custom outdoor work.",
+    amountCents: 7500
+  }
+];
 
 function id(prefix) {
   return `${prefix}_${crypto.randomUUID()}`;
@@ -86,6 +126,17 @@ function cents(value, label = "Amount") {
     throw httpError(400, `${label} must be a valid amount in cents.`);
   }
   return number;
+}
+
+function prepaidPackage(packageId) {
+  const normalized = text(packageId, "Service package", { required: true, maximum: 80 });
+  const item = PREPAID_PACKAGES.find(entry => entry.id === normalized);
+  if (!item) throw httpError(400, "Choose a valid upfront service package.");
+  return item;
+}
+
+function publicPrepaidPackages() {
+  return PREPAID_PACKAGES.map(item => ({ ...item, currency: "usd" }));
 }
 
 function numberOrNull(value) {
@@ -312,6 +363,9 @@ function paymentForUser(payment, user, job) {
     platformFeeCents: payment.platformFeeCents,
     contractorPercentage: payment.contractorPercentage,
     contractorAmountCents: payment.contractorAmountCents,
+    prepaid: Boolean(payment.prepaid),
+    prepaidPackageId: payment.prepaidPackageId || "",
+    prepaidPackageName: payment.prepaidPackageName || "",
     currency: payment.currency,
     stripeMode: payment.stripeMode,
     paymentStatus: payment.paymentStatus,
@@ -491,6 +545,237 @@ async function createJob(user, body) {
   return { job: publicJob(publicRecord) };
 }
 
+function latestChargeId(paymentIntent) {
+  const charge = paymentIntent && paymentIntent.latest_charge;
+  return typeof charge === "string" ? charge : charge && charge.id || "";
+}
+
+async function createPrepaidIntent(user, req, body) {
+  requireActive(user);
+  const [jobs, drafts] = await Promise.all([all("jobs"), all("prepaidJobDrafts")]);
+  const recentCutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const recentOrders = jobs.filter(job => job.postedBy === user.uid && timestampMs(job.createdAt) >= recentCutoff).length +
+    drafts.filter(draft => draft.buyerId === user.uid && timestampMs(draft.createdAt) >= recentCutoff).length;
+  if (recentOrders >= 5) {
+    throw httpError(429, "You have submitted several requests recently. Contact support if you need help.");
+  }
+
+  const fields = safeJobEditFields(body);
+  const fullAddress = text(body.fullAddress, "Full address", { required: true, maximum: 500 });
+  const posterPhone = text(body.posterPhone, "Phone number", { required: true, maximum: 80 });
+  const selectedPackage = prepaidPackage(body.prepaidPackageId);
+  const split = moneySplit(selectedPackage.amountCents);
+  const recentOwnJobs = jobs.filter(job => job.postedBy === user.uid && timestampMs(job.createdAt) >= recentCutoff);
+  for (const existing of recentOwnJobs) {
+    const details = await privateDetails(existing.id);
+    if (existing.serviceType === fields.serviceType && String(details.fullAddress || "").toLowerCase() === fullAddress.toLowerCase()) {
+      throw httpError(409, "A similar request for this address was submitted recently. Review My Requests before posting a duplicate.");
+    }
+  }
+
+  const draftId = id("draft");
+  const jobId = id("job");
+  const draft = {
+    id: draftId,
+    jobId,
+    buyerId: user.uid,
+    buyerEmail: user.profile.email || "",
+    buyerName: userName(user.profile),
+    emailVerified: user.profile.emailVerified !== false,
+    publicFields: fields,
+    privateFields: {
+      posterName: userName(user.profile),
+      posterEmail: user.profile.email || "",
+      posterPhone,
+      fullAddress,
+      latitude: numberOrNull(body.latitude),
+      longitude: numberOrNull(body.longitude),
+      locationAccuracyMeters: numberOrNull(body.locationAccuracyMeters),
+      gateInstructions: text(body.gateInstructions, "Gate or lock instructions", { maximum: 1200 }),
+      parkingInstructions: text(body.parkingInstructions, "Parking or access instructions", { maximum: 1200 }),
+      privateNotes: text(body.privateNotes, "Private notes", { maximum: 1200 })
+    },
+    prepaidPackageId: selectedPackage.id,
+    prepaidPackageName: selectedPackage.name,
+    prepaidPackageDescription: selectedPackage.description,
+    ...split,
+    currency: "usd",
+    stripeMode: stripeMode(),
+    transferGroup: `JCM_JOB_${jobId}`,
+    stripePaymentIntentId: "",
+    draftStatus: "payment_pending",
+    createdAt: nowMarker(),
+    updatedAt: nowMarker()
+  };
+
+  await systemWrite([
+    operation("set", `prepaidJobDrafts/${draftId}`, draft),
+    auditOperation(user, "prepaid_order.draft_created", "prepaidJobDraft", draftId, {
+      newValue: { jobId, prepaidPackageId: selectedPackage.id, finalAmountCents: split.finalAmountCents }
+    })
+  ], "Create JCM prepaid order draft");
+
+  if (stripeTestSimulationEnabled()) {
+    return {
+      simulated: true,
+      draftId,
+      jobId,
+      paymentIntentId: `sim_intent_${draftId}`,
+      amountCents: split.finalAmountCents,
+      currency: "usd",
+      package: { ...selectedPackage, currency: "usd" },
+      ...stripeModeSummary()
+    };
+  }
+
+  const intent = await createUpfrontPaymentIntent(req, draft, user);
+  await systemWrite([
+    operation("update", `prepaidJobDrafts/${draftId}`, {
+      stripePaymentIntentId: intent.id,
+      draftStatus: "payment_intent_created",
+      updatedAt: nowMarker()
+    }),
+    auditOperation(user, "prepaid_order.payment_intent_created", "prepaidJobDraft", draftId, {
+      newValue: { stripePaymentIntentId: intent.id }
+    })
+  ], "Create JCM upfront Stripe PaymentIntent");
+
+  return {
+    draftId,
+    jobId,
+    paymentIntentId: intent.id,
+    clientSecret: intent.client_secret,
+    amountCents: split.finalAmountCents,
+    currency: "usd",
+    package: { ...selectedPackage, currency: "usd" },
+    ...stripeModeSummary()
+  };
+}
+
+async function finalizePrepaidDraft(draft, paymentIntent, user, source = {}) {
+  if (!draft) throw httpError(404, "Prepaid order draft not found.");
+  const existingJob = await get("jobs", draft.jobId);
+  if (existingJob) return { job: publicJob(existingJob), alreadyFinalized: true };
+
+  const simulated = stripeTestSimulationEnabled() && String(paymentIntent && paymentIntent.id || "").startsWith("sim_intent_");
+  if (!simulated) {
+    if (!paymentIntent || paymentIntent.status !== "succeeded") {
+      throw httpError(409, "Stripe has not confirmed this upfront payment yet.");
+    }
+    if (paymentIntent.amount !== draft.finalAmountCents || paymentIntent.currency !== draft.currency) {
+      throw httpError(409, "Stripe payment amount does not match this order.");
+    }
+    const metadata = paymentIntent.metadata || {};
+    if (metadata.jcmDraftId !== draft.id || metadata.jcmJobId !== draft.jobId || metadata.jcmBuyerId !== draft.buyerId) {
+      throw httpError(409, "Stripe payment metadata does not match this order.");
+    }
+  }
+
+  const verificationRequired = String(process.env.REQUIRE_EMAIL_VERIFICATION || "false").toLowerCase() === "true";
+  const initialStatus = verificationRequired && draft.emailVerified === false ? "pending_verification" : "open";
+  const paymentId = `payment_${draft.jobId}`;
+  const chargeId = simulated ? `sim_charge_${draft.id}` : latestChargeId(paymentIntent);
+  const intentId = simulated ? paymentIntent.id : paymentIntent.id;
+  const publicRecord = {
+    id: draft.jobId,
+    postedBy: draft.buyerId,
+    buyerId: draft.buyerId,
+    ...draft.publicFields,
+    status: initialStatus,
+    quoteCount: 0,
+    acceptedQuoteId: null,
+    acceptedContractorId: null,
+    acceptedContractorName: "",
+    paymentId,
+    paymentStatus: "held_pending_completion",
+    prepaid: true,
+    prepaidPackageId: draft.prepaidPackageId,
+    prepaidPackageName: draft.prepaidPackageName,
+    prepaidPackageDescription: draft.prepaidPackageDescription,
+    finalAmountCents: draft.finalAmountCents,
+    platformFeeCents: draft.platformFeeCents,
+    contractorAmountCents: draft.contractorAmountCents,
+    scheduleStatus: "preferred_only",
+    proposedSchedule: null,
+    confirmedSchedule: null,
+    createdAt: nowMarker(),
+    updatedAt: nowMarker()
+  };
+  const privateRecord = {
+    ...draft.privateFields,
+    createdAt: nowMarker(),
+    updatedAt: nowMarker()
+  };
+  const payment = {
+    id: paymentId,
+    jobId: draft.jobId,
+    buyerId: draft.buyerId,
+    contractorId: "",
+    finalAmountCents: draft.finalAmountCents,
+    platformFeePercentage: draft.platformFeePercentage,
+    platformFeeCents: draft.platformFeeCents,
+    contractorPercentage: draft.contractorPercentage,
+    contractorAmountCents: draft.contractorAmountCents,
+    prepaid: true,
+    prepaidPackageId: draft.prepaidPackageId,
+    prepaidPackageName: draft.prepaidPackageName,
+    currency: draft.currency,
+    stripeMode: draft.stripeMode,
+    transferGroup: draft.transferGroup,
+    stripePaymentIntentId: intentId,
+    stripeCheckoutSessionId: "",
+    stripeChargeId: chargeId,
+    stripeTransferId: "",
+    stripeConnectedAccountId: "",
+    paymentStatus: "held_pending_completion",
+    releaseStatus: "not_released",
+    refundStatus: "not_refunded",
+    paidAt: nowMarker(),
+    createdAt: nowMarker(),
+    updatedAt: nowMarker()
+  };
+  const eventType = source.eventType || "payment_intent.succeeded";
+  await systemWrite([
+    operation("set", `jobs/${draft.jobId}`, publicRecord),
+    operation("set", `jobs/${draft.jobId}/private/customer`, privateRecord),
+    operation("set", `jobPayments/${paymentId}`, payment),
+    operation("update", `prepaidJobDrafts/${draft.id}`, {
+      draftStatus: "finalized",
+      stripePaymentIntentId: intentId,
+      stripeChargeId: chargeId,
+      finalizedAt: nowMarker(),
+      updatedAt: nowMarker()
+    }),
+    statusHistoryOperation(user, draft.jobId, null, initialStatus, "Upfront Stripe payment collected."),
+    paymentEventOperation(paymentId, draft.jobId, eventType, {
+      stripeEventId: source.eventId || "",
+      stripeObjectId: intentId,
+      note: "Upfront buyer payment held before contractor assignment."
+    }),
+    systemMessageOperation(draft.jobId, "Buyer payment was collected upfront through Stripe. A full refund can be issued if the job is canceled before payout release.", "upfront_payment_collected"),
+    auditOperation(user, "prepaid_order.finalized", "job", draft.jobId, {
+      newValue: { paymentId, finalAmountCents: draft.finalAmountCents, paymentStatus: "held_pending_completion" }
+    })
+  ], "Finalize JCM prepaid job");
+  return { job: publicJob(publicRecord), payment: paymentForUser(payment, user || { profile: { role: "admin" } }, publicRecord), alreadyFinalized: false };
+}
+
+async function finalizePrepaidJob(user, body) {
+  requireActive(user);
+  const draftId = text(body.draftId, "Draft ID", { required: true, maximum: MAX_SHORT_TEXT });
+  const draft = await get("prepaidJobDrafts", draftId);
+  if (!draft) throw httpError(404, "Prepaid order draft not found.");
+  if (draft.buyerId !== user.uid) throw httpError(403, "Only the buyer can finish this prepaid order.");
+  const paymentIntentId = text(body.paymentIntentId, "PaymentIntent ID", { required: true, maximum: MAX_SHORT_TEXT });
+  if (draft.stripePaymentIntentId && draft.stripePaymentIntentId !== paymentIntentId && !stripeTestSimulationEnabled()) {
+    throw httpError(409, "This payment does not match the order draft.");
+  }
+  const paymentIntent = stripeTestSimulationEnabled()
+    ? { id: paymentIntentId, status: "succeeded", amount: draft.finalAmountCents, currency: draft.currency, metadata: { jcmDraftId: draft.id, jcmJobId: draft.jobId, jcmBuyerId: draft.buyerId } }
+    : await getStripe().paymentIntents.retrieve(paymentIntentId);
+  return finalizePrepaidDraft(draft, paymentIntent, user, { eventType: "payment_intent.client_confirmed" });
+}
+
 async function updateJob(user, body) {
   requireActive(user);
   const job = await getJob(body.jobId);
@@ -599,21 +884,42 @@ async function acceptQuote(user, body) {
   if (!isApprovedContractor(contractor) || isSuspended(contractor)) throw httpError(409, "This contractor is not currently available.");
   requirePayoutReady(contractor);
   const quotes = (await all("jobQuotes")).filter(item => item.jobId === job.id && item.status === "submitted");
+  const prepaidPayment = job.paymentId && job.paymentStatus === "held_pending_completion"
+    ? await get("jobPayments", job.paymentId)
+    : null;
+  if (prepaidPayment) assertPaymentCurrentStripeMode(prepaidPayment);
+  const nextStatus = prepaidPayment ? "payment_held" : "awaiting_final_offer";
+  const nextPaymentStatus = prepaidPayment ? "held_pending_completion" : "awaiting_final_offer";
   const ops = [
     operation("update", `jobs/${job.id}`, {
-      status: "awaiting_final_offer",
+      status: nextStatus,
       acceptedQuoteId: quote.id,
       acceptedContractorId: quote.contractorId,
       acceptedContractorName: quote.contractorBusinessName || quote.contractorDisplayName,
-      paymentStatus: "awaiting_final_offer",
+      paymentStatus: nextPaymentStatus,
       acceptedAt: nowMarker(),
       updatedAt: nowMarker()
     }),
     statusHistoryOperation(user, job.id, job.status, "contractor_accepted"),
-    statusHistoryOperation(user, job.id, "contractor_accepted", "awaiting_final_offer"),
-    systemMessageOperation(job.id, `${quote.contractorBusinessName || quote.contractorDisplayName} was accepted. Use this chat to agree on final scope, price, and timing.`, "contractor_accepted"),
+    statusHistoryOperation(user, job.id, "contractor_accepted", nextStatus),
+    systemMessageOperation(job.id, prepaidPayment
+      ? `${quote.contractorBusinessName || quote.contractorDisplayName} was accepted. Upfront payment is already held, so the contractor can propose a schedule.`
+      : `${quote.contractorBusinessName || quote.contractorDisplayName} was accepted. Use this chat to agree on final scope, price, and timing.`,
+    "contractor_accepted"),
     auditOperation(user, "quote.accepted", "jobQuote", quote.id, { newValue: { jobId: job.id, contractorId: quote.contractorId } })
   ];
+  if (prepaidPayment) {
+    ops.push(
+      operation("update", `jobPayments/${prepaidPayment.id}`, {
+        contractorId: quote.contractorId,
+        stripeConnectedAccountId: contractor.stripeAccountId,
+        updatedAt: nowMarker()
+      }),
+      paymentEventOperation(prepaidPayment.id, job.id, "contractor.accepted_for_prepaid_job", {
+        note: "Contractor connected to upfront buyer payment."
+      })
+    );
+  }
   quotes.forEach(item => {
     ops.push(operation("update", `jobQuotes/${item.id}`, {
       status: item.id === quote.id ? "accepted" : "not_selected",
@@ -1437,6 +1743,7 @@ async function overview(user) {
     cancellationReasons: CANCELLATION_REASONS,
     jobStatuses: JOB_STATUSES,
     paymentStatuses: PAYMENT_STATUSES,
+    prepaidPackages: publicPrepaidPackages(),
     platformPaymentsRequired: PLATFORM_PAYMENTS_REQUIRED,
     autoRelease: { enabled: AUTO_RELEASE_ENABLED, afterDays: AUTO_RELEASE_AFTER_DAYS },
     stripe: stripeModeSummary()
@@ -1445,7 +1752,7 @@ async function overview(user) {
 
 async function adminOverview(user) {
   requireStaff(user);
-  const [jobs, applications, users, quotes, disputes, tickets, payments, audits, histories] = await Promise.all([
+  const [jobs, applications, users, quotes, disputes, tickets, payments, drafts, audits, histories] = await Promise.all([
     all("jobs"),
     all("contractorApplications"),
     all("users"),
@@ -1453,6 +1760,7 @@ async function adminOverview(user) {
     all("jobDisputes"),
     all("supportTickets"),
     all("jobPayments"),
+    all("prepaidJobDrafts"),
     all("auditLogs"),
     all("jobStatusHistory")
   ]);
@@ -1465,6 +1773,7 @@ async function adminOverview(user) {
     disputes: disputes.sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt)),
     tickets: tickets.sort((a, b) => (a.priority === "urgent" ? -1 : 1) - (b.priority === "urgent" ? -1 : 1) || timestampMs(b.createdAt) - timestampMs(a.createdAt)),
     payments: payments.sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt)),
+    prepaidDrafts: drafts.sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt)),
     audits: audits.sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt)).slice(0, 250),
     histories: histories.sort((a, b) => timestampMs(b.createdAt) - timestampMs(a.createdAt)),
     stripe: stripeModeSummary(),
@@ -1515,6 +1824,32 @@ async function paymentFromStripeObject(object) {
     relatedIds.includes(payment.stripeChargeId)
     )
   ) || null;
+}
+
+async function finalizePrepaidDraftFromStripeEvent(event, object) {
+  const metadata = stripeObjectMetadata(object);
+  const draftId = metadata.jcmDraftId || metadata.jcmPrepaidDraftId || "";
+  if (!draftId) return false;
+  const draft = await get("prepaidJobDrafts", draftId);
+  if (!draft || !paymentInCurrentStripeMode(draft)) return false;
+  if (event.type === "payment_intent.succeeded") {
+    await finalizePrepaidDraft(draft, object, null, { eventType: event.type, eventId: event.id });
+    return true;
+  }
+  if (["payment_intent.payment_failed", "payment_intent.canceled"].includes(event.type)) {
+    const failure = paymentFailureDetails(object);
+    await systemWrite([
+      operation("update", `prepaidJobDrafts/${draft.id}`, {
+        draftStatus: event.type === "payment_intent.canceled" ? "payment_canceled" : "payment_failed",
+        stripeFailureCode: failure.stripeFailureCode,
+        stripeFailureMessage: failure.stripeFailureMessage,
+        updatedAt: nowMarker()
+      }),
+      auditOperation(null, "prepaid_order.payment_failed", "prepaidJobDraft", draft.id, { newValue: failure })
+    ], "Record JCM upfront payment failure");
+    return true;
+  }
+  return false;
 }
 
 function paymentFailureDetails(object) {
@@ -1569,6 +1904,7 @@ async function processStripeEvent(event) {
     })], "Record JCM Stripe webhook receipt");
   }
   const object = event.data && event.data.object || {};
+  await finalizePrepaidDraftFromStripeEvent(event, object);
   const payment = await paymentFromStripeObject(object);
   if (["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type) && payment) {
     await systemWrite([
@@ -1656,6 +1992,9 @@ async function processStripeEvent(event) {
 async function dispatch(user, req, body) {
   const action = String(body.action || "");
   if (action === "overview") return overview(user);
+  if (action === "prepaidPackages") return { packages: publicPrepaidPackages(), stripe: stripeModeSummary() };
+  if (action === "createPrepaidIntent") return createPrepaidIntent(user, req, body);
+  if (action === "finalizePrepaidJob") return finalizePrepaidJob(user, body);
   if (action === "jobDetails") return jobDetails(user, body);
   if (action === "createJob") return createJob(user, body);
   if (action === "updateJob") return updateJob(user, body);

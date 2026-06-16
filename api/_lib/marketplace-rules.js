@@ -57,7 +57,7 @@ const LEGAL_TRANSITIONS = {
   pending_verification: ["open", "canceled"],
   open: ["quotes_received", "contractor_accepted", "canceled"],
   quotes_received: ["contractor_accepted", "canceled"],
-  contractor_accepted: ["awaiting_final_offer", "canceled"],
+  contractor_accepted: ["awaiting_final_offer", "payment_held", "canceled"],
   awaiting_final_offer: ["awaiting_buyer_offer_acceptance", "canceled"],
   awaiting_buyer_offer_acceptance: ["awaiting_final_offer", "awaiting_payment", "canceled"],
   awaiting_payment: ["payment_held", "canceled"],

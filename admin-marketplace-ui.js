@@ -43,8 +43,13 @@
       ".admin-actions .btn{width:auto}",
       ".admin-form{display:grid;gap:8px;margin-top:10px}",
       ".admin-form input,.admin-form select,.admin-form textarea{width:100%}",
+      ".admin-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.42fr);gap:14px;align-items:start}",
       ".urgent-ticket{border-left:5px solid #b42318}",
       ".audit-row{font-size:.9rem}",
+      ".admin-test-frame{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;box-shadow:var(--shadow-md)}",
+      ".admin-test-frame iframe{width:100%;min-height:74vh;border:0;display:block}",
+      ".mode-pill{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px;padding:4px 10px;background:#fff;font-size:.82rem;font-weight:800}",
+      "@media(max-width:900px){.admin-split{grid-template-columns:1fr}}",
       "@media(max-width:700px){.admin-actions .btn{width:100%}}"
     ].join("");
     document.head.appendChild(style);
@@ -60,6 +65,7 @@
     if (nav) {
       nav.innerHTML = [
         ["overview", "Overview"],
+        ["test", "Test"],
         ["applications", "Contractor Applications"],
         ["requests", "Jobs / Requests"],
         ["users", "Users"],
@@ -76,6 +82,7 @@
     if (main) {
       main.innerHTML = [
         '<section class="tab active" id="tab-overview"><div class="section-header"><div><h1>Overview</h1><p>Operational marketplace snapshot.</p></div></div><div class="grid" id="adminOverviewStats"></div></section>',
+        '<section class="tab" id="tab-test"><div class="section-header"><div><h1>Test Website</h1><p>Preview the full customer and contractor experience while the public site is in maintenance mode.</p></div><a class="btn btn-secondary" href="/test.html" target="_blank" rel="noopener">Open Full Page</a></div><div class="admin-test-frame"><iframe src="/test.html" title="JCM test website"></iframe></div></section>',
         tab("applications", "Contractor Applications", "Pending applications only. Approved and rejected applications leave this list immediately."),
         tab("requests", "Jobs / Requests", "Review lifecycle, payment state, and admin-only force actions with reasons."),
         tab("users", "Users", "Suspend or restore ordinary accounts. Staff roles remain controlled by config/roles.json."),
@@ -113,13 +120,17 @@
   function renderOverview(data) {
     var stats = [
       ["Open requests", count(data.jobs, function (job) { return ["open", "quotes_received"].includes(job.status); })],
+      ["Prepaid requests", count(data.jobs, function (job) { return job.prepaid || job.paymentStatus === "held_pending_completion"; })],
+      ["Unclaimed prepaid", count(data.jobs, function (job) { return (job.prepaid || job.paymentStatus === "held_pending_completion") && !job.acceptedContractorId && ["open", "quotes_received"].includes(job.status); })],
       ["Pending applications", data.applications.length],
       ["Open disputes", count(data.disputes, function (item) { return item.status === "open"; })],
       ["Urgent support", count(data.tickets, function (item) { return item.status === "open" && item.priority === "urgent"; })],
       ["Awaiting payment", count(data.jobs, function (job) { return job.status === "awaiting_payment"; })],
-      ["Payment held", count(data.payments, function (item) { return item.paymentStatus === "held_pending_completion"; })]
+      ["Payment held", count(data.payments, function (item) { return item.paymentStatus === "held_pending_completion"; })],
+      ["Payment drafts", (data.prepaidDrafts || []).length]
     ];
-    byId("adminOverviewStats").innerHTML = stats.map(function (item) { return '<article class="card"><div class="stat-value">' + item[1] + '</div><p>' + esc(item[0]) + '</p></article>'; }).join("");
+    byId("adminOverviewStats").innerHTML = stats.map(function (item) { return '<article class="card"><div class="stat-value">' + item[1] + '</div><p>' + esc(item[0]) + '</p></article>'; }).join("") +
+      '<article class="card"><span class="mode-pill">' + esc((data.stripe && data.stripe.stripeModeLabel) || "Stripe mode unknown") + '</span><p>Public site is in maintenance. Test build is available in the Test tab.</p></article>';
   }
 
   function renderApplications(data) {
@@ -133,9 +144,19 @@
     return '<form class="admin-form" onsubmit="forceMarketplaceStatus(event,\'' + esc(job.id) + '\')"><label>Force status<select id="force-status-' + esc(job.id) + '">' + (state.adminMarketplace.jobStatuses || []).map(function (status) { return '<option ' + (status === job.status ? "selected" : "") + '>' + esc(status) + '</option>'; }).join("") + '</select></label><label>Required admin reason<textarea id="force-reason-' + esc(job.id) + '" maxlength="1600" required></textarea></label><button class="btn btn-secondary" type="submit">Apply Admin Status Override</button></form>';
   }
 
+  function refundForm(job) {
+    if (!isAdminAccount()) return "";
+    var refundable = ["held_pending_completion", "payment_authorized_or_paid", "release_requested"].includes(String(job.paymentStatus || ""));
+    var blocked = ["in_progress", "contractor_completed", "completed", "disputed", "closed"].includes(String(job.status || ""));
+    if (!job.paymentId || !refundable || blocked) return "";
+    var reasons = (state.adminMarketplace.cancellationReasons || ["no response from contractor", "contractor no-show", "other"])
+      .filter(function (reason) { return ["no response from contractor", "contractor no-show", "buyer canceled", "other"].includes(reason); });
+    return '<form class="admin-form" onsubmit="cancelRefundMarketplaceRequest(event,\'' + esc(job.id) + '\')"><label>Cancel/refund reason<select id="refund-reason-' + esc(job.id) + '">' + reasons.map(function (reason) { return '<option>' + esc(reason) + '</option>'; }).join("") + '</select></label><label>Required admin note<textarea id="refund-note-' + esc(job.id) + '" maxlength="1600" required placeholder="Example: No approved contractor accepted this prepaid job."></textarea></label><button class="btn btn-danger" type="submit">Cancel and Refund Buyer</button></form>';
+  }
+
   function renderRequests(data) {
     byId("requestsList").innerHTML = data.jobs.length ? data.jobs.map(function (job) {
-      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(job.title || "Service request") + '</h3><p>' + esc([job.city, job.zipCode].filter(Boolean).join(" ")) + '</p></div>' + statusBadge(job.status) + '</div><p><strong>Service:</strong> ' + esc(job.serviceType) + '</p><p><strong>Buyer ID:</strong> ' + esc(job.postedBy) + '</p><p><strong>Accepted contractor:</strong> ' + esc(job.acceptedContractorName || "None") + '</p><p><strong>Payment:</strong> ' + esc(job.paymentStatus || "not_required") + '</p><div class="admin-actions"><button class="btn btn-secondary" type="button" onclick="revealMarketplaceBuyer(\'' + esc(job.id) + '\')">Reveal Buyer Details with Reason</button></div><div id="buyer-' + esc(job.id) + '"></div>' + forceForm(job) + '</article>';
+      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(job.title || "Service request") + '</h3><p>' + esc([job.city, job.zipCode].filter(Boolean).join(" ")) + '</p></div>' + statusBadge(job.status) + '</div><p><strong>Service:</strong> ' + esc(job.serviceType) + '</p><p><strong>Buyer ID:</strong> ' + esc(job.postedBy) + '</p><p><strong>Accepted contractor:</strong> ' + esc(job.acceptedContractorName || "None") + '</p><p><strong>Payment:</strong> ' + esc(job.paymentStatus || "not_required") + (job.prepaidPackageName ? " - " + esc(job.prepaidPackageName) : "") + '</p><p><strong>Upfront amount:</strong> ' + esc(job.finalAmountCents ? money(job.finalAmountCents) : "Not paid upfront") + '</p><div class="admin-actions"><button class="btn btn-secondary" type="button" onclick="revealMarketplaceBuyer(\'' + esc(job.id) + '\')">Reveal Buyer Details with Reason</button></div><div id="buyer-' + esc(job.id) + '"></div>' + refundForm(job) + forceForm(job) + '</article>';
     }).join("") : '<div class="card"><p>No requests found.</p></div>';
   }
 
@@ -175,9 +196,13 @@
       byId("paymentsList").innerHTML = '<div class="card"><p>Admin or owner access is required.</p></div>';
       return;
     }
-    byId("paymentsList").innerHTML = data.payments.length ? data.payments.map(function (item) {
+    var payments = data.payments.length ? data.payments.map(function (item) {
       return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(item.jobId) + '</h3><p>Stripe processing metadata</p></div>' + statusBadge(item.paymentStatus) + '</div><p><strong>Final price:</strong> ' + money(item.finalAmountCents) + '</p><p><strong>Release:</strong> ' + esc(item.releaseStatus) + '</p><p><strong>Refund:</strong> ' + esc(item.refundStatus) + '</p><p><strong>Payment Intent:</strong> ' + esc(item.stripePaymentIntentId || "Not created") + '</p><p><strong>Transfer:</strong> ' + esc(item.stripeTransferId || "Not released") + '</p></article>';
     }).join("") : '<div class="card"><p>No payment records yet.</p></div>';
+    var drafts = (data.prepaidDrafts || []).length ? '<section class="card" style="margin-top:14px"><h2>Prepaid Checkout Drafts</h2><div class="list">' + data.prepaidDrafts.map(function (draft) {
+      return '<article class="admin-row"><div class="item-header"><div><h3>' + esc(draft.prepaidPackageName || "Prepaid order") + '</h3><p>' + esc(draft.buyerEmail || draft.buyerId || "") + '</p></div>' + statusBadge(draft.draftStatus || "draft") + '</div><p><strong>Amount:</strong> ' + money(draft.finalAmountCents) + '</p><p><strong>Job:</strong> ' + esc(draft.jobId || "Not finalized") + '</p><p><strong>Payment Intent:</strong> ' + esc(draft.stripePaymentIntentId || "Not created") + '</p><p>' + esc(draft.stripeFailureMessage || "") + '</p></article>';
+    }).join("") + '</div></section>' : "";
+    byId("paymentsList").innerHTML = payments + drafts;
   }
 
   function renderAudits(data) {
@@ -223,6 +248,7 @@
     } catch (error) { notify(error); }
   };
   window.forceMarketplaceStatus = async function (event, jobId) { event.preventDefault(); try { await api("adminForceStatus", { jobId: jobId, status: text("force-status-" + jobId), reason: text("force-reason-" + jobId) }); await loadAdmin(true); toast("Job status updated with audit log.", "success"); } catch (error) { notify(error); } };
+  window.cancelRefundMarketplaceRequest = async function (event, jobId) { event.preventDefault(); try { await api("cancelJob", { jobId: jobId, reason: text("refund-reason-" + jobId), note: text("refund-note-" + jobId) }); await loadAdmin(true); toast("Request canceled. Stripe refund recorded when payment was eligible.", "success"); } catch (error) { notify(error); } };
   window.updateMarketplaceUser = async function (event, uid, suspended) { event.preventDefault(); try { await api("adminUpdateUser", { uid: uid, suspended: suspended, reason: text("user-reason-" + uid) }); await loadAdmin(true); toast("User updated.", "success"); } catch (error) { notify(error); } };
   window.resolveMarketplaceDispute = async function (event, jobId) { event.preventDefault(); try { await api("adminResolveDispute", { jobId: jobId, resolution: text("resolution-" + jobId), reason: text("resolution-reason-" + jobId) }); await loadAdmin(true); toast("Dispute resolved.", "success"); } catch (error) { notify(error); } };
   window.closeMarketplaceTicket = async function (event, ticketId) { event.preventDefault(); try { await api("adminCloseTicket", { ticketId: ticketId, reason: text("ticket-note-" + ticketId) }); await loadAdmin(true); toast("Support ticket closed.", "success"); } catch (error) { notify(error); } };

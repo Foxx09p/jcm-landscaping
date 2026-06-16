@@ -277,6 +277,28 @@ async function createCheckoutSession(req, payment, job, buyer) {
   }, { idempotencyKey: `jcm_checkout_${stripeMode()}_${payment.id}_${checkoutAttempt}` });
 }
 
+async function createUpfrontPaymentIntent(req, draft, buyer) {
+  const stripe = getStripe();
+  const paymentId = `payment_${draft.jobId}`;
+  return stripe.paymentIntents.create({
+    amount: draft.finalAmountCents,
+    currency: draft.currency,
+    payment_method_types: ["card"],
+    receipt_email: buyer.profile.email || undefined,
+    description: `JCM upfront service payment: ${draft.prepaidPackageName || "Outdoor service"}`,
+    metadata: {
+      jcmFlow: "upfront_order",
+      jcmDraftId: draft.id,
+      jcmJobId: draft.jobId,
+      jcmPaymentId: paymentId,
+      jcmBuyerId: buyer.uid,
+      jcmPackageId: draft.prepaidPackageId || "",
+      stripeMode: stripeMode()
+    },
+    transfer_group: `JCM_JOB_${draft.jobId}`
+  }, { idempotencyKey: `jcm_upfront_intent_${stripeMode()}_${draft.id}` });
+}
+
 async function createContractorTransfer(payment) {
   assertPaymentStripeMode(payment);
   if (stripeTestSimulationEnabled()) return { id: `sim_transfer_${payment.id}` };
@@ -329,6 +351,7 @@ module.exports = {
   createContractorTransfer,
   createFullRefund,
   createOrRetrieveAccount,
+  createUpfrontPaymentIntent,
   findUidByStripeAccountId,
   getConnectedAccount,
   getStripe,
