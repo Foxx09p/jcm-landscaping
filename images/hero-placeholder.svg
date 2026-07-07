@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" role="img" aria-label="Light green placeholder image">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#f7fff3"/>
+      <stop offset="1" stop-color="#d8efd1"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" x2="1">
+      <stop offset="0" stop-color="#b9dda9"/>
+      <stop offset="1" stop-color="#e8f5e3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="800" fill="url(#sky)"/>
+  <circle cx="1320" cy="155" r="92" fill="#fff" opacity=".75"/>
+  <path d="M0 540C240 430 395 520 600 465c205-56 365-94 590-12 140 51 265 51 410 3v344H0Z" fill="url(#ground)"/>
+  <path d="M0 630c260-86 485-25 700-62 240-41 490-36 900 59v173H0Z" fill="#95cb7f" opacity=".6"/>
+  <g fill="none" stroke="#fff" stroke-width="7" opacity=".54">
+    <path d="M100 710c190-160 330-185 540-170"/>
+    <path d="M790 650c270-128 470-126 740-34"/>
+  </g>
+  <text x="800" y="405" fill="#1e6b3a" font-family="Arial, sans-serif" font-size="38" font-weight="700" opacity=".55" text-anchor="middle">HERO IMAGE PLACEHOLDER</text>
+</svg>

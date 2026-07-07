@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" role="img" aria-label="Weeding placeholder image">
+  <rect width="700" height="700" fill="#f3faef"/>
+  <circle cx="120" cy="125" r="85" fill="#d2eac7"/>
+  <circle cx="610" cy="230" r="120" fill="#e1f1da"/>
+  <g fill="none" stroke="#85bd6d" stroke-linecap="round" stroke-width="12" opacity=".78">
+    <path d="M350 660V290"/>
+    <path d="M350 440c-90-6-148-58-172-138 95-8 158 34 172 138Z"/>
+    <path d="M350 510c98-6 157-58 187-143-100-8-169 38-187 143Z"/>
+  </g>
+  <text x="350" y="115" fill="#1e6b3a" font-family="Arial, sans-serif" font-size="29" font-weight="700" opacity=".5" text-anchor="middle">IMAGE PLACEHOLDER</text>
+</svg>
