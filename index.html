@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1e6b3a">
   <title>JCM Landscaping</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&amp;icon_names=call,location_on,schedule&amp;display=block" rel="stylesheet">
   <style>
     :root {
       /* ============================================================
@@ -344,8 +345,73 @@
     }
 
     .contact-section {
-      padding: 76px 0;
+      padding: 0 0 76px;
       background: var(--green-dark);
+    }
+
+    .contact-info-strip {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto 12px;
+      padding: 32px clamp(18px, 4vw, 48px);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+      transform: translateY(-38px);
+    }
+
+    .contact-detail {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      flex-direction: column;
+      padding: 4px clamp(14px, 3vw, 34px);
+      color: #000;
+      text-align: center;
+    }
+
+    .contact-detail + .contact-detail {
+      border-left: 1px solid var(--border);
+    }
+
+    .material-symbols-outlined.contact-detail-icon {
+      margin-bottom: 10px;
+      color: var(--green-accent);
+      font-size: 42px;
+      font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 48;
+    }
+
+    .contact-detail h3 {
+      margin: 0 0 7px;
+      color: #000;
+      font-size: 1.08rem;
+      line-height: 1.2;
+    }
+
+    .contact-detail p {
+      margin: 3px 0 0;
+      color: #000;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .contact-detail-name {
+      margin-top: 10px !important;
+      font-weight: 700;
+    }
+
+    .contact-detail a {
+      color: #000;
+      text-decoration-color: rgba(30, 107, 58, 0.45);
+      text-underline-offset: 3px;
+    }
+
+    .contact-detail a:hover,
+    .contact-detail a:focus-visible {
+      color: var(--green);
     }
 
     .contact-grid {
@@ -426,6 +492,36 @@
     textarea {
       min-height: 126px;
       resize: vertical;
+    }
+
+    .contact-submit {
+      min-height: 54px;
+      margin-top: 4px;
+      border: 2px solid var(--green);
+      border-radius: 5px;
+      background: var(--green);
+      color: var(--white);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .contact-submit:hover,
+    .contact-submit:focus-visible {
+      background: var(--white);
+      color: var(--green);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    .form-status {
+      min-height: 1.4em;
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
     }
 
     .closing-section {
@@ -560,6 +656,23 @@
         grid-template-columns: 1fr;
       }
 
+      .contact-info-strip {
+        grid-template-columns: 1fr;
+        width: calc(100% - 28px);
+        margin-bottom: 2px;
+        padding: 18px;
+        transform: translateY(-28px);
+      }
+
+      .contact-detail {
+        padding: 22px 8px;
+      }
+
+      .contact-detail + .contact-detail {
+        border-top: 1px solid var(--border);
+        border-left: 0;
+      }
+
       .services {
         gap: 16px;
         padding-bottom: 54px;
@@ -569,7 +682,10 @@
         min-height: 290px;
       }
 
-      .contact-section,
+      .contact-section {
+        padding: 0 0 58px;
+      }
+
       .closing-section {
         padding-block: 58px;
       }
@@ -641,33 +757,59 @@
     </section>
 
     <section class="contact-section" id="contact">
+      <div class="contact-info-strip" aria-label="Business information">
+        <article class="contact-detail">
+          <span class="material-symbols-outlined contact-detail-icon" aria-hidden="true">schedule</span>
+          <h3>Hours</h3>
+          <p>Mon - Fri</p>
+          <p>8 AM - 9 PM</p>
+        </article>
+
+        <article class="contact-detail">
+          <span class="material-symbols-outlined contact-detail-icon" aria-hidden="true">call</span>
+          <h3>Get in Touch</h3>
+          <p class="contact-detail-name">Jaydon</p>
+          <p><a href="tel:+19189985618">(918)-998-5618</a></p>
+          <p class="contact-detail-name">Charlie</p>
+          <p><a href="tel:+19188891493">(918)-889-1493</a></p>
+        </article>
+
+        <article class="contact-detail">
+          <span class="material-symbols-outlined contact-detail-icon" aria-hidden="true">location_on</span>
+          <h3>Service Areas</h3>
+          <p>Tulsa, Pryor, Chouteau, Broken Arrow, Jenks, Bixby, Glenpool, Owasso, Collinsville, Sand Springs, Sapulpa, Wagoner, Inola, Catoosa, Coweta, Locust Grove, and more!</p>
+        </article>
+      </div>
+
       <div class="contact-grid page-width">
         <div class="intro-copy">
           <h2 class="section-title">Placeholder Title</h2>
           <p>Placeholder text goes here. Replace this section with your own wording.</p>
         </div>
 
-        <div class="contact-card">
+        <form class="contact-card" id="contact-form">
           <h2>Get in Touch</h2>
           <div class="contact-fields">
             <label class="field-label">
               Name
-              <input type="text" name="name" placeholder="Name" autocomplete="name">
+              <input type="text" name="name" placeholder="Name" autocomplete="name" required>
             </label>
             <label class="field-label">
               Email Address
-              <input type="email" name="email" placeholder="Email Address" autocomplete="email">
+              <input type="email" name="email" placeholder="Email Address" autocomplete="email" required>
             </label>
             <label class="field-label">
               Phone
-              <input type="tel" name="phone" placeholder="Phone" autocomplete="tel">
+              <input type="tel" name="phone" placeholder="Phone" autocomplete="tel" required>
             </label>
             <label class="field-label">
               Message
-              <textarea name="message" placeholder="Message"></textarea>
+              <textarea name="message" placeholder="Message" required></textarea>
             </label>
+            <button class="contact-submit" type="submit">SEND MESSAGE</button>
+            <p class="form-status" id="form-status" aria-live="polite"></p>
           </div>
-        </div>
+        </form>
       </div>
     </section>
 
@@ -684,5 +826,33 @@
       </div>
     </section>
   </main>
+  <script>
+    (function () {
+      var form = document.getElementById("contact-form");
+      var status = document.getElementById("form-status");
+      var destination = "+19189985618";
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        var data = new FormData(form);
+        var message = [
+          "JCM Landscaping website inquiry",
+          "",
+          "Name: " + data.get("name"),
+          "Email: " + data.get("email"),
+          "Phone: " + data.get("phone"),
+          "",
+          "Message:",
+          data.get("message")
+        ].join("\n");
+
+        var isAppleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        var separator = isAppleMobile ? "&" : "?";
+        status.textContent = "Opening your messaging app with the details filled in. Press send to finish.";
+        window.location.href = "sms:" + destination + separator + "body=" + encodeURIComponent(message);
+      });
+    }());
+  </script>
 </body>
 </html>
