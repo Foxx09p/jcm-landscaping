@@ -589,6 +589,30 @@
       transform: translateY(-2px);
     }
 
+    .reveal-ready [data-reveal] {
+      opacity: 0;
+      transform: translateY(38px);
+      transition:
+        opacity 680ms ease,
+        transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+      transition-delay: 0ms;
+      will-change: opacity, transform;
+    }
+
+    .reveal-ready [data-reveal="left"] {
+      transform: translate(-34px, 18px);
+    }
+
+    .reveal-ready [data-reveal="right"] {
+      transform: translate(34px, 18px);
+    }
+
+    .reveal-ready [data-reveal].is-visible {
+      opacity: 1;
+      transform: translate(0, 0);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
     @media (max-width: 780px) {
       .page-width {
         width: min(100% - 28px, 600px);
@@ -711,6 +735,13 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .quote-button { transition: none; }
+
+      .reveal-ready [data-reveal],
+      .reveal-ready [data-reveal].is-visible {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
     }
   </style>
 </head>
@@ -744,25 +775,25 @@
           <a class="hero-quote-button" href="#contact">GET A FREE QUOTE</a>
         </div>
       </div>
-      <div class="phone-row">
+      <div class="phone-row" data-reveal>
         <p class="phone-number">Phone: (918)-998-5618</p>
       </div>
     </section>
 
     <section class="services page-width" id="services" aria-label="Services">
-      <article class="service-card" id="mowing">
+      <article class="service-card" id="mowing" data-reveal style="--reveal-delay: 0ms;">
         <h2 class="service-title">Mowing and Edging</h2>
       </article>
-      <article class="service-card" id="weeding">
+      <article class="service-card" id="weeding" data-reveal style="--reveal-delay: 110ms;">
         <h2 class="service-title">Weeding</h2>
       </article>
-      <article class="service-card" id="cleanup">
+      <article class="service-card" id="cleanup" data-reveal style="--reveal-delay: 220ms;">
         <h2 class="service-title">Yard Cleanup</h2>
       </article>
     </section>
 
     <section class="contact-section" id="contact">
-      <div class="contact-info-strip" aria-label="Business information">
+      <div class="contact-info-strip" aria-label="Business information" data-reveal>
         <article class="contact-detail">
           <span class="material-symbols-outlined contact-detail-icon" aria-hidden="true">schedule</span>
           <h3>Hours</h3>
@@ -787,12 +818,12 @@
       </div>
 
       <div class="contact-grid page-width">
-        <div class="intro-copy">
+        <div class="intro-copy" data-reveal="left">
           <h2 class="section-title">Placeholder Title</h2>
           <p>Placeholder text goes here. Replace this section with your own wording.</p>
         </div>
 
-        <form class="contact-card" id="contact-form">
+        <form class="contact-card" id="contact-form" data-reveal="right">
           <h2>Get in Touch</h2>
           <div class="contact-fields">
             <label class="field-label">
@@ -820,13 +851,13 @@
 
     <section class="closing-section">
       <div class="closing-grid page-width">
-        <img class="closing-logo" src="./JCM_Landscaping.png" alt="JCM Landscaping">
-        <div class="closing-copy">
+        <img class="closing-logo" src="./JCM_Landscaping.png" alt="JCM Landscaping" data-reveal="left">
+        <div class="closing-copy" data-reveal="right">
           <h2 class="section-title">Placeholder Title</h2>
           <p>Placeholder text goes here. Replace this section with your own wording.</p>
         </div>
       </div>
-      <div class="quote-row page-width">
+      <div class="quote-row page-width" data-reveal>
         <a class="quote-button" href="#contact">GET MY FREE QUOTE!</a>
       </div>
     </section>
@@ -836,6 +867,28 @@
       var form = document.getElementById("contact-form");
       var status = document.getElementById("form-status");
       var destination = "+19189985618";
+      var revealItems = document.querySelectorAll("[data-reveal]");
+
+      document.documentElement.classList.add("reveal-ready");
+
+      if ("IntersectionObserver" in window) {
+        var revealObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            entry.target.classList.toggle("is-visible", entry.isIntersecting);
+          });
+        }, {
+          threshold: 0.12,
+          rootMargin: "0px 0px -8% 0px"
+        });
+
+        revealItems.forEach(function (item) {
+          revealObserver.observe(item);
+        });
+      } else {
+        revealItems.forEach(function (item) {
+          item.classList.add("is-visible");
+        });
+      }
 
       form.addEventListener("submit", function (event) {
         event.preventDefault();
