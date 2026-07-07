@@ -212,9 +212,14 @@
       position: absolute;
       z-index: 1;
       top: 50%;
-      left: max(24px, calc((100vw - 1180px) / 2));
-      width: min(1800px, calc(100% - 48px));
-      transform: translateY(-50%);
+      left: 50%;
+      display: flex;
+      width: min(1100px, calc(100% - 48px));
+      align-items: center;
+      flex-direction: column;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      text-align: center;
+      transform: translate(-50%, -50%);
     }
 
     .outlined-text {
@@ -234,22 +239,22 @@
       padding: 10px 16px;
       border: 2px solid rgba(255, 255, 255, 0.88);
       background: rgba(30, 107, 58, 0.30);
-      backdrop-filter: blur(3px);
     }
 
     .hero-title {
-      font-size: clamp(1.5rem, 4vw, 3.8rem);
-      font-weight: 900;
-      line-height: 0.98;
-      letter-spacing: -0.045em;
+      font-size: clamp(2rem, 5vw, 4.6rem);
+      font-weight: 800;
+      line-height: 1.03;
+      letter-spacing: -0.025em;
       text-transform: uppercase;
     }
 
     .hero-text {
-      max-width: 520px;
+      max-width: 720px;
       margin-top: 14px;
-      font-size: clamp(0.5rem, 1vw, 0.8rem);
-      font-weight: 700;
+      font-size: clamp(1rem, 1.65vw, 1.25rem);
+      font-weight: 600;
+      line-height: 1.45;
     }
 
     .hero-quote-button {
