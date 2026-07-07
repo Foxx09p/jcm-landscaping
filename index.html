@@ -18,6 +18,7 @@
 
       --green: #1e6b3a;
       --green-dark: #0f3d1f;
+      --green-deep: #071d0e;
       --green-light: #e8f5e3;
       --green-accent: #2e9e58;
       --white: #ffffff;
@@ -38,7 +39,7 @@
 
     body {
       margin: 0;
-      background: var(--off-white);
+      background: var(--green-deep);
       color: var(--ink);
       font-family: Arial, Helvetica, sans-serif;
       line-height: 1.6;
@@ -50,17 +51,128 @@
     }
 
     .site-header {
-      display: grid;
-      min-height: 118px;
-      place-items: center;
-      padding: 22px 24px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.74);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: 0 8px 28px rgba(7, 29, 14, 0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .header-inner {
+      display: flex;
+      width: min(1180px, calc(100% - 40px));
+      height: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-inline: auto;
     }
 
     .header-logo {
-      width: min(270px, 66vw);
+      width: 205px;
       height: auto;
+      flex: 0 0 auto;
+    }
+
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-link,
+    .nav-dropdown summary {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      color: var(--green-dark);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      list-style: none;
+      text-decoration: none;
+    }
+
+    .nav-dropdown summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible,
+    .nav-dropdown summary:hover,
+    .nav-dropdown summary:focus-visible {
+      background: rgba(232, 245, 227, 0.7);
+      outline: none;
+    }
+
+    .nav-arrow {
+      font-size: 0.85rem;
+      transition: transform 160ms ease;
+    }
+
+    .nav-dropdown[open] .nav-arrow {
+      transform: rotate(180deg);
+    }
+
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 205px;
+      overflow: hidden;
+      padding: 7px;
+      border: 1px solid rgba(216, 228, 212, 0.9);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .nav-dropdown:not([open]) .dropdown-menu {
+      display: none;
+    }
+
+    .nav-dropdown:hover .dropdown-menu,
+    .nav-dropdown:focus-within .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 11px;
+      border-radius: 4px;
+      color: var(--green-dark);
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .dropdown-menu a:hover,
+    .dropdown-menu a:focus-visible {
+      background: var(--green-light);
+      outline: none;
+    }
+
+    .contact-nav {
+      border-color: var(--green-accent);
+      background: transparent;
     }
 
     main {
@@ -73,14 +185,14 @@
     }
 
     .hero-wrap {
-      padding-top: 28px;
+      width: 100%;
     }
 
     .hero {
       position: relative;
       min-height: clamp(380px, 54vw, 650px);
       overflow: hidden;
-      border-radius: 8px;
+      border-radius: 0;
       background-color: var(--green-light);
       background-image: var(--hero-image);
       background-position: center;
@@ -99,7 +211,7 @@
       position: absolute;
       z-index: 1;
       top: 50%;
-      left: clamp(24px, 7vw, 86px);
+      left: max(24px, calc((100vw - 1180px) / 2));
       width: min(590px, calc(100% - 48px));
       transform: translateY(-50%);
     }
@@ -139,15 +251,44 @@
       font-weight: 700;
     }
 
+    .hero-quote-button {
+      display: inline-flex;
+      min-height: 52px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 18px;
+      padding: 12px 23px;
+      border: 2px solid var(--white);
+      border-radius: 5px;
+      background: rgba(7, 29, 14, 0.38);
+      color: var(--white);
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      text-decoration: none;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      transition: background-color 160ms ease, transform 160ms ease;
+    }
+
+    .hero-quote-button:hover,
+    .hero-quote-button:focus-visible {
+      background: rgba(15, 61, 31, 0.68);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
     .phone-row {
       display: flex;
       justify-content: flex-end;
+      width: min(1180px, calc(100% - 40px));
+      margin-inline: auto;
       padding: 18px 2px 8px;
     }
 
     .phone-number {
       margin: 0;
-      color: var(--green-dark);
+      color: var(--white);
       font-size: clamp(1.05rem, 2.5vw, 1.35rem);
       font-weight: 800;
       letter-spacing: 0.03em;
@@ -289,7 +430,7 @@
 
     .closing-section {
       padding: 82px 0 46px;
-      background: var(--white);
+      background: var(--green-deep);
     }
 
     .closing-grid {
@@ -302,14 +443,17 @@
     .closing-logo {
       width: min(470px, 100%);
       margin-inline: auto;
+      padding: 30px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
     }
 
     .closing-copy .section-title {
-      color: var(--green-dark);
+      color: var(--white);
     }
 
     .closing-copy p {
-      color: var(--ink-muted);
+      color: var(--green-light);
     }
 
     .quote-row {
@@ -350,15 +494,42 @@
       }
 
       .site-header {
-        min-height: 96px;
+        height: 74px;
+      }
+
+      .header-inner {
+        width: calc(100% - 20px);
+        gap: 8px;
+      }
+
+      .header-logo {
+        width: 128px;
+      }
+
+      .main-nav {
+        gap: 2px;
+      }
+
+      .nav-link,
+      .nav-dropdown summary {
+        min-height: 36px;
+        gap: 3px;
+        padding: 7px 6px;
+        font-size: 0.64rem;
+        letter-spacing: 0.035em;
+      }
+
+      .dropdown-menu {
+        right: -62px;
+        width: 180px;
       }
 
       .hero-wrap {
-        padding-top: 14px;
+        width: 100%;
       }
 
       .hero {
-        min-height: 470px;
+        min-height: 560px;
       }
 
       .hero-copy {
@@ -373,6 +544,14 @@
       .hero-title,
       .hero-text {
         width: 100%;
+      }
+
+      .hero-quote-button {
+        width: 100%;
+      }
+
+      .phone-row {
+        width: calc(100% - 28px);
       }
 
       .services,
@@ -414,17 +593,34 @@
     }
   </style>
 </head>
-<body>
+<body id="top">
   <header class="site-header">
-    <img class="header-logo" src="./JCM_Landscaping.png" alt="JCM Landscaping">
+    <div class="header-inner">
+      <a href="#top" aria-label="JCM Landscaping home">
+        <img class="header-logo" src="./JCM_Landscaping.png" alt="JCM Landscaping">
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link" href="#top">HOME</a>
+        <details class="nav-dropdown">
+          <summary>SERVICES <span class="nav-arrow" aria-hidden="true">▾</span></summary>
+          <div class="dropdown-menu">
+            <a href="#mowing">Mowing &amp; Edging</a>
+            <a href="#weeding">Weeding</a>
+            <a href="#cleanup">Yard Cleanup</a>
+          </div>
+        </details>
+        <a class="nav-link contact-nav" href="#contact">CONTACT</a>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <section class="hero-wrap page-width" aria-labelledby="hero-title">
+    <section class="hero-wrap" aria-labelledby="hero-title">
       <div class="hero">
         <div class="hero-copy">
           <h1 class="hero-title outlined-text" id="hero-title">Placeholder Title</h1>
           <p class="hero-text outlined-text">Placeholder text goes here. Replace this with your own wording.</p>
+          <a class="hero-quote-button" href="#contact">GET A FREE QUOTE</a>
         </div>
       </div>
       <div class="phone-row">
@@ -432,14 +628,14 @@
       </div>
     </section>
 
-    <section class="services page-width" aria-label="Services">
-      <article class="service-card">
+    <section class="services page-width" id="services" aria-label="Services">
+      <article class="service-card" id="mowing">
         <h2 class="service-title">Mowing and Edging</h2>
       </article>
-      <article class="service-card">
+      <article class="service-card" id="weeding">
         <h2 class="service-title">Weeding</h2>
       </article>
-      <article class="service-card">
+      <article class="service-card" id="cleanup">
         <h2 class="service-title">Yard Cleanup</h2>
       </article>
     </section>
