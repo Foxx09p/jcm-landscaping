@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" role="img" aria-label="Mowing and edging placeholder image">
-  <rect width="700" height="700" fill="#e8f5e3"/>
-  <path d="M0 370c150-75 260-90 390-40 120 46 210 43 310-8v378H0Z" fill="#acd699"/>
-  <g stroke="#f8fff5" stroke-width="8" opacity=".7">
-    <path d="M50 660 310 350"/><path d="M190 700 450 370"/><path d="M360 700 610 400"/><path d="M540 700 700 500"/>
-  </g>
-  <text x="350" y="175" fill="#1e6b3a" font-family="Arial, sans-serif" font-size="29" font-weight="700" opacity=".5" text-anchor="middle">IMAGE PLACEHOLDER</text>
-</svg>
