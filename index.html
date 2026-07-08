@@ -984,13 +984,12 @@
           <p>Placeholder text goes here. Replace this section with your own wording.</p>
         </div>
 
-        <form class="contact-card" id="contact-form" action="https://formsubmit.co/foxx09p@gmail.com" method="POST" accept-charset="UTF-8" data-reveal>
+        <form class="contact-card" id="contact-form" action="https://api.web3forms.com/submit" method="POST" accept-charset="UTF-8" data-reveal>
           <h2>Get in Touch</h2>
-          <input type="hidden" name="_subject" value="[JCM WEBSITE INQUIRY] New Quote Request">
-          <input type="hidden" name="_template" value="table">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_next" value="https://jcm-landscaping.com/?submitted=true#contact">
-          <input type="text" name="_honey" tabindex="-1" autocomplete="off" hidden>
+          <input type="hidden" name="access_key" value="3e2b9ad9-f6e0-4da0-bc4b-72b455272879">
+          <input type="hidden" name="subject" value="[JCM WEBSITE INQUIRY] New Quote Request">
+          <input type="hidden" name="from_name" value="JCM Landscaping Website">
+          <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" hidden>
           <div class="contact-fields">
             <label class="field-label">
               Name
@@ -1097,15 +1096,34 @@
         });
       }
 
-      if (new URLSearchParams(window.location.search).get("submitted") === "true") {
-        status.textContent = "Thanks! Your message has been sent. We’ll be in touch soon.";
-      }
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
 
-      form.addEventListener("submit", function () {
         var submitButton = form.querySelector(".contact-submit");
+        var originalButtonText = submitButton.textContent;
         submitButton.disabled = true;
         submitButton.textContent = "SENDING...";
         status.textContent = "Sending your message...";
+
+        try {
+          var response = await fetch(form.action, {
+            method: "POST",
+            body: new FormData(form)
+          });
+          var result = await response.json();
+
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || "The form service could not send this message.");
+          }
+
+          form.reset();
+          status.textContent = "Thanks! Your message has been sent. We’ll be in touch soon.";
+        } catch (error) {
+          status.textContent = "Your message couldn’t be sent. Please call (918)-998-5618 instead.";
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
       });
     }());
   </script>
