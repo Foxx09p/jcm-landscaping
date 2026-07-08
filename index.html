@@ -689,10 +689,12 @@
 
     .closing-copy .section-title {
       color: var(--white);
+      font-size: clamp(2.2rem, 4vw, 3.7rem);
     }
 
     .closing-copy p {
       color: var(--green-light);
+      max-width: 640px;
     }
 
     .quote-row {
@@ -727,6 +729,126 @@
       transform: translateY(-2px);
     }
 
+    .site-footer {
+      border-top: 1px solid rgba(232, 245, 227, 0.14);
+      background: #030e07;
+      color: var(--green-light);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 0.85fr 1.15fr;
+      gap: clamp(32px, 5vw, 64px);
+      padding-block: 64px 48px;
+    }
+
+    .footer-brand-logo {
+      width: min(225px, 100%);
+      margin-bottom: 22px;
+      padding: 14px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .footer-brand p,
+    .footer-column p {
+      margin: 0;
+      color: rgba(232, 245, 227, 0.78);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    .footer-column h2 {
+      margin: 0 0 18px;
+      color: var(--white);
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .footer-contact-block + .footer-contact-block {
+      margin-top: 16px;
+    }
+
+    .footer-contact-block strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--white);
+    }
+
+    .footer-contact-block a,
+    .footer-links a,
+    .footer-email {
+      color: var(--green-light);
+      text-decoration-color: rgba(232, 245, 227, 0.38);
+      text-underline-offset: 3px;
+    }
+
+    .footer-contact-block a:hover,
+    .footer-contact-block a:focus-visible,
+    .footer-links a:hover,
+    .footer-links a:focus-visible,
+    .footer-email:hover,
+    .footer-email:focus-visible {
+      color: var(--white);
+      text-decoration-color: var(--green-accent);
+    }
+
+    .footer-links {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .footer-info-item + .footer-info-item {
+      margin-top: 14px;
+    }
+
+    .footer-info-item strong {
+      color: var(--white);
+    }
+
+    .footer-quote-link {
+      display: inline-flex;
+      margin-top: 20px;
+      padding: 9px 14px;
+      border: 1px solid var(--green-accent);
+      border-radius: 4px;
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+
+    .footer-quote-link:hover,
+    .footer-quote-link:focus-visible {
+      background: var(--green);
+      outline: none;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-block: 22px 28px;
+      border-top: 1px solid rgba(232, 245, 227, 0.14);
+      color: rgba(232, 245, 227, 0.62);
+      font-size: 0.8rem;
+    }
+
+    .footer-bottom p {
+      margin: 0;
+    }
+
+    .footer-bottom a {
+      color: inherit;
+      text-underline-offset: 3px;
+    }
+
     .reveal-ready [data-reveal] {
       opacity: 0;
       transition: opacity 620ms ease;
@@ -742,6 +864,10 @@
     @media (max-width: 860px) {
       .contact-grid {
         grid-template-columns: 1fr;
+      }
+
+      .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
@@ -878,8 +1004,29 @@
         text-align: center;
       }
 
+      .closing-copy p {
+        margin-inline: auto;
+      }
+
       .quote-row {
         padding-top: 42px;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 34px;
+        padding-block: 48px 38px;
+      }
+
+      .footer-brand-logo {
+        width: min(210px, 70vw);
+      }
+
+      .footer-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding-block: 20px 24px;
       }
     }
 
@@ -1045,8 +1192,8 @@
       <div class="closing-grid page-width">
         <img class="closing-logo" src="./JCM_Landscaping.png" alt="JCM Landscaping" data-reveal>
         <div class="closing-copy" data-reveal>
-          <h2 class="section-title">Placeholder Title</h2>
-          <p>Placeholder text goes here. Replace this section with your own wording.</p>
+          <h2 class="section-title">A Cleaner Yard Starts Here</h2>
+          <p>From mowing and edging to weeding and yard cleanup, JCM Landscaping is ready to help. Tell us what your yard needs, and we’ll provide a free quote.</p>
         </div>
       </div>
       <div class="quote-row page-width" data-reveal>
@@ -1054,6 +1201,53 @@
       </div>
     </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid page-width">
+      <div class="footer-brand" data-reveal>
+        <a href="#top" aria-label="Back to the top of the JCM Landscaping website">
+          <img class="footer-brand-logo" src="./JCM_Landscaping.png" alt="JCM Landscaping">
+        </a>
+        <p>Mowing, edging, weeding, and yard cleanup for Tulsa and surrounding communities.</p>
+      </div>
+
+      <section class="footer-column" aria-labelledby="footer-contact-title" data-reveal>
+        <h2 id="footer-contact-title">Contact</h2>
+        <p class="footer-contact-block">
+          <strong>Jaydon</strong>
+          <a href="tel:+19189985618">(918)-998-5618</a><br>
+          <a class="footer-email" href="mailto:foxx09p@gmail.com">foxx09p@gmail.com</a>
+        </p>
+        <p class="footer-contact-block">
+          <strong>Charlie</strong>
+          <a href="tel:+19188891493">(918)-889-1493</a>
+        </p>
+      </section>
+
+      <nav class="footer-column" aria-labelledby="footer-links-title" data-reveal>
+        <h2 id="footer-links-title">Quick Links</h2>
+        <ul class="footer-links">
+          <li><a href="#top">Home</a></li>
+          <li><a href="#mowing">Mowing &amp; Edging</a></li>
+          <li><a href="#weeding">Weeding</a></li>
+          <li><a href="#cleanup">Yard Cleanup</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <section class="footer-column" aria-labelledby="footer-info-title" data-reveal>
+        <h2 id="footer-info-title">Business Info</h2>
+        <p class="footer-info-item"><strong>Hours</strong><br>Monday–Friday<br>8 AM–9 PM</p>
+        <p class="footer-info-item"><strong>Service Area</strong><br>Tulsa and the surrounding communities listed above.</p>
+        <a class="footer-quote-link" href="#contact">GET A FREE QUOTE</a>
+      </section>
+    </div>
+
+    <div class="footer-bottom page-width">
+      <p>&copy; 2026 JCM Landscaping. All rights reserved.</p>
+      <p><a href="#top">Back to top</a></p>
+    </div>
+  </footer>
   <script>
     (function () {
       var form = document.getElementById("contact-form");
