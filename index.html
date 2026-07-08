@@ -213,6 +213,7 @@
 
     .hero-wrap {
       width: 100%;
+      background: var(--green-deep);
     }
 
     .hero {
@@ -265,6 +266,12 @@
       bottom: -1px;
       left: 0;
       z-index: 2;
+    }
+
+    .hero-wave path {
+      fill: var(--green-deep);
+      stroke: var(--green-deep);
+      stroke-width: 1.5px;
     }
 
     .wave-deep-to-dark {
@@ -425,6 +432,7 @@
 
     .contact-info-strip {
       position: relative;
+      z-index: 4;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       width: min(1180px, calc(100% - 40px));
