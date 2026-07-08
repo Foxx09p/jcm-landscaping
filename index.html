@@ -258,20 +258,15 @@
       fill: currentColor;
     }
 
-    .hero-wave {
-      --wave-from: transparent;
-      --wave-to: var(--green-deep);
+    .hero-divider {
       position: absolute;
       right: 0;
       bottom: -1px;
       left: 0;
       z-index: 2;
-    }
-
-    .hero-wave path {
-      fill: var(--green-deep);
-      stroke: var(--green-deep);
-      stroke-width: 1.5px;
+      height: clamp(40px, 4.5vw, 58px);
+      background: #000;
+      pointer-events: none;
     }
 
     .wave-deep-to-dark {
@@ -860,11 +855,7 @@
           <p class="hero-text outlined-text">From mowing and edging to weeding and yard cleanup, we help keep your outdoor space neat, clean, and ready to enjoy.</p>
           <a class="hero-quote-button" href="#contact">GET A FREE QUOTE</a>
         </div>
-        <div class="section-wave hero-wave" aria-hidden="true">
-          <svg viewBox="0 0 1440 90" preserveAspectRatio="none" focusable="false">
-            <path d="M0,48 C240,8 480,88 720,48 C960,8 1200,88 1440,48 L1440,90 L0,90 Z"></path>
-          </svg>
-        </div>
+        <div class="hero-divider" aria-hidden="true"></div>
       </div>
       <div class="phone-row" data-reveal>
         <p class="phone-number">Phone: (918)-998-5618</p>
