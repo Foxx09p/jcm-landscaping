@@ -548,8 +548,8 @@
 
     .contact-grid {
       display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      gap: clamp(28px, 6vw, 78px);
+      grid-template-columns: 1fr 1.05fr;
+      gap: clamp(28px, 5vw, 64px);
       align-items: center;
     }
 
@@ -572,6 +572,16 @@
     .closing-copy p {
       margin: 0;
       font-size: 1.08rem;
+    }
+
+    .intro-copy .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.75rem);
+      letter-spacing: -0.025em;
+    }
+
+    .intro-copy p {
+      font-size: 0.98rem;
+      line-height: 1.65;
     }
 
     .contact-card {
