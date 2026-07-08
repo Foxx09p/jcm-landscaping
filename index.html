@@ -984,8 +984,13 @@
           <p>Placeholder text goes here. Replace this section with your own wording.</p>
         </div>
 
-        <form class="contact-card" id="contact-form" data-reveal>
+        <form class="contact-card" id="contact-form" action="https://formsubmit.co/foxx09p@gmail.com" method="POST" accept-charset="UTF-8" data-reveal>
           <h2>Get in Touch</h2>
+          <input type="hidden" name="_subject" value="[JCM WEBSITE INQUIRY] New Quote Request">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="https://jcm-landscaping.com/?submitted=true#contact">
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" hidden>
           <div class="contact-fields">
             <label class="field-label">
               Name
@@ -1033,7 +1038,6 @@
     (function () {
       var form = document.getElementById("contact-form");
       var status = document.getElementById("form-status");
-      var destination = "+19189985618";
       var revealItems = document.querySelectorAll("[data-reveal]");
       var header = document.querySelector(".site-header");
       var headerUpdateQueued = false;
@@ -1093,25 +1097,15 @@
         });
       }
 
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
+      if (new URLSearchParams(window.location.search).get("submitted") === "true") {
+        status.textContent = "Thanks! Your message has been sent. We’ll be in touch soon.";
+      }
 
-        var data = new FormData(form);
-        var message = [
-          "JCM Landscaping website inquiry",
-          "",
-          "Name: " + data.get("name"),
-          "Email: " + data.get("email"),
-          "Phone: " + data.get("phone"),
-          "",
-          "Message:",
-          data.get("message")
-        ].join("\n");
-
-        var isAppleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        var separator = isAppleMobile ? "&" : "?";
-        status.textContent = "Opening your messaging app with the details filled in. Press send to finish.";
-        window.location.href = "sms:" + destination + separator + "body=" + encodeURIComponent(message);
+      form.addEventListener("submit", function () {
+        var submitButton = form.querySelector(".contact-submit");
+        submitButton.disabled = true;
+        submitButton.textContent = "SENDING...";
+        status.textContent = "Sending your message...";
       });
     }());
   </script>
