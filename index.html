@@ -548,8 +548,8 @@
 
     .contact-grid {
       display: grid;
-      grid-template-columns: 1fr 1.05fr;
-      gap: clamp(28px, 5vw, 64px);
+      grid-template-columns: 1.1fr 0.95fr;
+      gap: clamp(28px, 4.5vw, 56px);
       align-items: center;
     }
 
@@ -736,6 +736,12 @@
     .reveal-ready [data-reveal].is-visible {
       opacity: 1;
       transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    @media (max-width: 860px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 780px) {
