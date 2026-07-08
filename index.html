@@ -264,9 +264,63 @@
       bottom: -1px;
       left: 0;
       z-index: 2;
+      display: flex;
       height: clamp(40px, 4.5vw, 58px);
+      align-items: center;
+      overflow: hidden;
       background: #000;
-      pointer-events: none;
+      color: var(--white);
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+    }
+
+    .testimonial-track {
+      display: flex;
+      width: max-content;
+      align-items: center;
+    }
+
+    .hero-divider.ticker-ready .testimonial-track {
+      animation: testimonial-scroll 34s linear infinite;
+    }
+
+    .hero-divider:hover .testimonial-track {
+      animation-play-state: paused;
+    }
+
+    .testimonial-group {
+      display: flex;
+      flex: none;
+      align-items: center;
+    }
+
+    .testimonial-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding-left: clamp(28px, 3.5vw, 54px);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: clamp(0.72rem, 1.1vw, 0.92rem);
+      letter-spacing: 0.025em;
+      white-space: nowrap;
+    }
+
+    .testimonial-item::after {
+      margin-left: clamp(28px, 3.5vw, 54px);
+      color: var(--green-accent);
+      content: "\2022";
+      font-size: 1.2em;
+    }
+
+    .testimonial-name {
+      color: var(--white);
+      font-weight: 900;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    @keyframes testimonial-scroll {
+      to { transform: translateX(-50%); }
     }
 
     .wave-deep-to-dark {
@@ -818,6 +872,15 @@
         transition: none;
       }
 
+      .hero-divider.ticker-ready .testimonial-track {
+        animation: none;
+        transform: none;
+      }
+
+      .testimonial-group[aria-hidden="true"] {
+        display: none;
+      }
+
       .reveal-ready [data-reveal],
       .reveal-ready [data-reveal].is-visible {
         opacity: 1;
@@ -855,7 +918,16 @@
           <p class="hero-text outlined-text">From mowing and edging to weeding and yard cleanup, we help keep your outdoor space neat, clean, and ready to enjoy.</p>
           <a class="hero-quote-button" href="#contact">GET A FREE QUOTE</a>
         </div>
-        <div class="hero-divider" aria-hidden="true"></div>
+        <div class="hero-divider" role="region" aria-label="Customer testimonial placeholders">
+          <!-- TESTIMONIAL TICKER: Replace each Customer Name and placeholder quote with a genuine review. -->
+          <div class="testimonial-track">
+            <div class="testimonial-group">
+              <span class="testimonial-item"><strong class="testimonial-name">Customer Name</strong> “Add a genuine customer quote here.”</span>
+              <span class="testimonial-item"><strong class="testimonial-name">Customer Name</strong> “Add a real quote about the quality of your work here.”</span>
+              <span class="testimonial-item"><strong class="testimonial-name">Customer Name</strong> “Add another genuine customer experience here.”</span>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="phone-row" data-reveal>
         <p class="phone-number">Phone: (918)-998-5618</p>
@@ -964,6 +1036,16 @@
       var revealItems = document.querySelectorAll("[data-reveal]");
       var header = document.querySelector(".site-header");
       var headerUpdateQueued = false;
+      var heroDivider = document.querySelector(".hero-divider");
+      var testimonialTrack = document.querySelector(".testimonial-track");
+      var testimonialGroup = document.querySelector(".testimonial-group");
+
+      if (heroDivider && testimonialTrack && testimonialGroup) {
+        var testimonialCopy = testimonialGroup.cloneNode(true);
+        testimonialCopy.setAttribute("aria-hidden", "true");
+        testimonialTrack.appendChild(testimonialCopy);
+        heroDivider.classList.add("ticker-ready");
+      }
 
       function updateHeaderSize() {
         if (window.scrollY > 14) {
