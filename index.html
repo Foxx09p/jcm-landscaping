@@ -36,6 +36,7 @@
 
     html {
       scroll-behavior: smooth;
+      scroll-padding-top: 82px;
     }
 
     body {
@@ -52,7 +53,7 @@
     }
 
     .site-header {
-      position: absolute;
+      position: fixed;
       z-index: 10;
       top: 0;
       right: 0;
@@ -63,6 +64,16 @@
       box-shadow: 0 8px 28px rgba(7, 29, 14, 0.12);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
+      transition:
+        height 280ms cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 280ms ease,
+        box-shadow 280ms ease;
+    }
+
+    .site-header.is-scrolled {
+      height: 68px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 30px rgba(7, 29, 14, 0.2);
     }
 
     .header-inner {
@@ -79,6 +90,11 @@
       width: 205px;
       height: auto;
       flex: 0 0 auto;
+      transition: width 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .site-header.is-scrolled .header-logo {
+      width: 158px;
     }
 
     .main-nav {
@@ -104,6 +120,16 @@
       letter-spacing: 0.07em;
       list-style: none;
       text-decoration: none;
+      transition:
+        min-height 280ms cubic-bezier(0.22, 1, 0.36, 1),
+        padding 280ms cubic-bezier(0.22, 1, 0.36, 1),
+        background-color 160ms ease;
+    }
+
+    .site-header.is-scrolled .nav-link,
+    .site-header.is-scrolled .nav-dropdown summary {
+      min-height: 38px;
+      padding-block: 7px;
     }
 
     .nav-dropdown summary::-webkit-details-marker {
@@ -653,6 +679,10 @@
         height: 74px;
       }
 
+      .site-header.is-scrolled {
+        height: 58px;
+      }
+
       .header-inner {
         width: calc(100% - 20px);
         gap: 8px;
@@ -660,6 +690,10 @@
 
       .header-logo {
         width: 128px;
+      }
+
+      .site-header.is-scrolled .header-logo {
+        width: 106px;
       }
 
       .main-nav {
@@ -673,6 +707,13 @@
         padding: 7px 6px;
         font-size: 0.64rem;
         letter-spacing: 0.035em;
+      }
+
+      .site-header.is-scrolled .nav-link,
+      .site-header.is-scrolled .nav-dropdown summary {
+        min-height: 32px;
+        padding: 5px;
+        font-size: 0.6rem;
       }
 
       .dropdown-menu {
@@ -766,6 +807,13 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .quote-button { transition: none; }
+
+      .site-header,
+      .header-logo,
+      .nav-link,
+      .nav-dropdown summary {
+        transition: none;
+      }
 
       .reveal-ready [data-reveal],
       .reveal-ready [data-reveal].is-visible {
@@ -915,6 +963,28 @@
       var status = document.getElementById("form-status");
       var destination = "+19189985618";
       var revealItems = document.querySelectorAll("[data-reveal]");
+      var header = document.querySelector(".site-header");
+      var headerUpdateQueued = false;
+
+      function updateHeaderSize() {
+        if (window.scrollY > 14) {
+          header.classList.add("is-scrolled");
+        } else if (window.scrollY <= 1) {
+          header.classList.remove("is-scrolled");
+        }
+
+        headerUpdateQueued = false;
+      }
+
+      function queueHeaderUpdate() {
+        if (!headerUpdateQueued) {
+          headerUpdateQueued = true;
+          window.requestAnimationFrame(updateHeaderSize);
+        }
+      }
+
+      window.addEventListener("scroll", queueHeaderUpdate, { passive: true });
+      updateHeaderSize();
 
       document.documentElement.classList.add("reveal-ready");
 
